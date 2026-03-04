@@ -6,13 +6,26 @@ namespace debug
 {
 static int SimpleInstruction(const std::string& name, const int offset)
 {
-	std::cout << name << std::endl;
+	std::printf("%-16s\n", name.c_str());
 	return offset + 1;
+}
+
+static int ConstantInstruction(const std::string& name, const Chunk& chunk, const int offset)
+{
+	const auto& code = chunk.GetCode();
+	const uint8_t constantIndex = code[offset + 1];
+	std::printf("%-16s %4d '", name.c_str(), constantIndex);
+
+	const Value value = chunk.GetConstant(constantIndex);
+	value.Print();
+	std::printf("\n");
+
+	return offset + 2;
 }
 
 void DisassembleChunk(const Chunk& chunk, const std::string& name)
 {
-	std::cout << "== " << name << " ==" << std::endl;
+	std::printf("%s%s%s\n", "== ", name.c_str(), " ==");
 
 	const auto& code = chunk.GetCode();
 
@@ -31,10 +44,12 @@ int DisassembleInstruction(const Chunk& chunk, const int offset)
 
 	switch (static_cast<OpCode>(instruction))
 	{
+	case OP_CONSTANT:
+		return ConstantInstruction("OP_CONSTANT", chunk, offset);
 	case OP_RETURN:
 		return SimpleInstruction("OP_RETURN", offset);
 	default:
-		std::cout << "Unknown opcode " << static_cast<int>(instruction) << std::endl;
+		std::printf("%s %i\n", "Unknown opcode:", static_cast<int>(instruction));
 		return offset + 1;
 	}
 }

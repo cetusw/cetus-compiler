@@ -14,8 +14,6 @@ using u16 = uint16_t;
 using u32 = uint32_t;
 using u64 = uint64_t;
 
-using Value = double;
-
 constexpr int FRAMES_MAX = 64;
 constexpr int STACK_MAX = FRAMES_MAX * 256;
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common.h"
+#include "value.h"
 
 enum OpCode : uint8_t
 {
@@ -19,10 +20,10 @@ public:
 
 	const std::vector<uint8_t>& GetCode() const;
 	const std::vector<int>& GetLines() const;
-	const std::vector<Value>& GetConstants() const;
+	Value GetConstant(int index) const;
 
 private:
-	std::vector<uint8_t> code;
-	std::vector<int> lines;
-	std::vector<Value> constants{};
+	std::vector<uint8_t> m_code;
+	std::vector<int> m_lines;
+	std::vector<Value> m_constants{};
 };
