@@ -13,4 +13,6 @@ add_executable(cetus_compiler
         vm/debug.h
         vm/chunk.cpp
         vm/value.cpp
-        vm/value.h)
+        vm/value.h
+        vm/vm.cpp
+        vm/vm.h)
