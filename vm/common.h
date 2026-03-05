@@ -16,6 +16,7 @@ using u64 = uint64_t;
 
 constexpr int FRAMES_MAX = 64;
 constexpr int STACK_MAX = FRAMES_MAX * 256;
+constexpr int TOTAL_POSSIBLE_OPCODES = 256;
 
 #ifdef NDEBUG
 constexpr bool DEBUG_MODE = false;

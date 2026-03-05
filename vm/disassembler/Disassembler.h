@@ -1,10 +1,10 @@
 #pragma once
 
-#include "chunk.h"
+#include "../types/chunk.h"
 #include <string>
 
-namespace debug
+namespace disassembler
 {
 void DisassembleChunk(const Chunk& chunk, const std::string& name);
 int DisassembleInstruction(const Chunk& chunk, int offset);
-} // namespace debug
+} // namespace disassembler

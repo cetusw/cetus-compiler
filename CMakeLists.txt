@@ -8,11 +8,21 @@ include_directories(vm)
 add_executable(cetus_compiler
         vm/common.h
         vm/main.cpp
-        vm/chunk.h
-        vm/debug.cpp
-        vm/debug.h
-        vm/chunk.cpp
-        vm/value.cpp
-        vm/value.h
+        vm/types/chunk.h
+        vm/types/chunk.cpp
+        vm/types/value.cpp
+        vm/types/value.h
         vm/vm.cpp
-        vm/vm.h)
+        vm/vm.h
+        vm/instructions/Instruction.h
+        vm/instructions/ConstantInstruction.h
+        vm/instructions/InstructionRegistry.h
+        vm/instructions/ReturnInstruction.h
+        vm/instructions/ConstantInstruction.cpp
+        vm/instructions/ReturnInstruction.cpp
+        vm/types/InterpretResult.h
+        vm/disassembler/Disassembler.cpp
+        vm/disassembler/Disassembler.h
+)
+
+remove_definitions(-D_GLIBCXX_DEBUG)

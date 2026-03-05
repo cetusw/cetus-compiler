@@ -1,5 +1,7 @@
 #include "vm.h"
 
+#include "disassembler/Disassembler.h"
+
 VM::VM()
 	: m_ip(nullptr)
 	, m_chunk(nullptr)
@@ -14,30 +16,54 @@ InterpretResult VM::Interpret(const Chunk& chunk)
 	return Run();
 }
 
+inline uint8_t VM::ReadByte()
+{
+	if (m_ip >= m_chunk->GetCode().data() + m_chunk->GetCode().size())
+	{
+		throw std::out_of_range("Bytecode overread");
+	}
+	return *m_ip++;
+}
+
+Value VM::ReadConstant()
+{
+	return m_chunk->GetConstant(ReadByte());
+}
+
 InterpretResult VM::Run()
 {
-#define READ_BYTE() (*m_ip++)
-#define READ_CONSTANT() (m_chunk->GetConstant(READ_BYTE()))
 	for (;;)
 	{
-		uint8_t instruction = READ_BYTE();
+		TraceExecution();
+		const uint8_t opcode = ReadByte();
+		const Instruction* instruction = m_registry.Get(opcode);
+		if (!instruction)
+		{
+			return InterpretResult::RUNTIME_ERROR;
+		}
 
-		switch (static_cast<OpCode>(instruction))
+		const InterpretResult result = instruction->Execute(*this);
+		if (result != InterpretResult::OK)
 		{
-		case OP_CONSTANT:
-		{
-			const Value constant = READ_CONSTANT();
-			Push(constant);
-			break;
-		}
-		case OP_RETURN:
-		{
-			return InterpretResult::OK;
-		}
+			return result == InterpretResult::OK_DONE ? InterpretResult::OK : result;
 		}
 	}
-#undef READ_CONSTANT
-#undef READ_BYTE
+}
+
+void VM::TraceExecution() const
+{
+#ifdef DEBUG_TRACE_EXECUTION
+	for (const Value* slot = m_stack; slot < m_stackTop; slot++)
+	{
+		std::printf("[ ");
+		slot->Print();
+		std::printf(" ]");
+	}
+	std::printf("\n");
+
+	const int offset = static_cast<int>(m_ip - m_chunk->GetCode().data());
+	disassembler::DisassembleInstruction(*m_chunk, offset);
+#endif
 }
 
 void VM::Push(const Value value)

@@ -1,8 +1,7 @@
-#include "debug.h"
+#include "Disassembler.h"
 #include <cstdio>
-#include <iostream>
 
-namespace debug
+namespace disassembler
 {
 static int SimpleInstruction(const std::string& name, const int offset)
 {
@@ -31,7 +30,7 @@ void DisassembleChunk(const Chunk& chunk, const std::string& name)
 
 	for (int offset = 0; offset < static_cast<int>(code.size());)
 	{
-		offset = DisassembleInstruction(chunk, offset);
+		offset = disassembler::DisassembleInstruction(chunk, offset);
 	}
 }
 

@@ -1,5 +1,4 @@
 #pragma once
-#include <iosfwd>
 
 enum class ValueType
 {
