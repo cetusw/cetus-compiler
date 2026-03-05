@@ -23,6 +23,9 @@ add_executable(cetus_compiler
         vm/types/InterpretResult.h
         vm/disassembler/Disassembler.cpp
         vm/disassembler/Disassembler.h
+        vm/types/OpCode.h
+        vm/instructions/NegateInstruction.cpp
+        vm/instructions/NegateInstruction.h
 )
 
 remove_definitions(-D_GLIBCXX_DEBUG)

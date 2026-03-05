@@ -77,3 +77,8 @@ Value VM::Pop()
 	m_stackTop--;
 	return *m_stackTop;
 }
+
+Value VM::Peek(const int distance) const
+{
+	return m_stackTop[-1 - distance];
+}

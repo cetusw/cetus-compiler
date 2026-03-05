@@ -1,5 +1,4 @@
-#include "common.h"
-#include "debug/debug.h"
+#include "types/OpCode.h"
 #include "types/chunk.h"
 #include "vm.h"
 
@@ -13,7 +12,8 @@ int main(int argc, const char* argv[])
 	chunk.Write(constant, 1);
 	chunk.Write(OP_CONSTANT, 2);
 	chunk.Write(constant2, 2);
-	chunk.Write(OP_RETURN, 1);
+	chunk.Write(OP_NEGATE, 2);
+	chunk.Write(OP_RETURN, 3);
 	vm.Interpret(chunk);
 	return 0;
 }

@@ -3,12 +3,6 @@
 #include "../common.h"
 #include "value.h"
 
-enum OpCode : uint8_t
-{
-	OP_CONSTANT,
-	OP_RETURN,
-};
-
 class Chunk
 {
 public:

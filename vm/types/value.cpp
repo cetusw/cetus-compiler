@@ -33,6 +33,11 @@ void Value::Print() const
 	}
 }
 
+Value Value::operator-() const
+{
+	return Value(-AsNumber());
+}
+
 bool Value::operator==(const Value& other) const
 {
 	if (m_type != other.m_type)

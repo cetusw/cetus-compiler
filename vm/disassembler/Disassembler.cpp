@@ -1,4 +1,5 @@
 #include "Disassembler.h"
+#include "types/OpCode.h"
 #include <cstdio>
 
 namespace disassembler
@@ -45,6 +46,8 @@ int DisassembleInstruction(const Chunk& chunk, const int offset)
 	{
 	case OP_CONSTANT:
 		return ConstantInstruction("OP_CONSTANT", chunk, offset);
+	case OP_NEGATE:
+		return SimpleInstruction("OP_NEGATE", offset);
 	case OP_RETURN:
 		return SimpleInstruction("OP_RETURN", offset);
 	default:
@@ -53,4 +56,4 @@ int DisassembleInstruction(const Chunk& chunk, const int offset)
 	}
 }
 
-} // namespace debug
+} // namespace disassembler

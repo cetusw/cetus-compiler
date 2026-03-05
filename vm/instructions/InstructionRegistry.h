@@ -3,7 +3,9 @@
 #include "../types/chunk.h"
 #include "ConstantInstruction.h"
 #include "Instruction.h"
+#include "NegateInstruction.h"
 #include "ReturnInstruction.h"
+#include "types/OpCode.h"
 #include <array>
 
 class InstructionRegistry
@@ -12,6 +14,7 @@ public:
 	InstructionRegistry()
 	{
 		m_table[OP_CONSTANT] = std::make_unique<ConstantInstruction>();
+		m_table[OP_NEGATE] = std::make_unique<NegateInstruction>();
 		m_table[OP_RETURN] = std::make_unique<ReturnInstruction>();
 	}
 

@@ -16,6 +16,7 @@ public:
 	double AsNumber() const;
 	void Print() const;
 
+	Value operator-() const;
 	bool operator==(const Value& other) const;
 
 private:
