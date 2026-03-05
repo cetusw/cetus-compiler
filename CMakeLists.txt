@@ -26,6 +26,7 @@ add_executable(cetus_compiler
         vm/types/OpCode.h
         vm/instructions/NegateInstruction.cpp
         vm/instructions/NegateInstruction.h
+        vm/instructions/BinaryInstruction.h
 )
 
 remove_definitions(-D_GLIBCXX_DEBUG)

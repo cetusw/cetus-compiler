@@ -17,6 +17,10 @@ public:
 	void Print() const;
 
 	Value operator-() const;
+	Value operator+(const Value& other) const;
+	Value operator-(const Value& other) const;
+	Value operator*(const Value& other) const;
+	Value operator/(const Value& other) const;
 	bool operator==(const Value& other) const;
 
 private:

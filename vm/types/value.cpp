@@ -38,6 +38,26 @@ Value Value::operator-() const
 	return Value(-AsNumber());
 }
 
+Value Value::operator+(const Value& other) const
+{
+	return Value(m_asNumber + other.m_asNumber);
+}
+
+Value Value::operator-(const Value& other) const
+{
+	return Value(m_asNumber - other.m_asNumber);
+}
+
+Value Value::operator*(const Value& other) const
+{
+	return Value(m_asNumber * other.m_asNumber);
+}
+
+Value Value::operator/(const Value& other) const
+{
+	return Value(m_asNumber / other.m_asNumber);
+}
+
 bool Value::operator==(const Value& other) const
 {
 	if (m_type != other.m_type)

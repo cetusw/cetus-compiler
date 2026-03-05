@@ -1,13 +1,16 @@
 #include "vm.h"
-
 #include "disassembler/Disassembler.h"
+#include "instructions/InstructionRegistry.h"
 
 VM::VM()
 	: m_ip(nullptr)
 	, m_chunk(nullptr)
+	, m_registry(std::make_unique<InstructionRegistry>())
 {
 	m_stackTop = m_stack;
 }
+
+VM::~VM() = default;
 
 InterpretResult VM::Interpret(const Chunk& chunk)
 {
@@ -36,7 +39,7 @@ InterpretResult VM::Run()
 	{
 		TraceExecution();
 		const uint8_t opcode = ReadByte();
-		const Instruction* instruction = m_registry.Get(opcode);
+		const Instruction* instruction = m_registry->Get(opcode);
 		if (!instruction)
 		{
 			return InterpretResult::RUNTIME_ERROR;

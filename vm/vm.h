@@ -1,15 +1,15 @@
 #pragma once
 
-#include "instructions/InstructionRegistry.h"
 #include "types/InterpretResult.h"
 #include "types/chunk.h"
 #include "types/value.h"
 
+class InstructionRegistry;
 class VM
 {
 public:
 	VM();
-	~VM() = default;
+	~VM();
 
 	InterpretResult Interpret(const Chunk& chunk);
 	uint8_t ReadByte();
@@ -24,7 +24,7 @@ private:
 	Value* m_stackTop;
 	const uint8_t* m_ip;
 	const Chunk* m_chunk;
-	InstructionRegistry m_registry;
+	std::unique_ptr<InstructionRegistry> m_registry;
 
 	InterpretResult Run();
 	void TraceExecution() const;
