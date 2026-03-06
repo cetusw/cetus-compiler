@@ -15,15 +15,23 @@ public:
 	InstructionRegistry()
 	{
 		m_table[OP_CONSTANT] = std::make_unique<ConstantInstruction>();
+
 		m_table[OP_NEGATE] = std::make_unique<NegateInstruction>();
-		m_table[OP_RETURN] = std::make_unique<ReturnInstruction>();
 		m_table[OP_ADD] = std::make_unique<BinaryInstruction<AddOp>>();
 		m_table[OP_SUBTRACT] = std::make_unique<BinaryInstruction<SubOp>>();
 		m_table[OP_MULTIPLY] = std::make_unique<BinaryInstruction<MulOp>>();
 		m_table[OP_DIVIDE] = std::make_unique<BinaryInstruction<DivOp>>();
+
+		m_table[OP_GREATER] = std::make_unique<BinaryInstruction<GreaterOp>>();
+		m_table[OP_LESS] = std::make_unique<BinaryInstruction<LessOp>>();
+		m_table[OP_GREATER_OR_EQUAL] = std::make_unique<BinaryInstruction<GreaterOp>>();
+		m_table[OP_LESS_OR_EQUAL] = std::make_unique<BinaryInstruction<LessOp>>();
+		m_table[OP_EQUAL] = std::make_unique<BinaryInstruction<EqualOp, false>>();
+
+		m_table[OP_RETURN] = std::make_unique<ReturnInstruction>();
 	}
 
-	const Instruction* Get(const uint8_t opcode) const
+	[[nodiscard]] const Instruction* Get(const uint8_t opcode) const
 	{
 		return m_table[opcode].get();
 	}

@@ -1,19 +1,21 @@
 #pragma once
-
-enum class ValueType
-{
-	Number,
-	// std::variant
-};
+#include <cstddef>
+#include <variant>
 
 class Value
 {
 public:
 	Value();
 	explicit Value(double value);
+	explicit Value(bool value);
 
-	bool IsNumber() const;
-	double AsNumber() const;
+	[[nodiscard]] bool IsNumber() const;
+	[[nodiscard]] bool IsBool() const;
+	[[nodiscard]] bool IsNull() const;
+
+	[[nodiscard]] double AsNumber() const;
+	[[nodiscard]] bool AsBool() const;
+
 	void Print() const;
 
 	Value operator-() const;
@@ -21,9 +23,12 @@ public:
 	Value operator-(const Value& other) const;
 	Value operator*(const Value& other) const;
 	Value operator/(const Value& other) const;
-	bool operator==(const Value& other) const;
+	Value operator==(const Value& other) const;
+	Value operator>(const Value& other) const;
+	Value operator<(const Value& other) const;
+	Value operator>=(const Value& other) const;
+	Value operator<=(const Value& other) const;
 
 private:
-	ValueType m_type;
-	double m_asNumber;
+	std::variant<std::nullptr_t, bool, double> m_data;
 };

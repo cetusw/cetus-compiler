@@ -3,34 +3,62 @@
 #include <cstdio>
 
 Value::Value()
-	: m_type(ValueType::Number)
-	, m_asNumber(0.0)
+	: m_data(nullptr)
 {
 }
 
 Value::Value(const double value)
-	: m_type(ValueType::Number)
-	, m_asNumber(value)
+	: m_data(value)
 {
 }
+
+Value::Value(bool value)
+	: m_data(value)
+{
+}
+
 bool Value::IsNumber() const
 {
-	return m_type == ValueType::Number;
+	return std::holds_alternative<double>(m_data);
+}
+
+bool Value::IsBool() const
+{
+	return std::holds_alternative<bool>(m_data);
+}
+
+bool Value::IsNull() const
+{
+	return std::holds_alternative<std::nullptr_t>(m_data);
 }
 
 double Value::AsNumber() const
 {
-	return m_asNumber;
+	return std::get<double>(m_data);
+}
+
+bool Value::AsBool() const
+{
+	return std::get<bool>(m_data);
 }
 
 void Value::Print() const
 {
-	switch (m_type)
-	{
-	case ValueType::Number:
-		std::printf("%f", AsNumber());
-		break;
-	}
+	std::visit([]<typename T>(T arg) {
+		if constexpr (std::is_same_v<T, double>)
+		{
+			std::printf("%g", arg);
+		}
+		else if constexpr (std::is_same_v<T, bool>)
+		{
+			std::printf(arg ? "true" : "false");
+		}
+		else if constexpr (std::is_same_v<T, std::nullptr_t>)
+		{
+			std::printf("nullptr");
+		}
+	},
+		m_data);
 }
 
 Value Value::operator-() const
@@ -40,29 +68,45 @@ Value Value::operator-() const
 
 Value Value::operator+(const Value& other) const
 {
-	return Value(m_asNumber + other.m_asNumber);
+	return Value(AsNumber() + std::get<double>(other.m_data));
 }
 
 Value Value::operator-(const Value& other) const
 {
-	return Value(m_asNumber - other.m_asNumber);
+	return Value(AsNumber() - std::get<double>(other.m_data));
 }
 
 Value Value::operator*(const Value& other) const
 {
-	return Value(m_asNumber * other.m_asNumber);
+	return Value(AsNumber() * std::get<double>(other.m_data));
 }
 
 Value Value::operator/(const Value& other) const
 {
-	return Value(m_asNumber / other.m_asNumber);
+	return Value(AsNumber() / std::get<double>(other.m_data));
 }
 
-bool Value::operator==(const Value& other) const
+Value Value::operator==(const Value& other) const
 {
-	if (m_type != other.m_type)
-	{
-		return false;
-	}
-	return m_asNumber == other.m_asNumber;
+	return Value(m_data == other.m_data);
+}
+
+Value Value::operator>(const Value& other) const
+{
+	return Value(std::get<double>(m_data) > std::get<double>(other.m_data));
+}
+
+Value Value::operator<(const Value& other) const
+{
+	return Value(std::get<double>(m_data) < std::get<double>(other.m_data));
+}
+
+Value Value::operator>=(const Value& other) const
+{
+	return Value(std::get<double>(m_data) >= std::get<double>(other.m_data));
+}
+
+Value Value::operator<=(const Value& other) const
+{
+	return Value(std::get<double>(m_data) <= std::get<double>(other.m_data));
 }

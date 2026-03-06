@@ -31,7 +31,7 @@ void DisassembleChunk(const Chunk& chunk, const std::string& name)
 
 	for (int offset = 0; offset < static_cast<int>(code.size());)
 	{
-		offset = disassembler::DisassembleInstruction(chunk, offset);
+		offset = DisassembleInstruction(chunk, offset);
 	}
 }
 
@@ -58,6 +58,17 @@ int DisassembleInstruction(const Chunk& chunk, const int offset)
 		return SimpleInstruction("OP_DIVIDE", offset);
 	case OP_RETURN:
 		return SimpleInstruction("OP_RETURN", offset);
+	case OP_EQUAL:
+		return SimpleInstruction("OP_EQUAL", offset);
+	case OP_GREATER:
+		return SimpleInstruction("OP_GREATER", offset);
+	case OP_LESS:
+		return SimpleInstruction("OP_LESS", offset);
+	case OP_GREATER_OR_EQUAL:
+		return SimpleInstruction("OP_GREATER_OR_EQUAL", offset);
+	case OP_LESS_OR_EQUAL:
+		return SimpleInstruction("OP_LESS_OR_EQUAL", offset);
+
 	default:
 		std::printf("%s %i\n", "Unknown opcode:", static_cast<int>(instruction));
 		return offset + 1;
