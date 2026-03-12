@@ -1,6 +1,6 @@
 #include "value.h"
-#include <cstdio>
 #include <cmath>
+#include <cstdio>
 
 Value::Value()
 	: m_data(nullptr)
@@ -94,6 +94,11 @@ Value Value::operator%(const Value& other) const
 Value Value::operator==(const Value& other) const
 {
 	return Value(m_data == other.m_data);
+}
+
+Value Value::operator!=(const Value& other) const
+{
+	return Value(m_data != other.m_data);
 }
 
 Value Value::operator>(const Value& other) const

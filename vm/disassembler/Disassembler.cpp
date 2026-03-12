@@ -62,6 +62,8 @@ int DisassembleInstruction(const Chunk& chunk, const int offset)
 		return SimpleInstruction("OP_RETURN", offset);
 	case OP_EQUAL:
 		return SimpleInstruction("OP_EQUAL", offset);
+	case OP_NOT_EQUAL:
+		return SimpleInstruction("OP_NOT_EQUAL", offset);
 	case OP_GREATER:
 		return SimpleInstruction("OP_GREATER", offset);
 	case OP_LESS:

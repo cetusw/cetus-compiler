@@ -14,6 +14,7 @@ int main(int argc, const char* argv[])
 	const int c10 = chunk.AddConstant(Value(10.0));
 	const int c0 = chunk.AddConstant(Value(0.0));
 	const int bTrue = chunk.AddConstant(Value(true));
+	const int bFalse = chunk.AddConstant(Value(false));
 
 	// 15 + 5 = 20
 	chunk.Write(OP_CONSTANT, 1);
@@ -43,21 +44,26 @@ int main(int argc, const char* argv[])
 	chunk.Write(bTrue, 5);
 	chunk.Write(OP_EQUAL, 5);
 
-	// 15 % 10 = 5
+	// true != false = true
 	chunk.Write(OP_CONSTANT, 6);
-	chunk.Write(c15, 6);
-	chunk.Write(OP_CONSTANT, 6);
-	chunk.Write(c10, 6);
-	chunk.Write(OP_MODULO, 6);
+	chunk.Write(bFalse, 6);
+	chunk.Write(OP_NOT_EQUAL, 6);
 
-	// 15 / 10 = 1.5
+	// 15 % 10 = 5
 	chunk.Write(OP_CONSTANT, 7);
 	chunk.Write(c15, 7);
 	chunk.Write(OP_CONSTANT, 7);
 	chunk.Write(c10, 7);
-	chunk.Write(OP_DIVIDE, 7);
+	chunk.Write(OP_MODULO, 7);
 
-	chunk.Write(OP_RETURN, 8);
+	// 15 / 10 = 1.5
+	chunk.Write(OP_CONSTANT, 8);
+	chunk.Write(c15, 8);
+	chunk.Write(OP_CONSTANT, 8);
+	chunk.Write(c10, 8);
+	chunk.Write(OP_DIVIDE, 8);
+
+	chunk.Write(OP_RETURN, 9);
 
 	const InterpretResult result = vm.Interpret(chunk);
 

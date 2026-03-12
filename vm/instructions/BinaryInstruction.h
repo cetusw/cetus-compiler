@@ -36,6 +36,10 @@ struct EqualOp
 {
 	Value operator()(const Value& a, const Value& b) const { return a == b; }
 };
+struct NotEqualOp
+{
+	Value operator()(const Value& a, const Value& b) const { return a != b; }
+};
 struct GreaterOp
 {
 	Value operator()(const Value& a, const Value& b) const { return Value(a > b); }
