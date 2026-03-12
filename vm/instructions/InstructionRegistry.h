@@ -25,8 +25,8 @@ public:
 
 		m_table[OP_GREATER] = std::make_unique<BinaryInstruction<GreaterOp>>();
 		m_table[OP_LESS] = std::make_unique<BinaryInstruction<LessOp>>();
-		m_table[OP_GREATER_OR_EQUAL] = std::make_unique<BinaryInstruction<GreaterOp>>();
-		m_table[OP_LESS_OR_EQUAL] = std::make_unique<BinaryInstruction<LessOp>>();
+		m_table[OP_GREATER_OR_EQUAL] = std::make_unique<BinaryInstruction<GreaterOrEqualOp>>();
+		m_table[OP_LESS_OR_EQUAL] = std::make_unique<BinaryInstruction<LessOrEqualOp>>();
 		m_table[OP_EQUAL] = std::make_unique<BinaryInstruction<EqualOp, false>>();
 
 		m_table[OP_RETURN] = std::make_unique<ReturnInstruction>();
