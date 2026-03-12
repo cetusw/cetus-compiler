@@ -1,0 +1,36 @@
+.def
+.name String
+.constants
+string "Cetus"
+string " "
+string "Compiler"
+string "Cetus"
+string "NotCetus"
+string "Result: "
+.code
+# "Cetus" + " " + "Compiler" -> "Cetus Compiler"
+1 const 0
+1 const 1
+1 add
+1 const 2
+1 add
+
+1 set_local 0
+
+# "Cetus" == "Cetus" -> true
+2 const 0
+2 const 3
+2 eq
+
+# "Cetus" != "NotCetus" -> true
+3 const 0
+3 const 4
+3 ne
+
+# "Result: " + "Cetus Compiler" -> "Result: Cetus Compiler"
+4 const 5
+4 get_local 0
+4 add
+
+5 return
+.end_def

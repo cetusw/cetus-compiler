@@ -1,0 +1,27 @@
+.def
+.name VariableTest
+.constants
+number 10
+number 5
+number 12
+string "Result is: "
+.code
+# var x = 10
+1 const 0
+
+# x + 5
+2 get_local 0
+2 const 1
+2 add
+
+# x = 15
+3 set_local 0
+3 pop
+
+# x > 12
+4 get_local 0
+4 const 2
+4 gt
+
+5 return
+.end_def

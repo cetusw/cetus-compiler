@@ -1,0 +1,36 @@
+.def
+.name Logic
+.constants
+number 10
+number 20
+bool true
+bool false
+.code
+# 10 < 20 -> true
+1 const 0
+1 const 1
+1 lt
+
+# !(10 < 20) -> false
+2 const 3
+2 eq
+
+# true != false -> true
+3 const 2
+3 const 3
+3 ne
+
+# false == false -> true
+4 const 3
+4 const 3
+4 eq
+
+# (10 < 20) == true
+5 const 0
+5 const 1
+5 lt
+5 const 2
+5 eq
+
+6 return
+.end_def

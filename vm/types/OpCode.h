@@ -1,4 +1,5 @@
 #pragma once
+#include <cstdint>
 
 enum OpCode : uint8_t
 {
