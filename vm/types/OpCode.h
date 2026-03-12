@@ -1,20 +1,25 @@
 #pragma once
-#include <cstdint>
 
 enum OpCode : uint8_t
 {
 	OP_CONSTANT,
+	OP_GET_LOCAL,
+	OP_SET_LOCAL,
+	OP_POP,
+
 	OP_NEGATE,
 	OP_ADD,
 	OP_SUBTRACT,
 	OP_MULTIPLY,
 	OP_DIVIDE,
 	OP_MODULO,
+
 	OP_EQUAL,
 	OP_NOT_EQUAL,
 	OP_GREATER,
 	OP_LESS,
 	OP_GREATER_OR_EQUAL,
 	OP_LESS_OR_EQUAL,
+
 	OP_RETURN,
 };

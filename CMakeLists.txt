@@ -31,6 +31,12 @@ add_executable(cetus_compiler
         vm/objects/Obj.cpp
         vm/objects/ObjString.cpp
         vm/objects/ObjString.h
+        vm/instructions/SetLocalInstruction.cpp
+        vm/instructions/SetLocalInstruction.h
+        vm/instructions/GetLocalInstruction.cpp
+        vm/instructions/GetLocalInstruction.h
+        vm/instructions/PopInstruction.cpp
+        vm/instructions/PopInstruction.h
 )
 
 remove_definitions(-D_GLIBCXX_DEBUG)

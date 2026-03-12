@@ -18,6 +18,8 @@ public:
 	void Push(const Value& value);
 	Value Pop();
 	[[nodiscard]] Value Peek(int distance) const;
+	Value GetStack(int index) const;
+	void SetStack(int index, const Value& value);
 
 private:
 	Value m_stack[STACK_MAX];

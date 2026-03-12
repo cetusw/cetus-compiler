@@ -93,6 +93,20 @@ int main(int argc, const char* argv[])
 	chunk.Write(sHello, 4);
 	chunk.Write(OP_NOT_EQUAL, 4);
 
+	// Пример работы с переменными
+	chunk.Write(OP_CONSTANT, 1);
+	chunk.Write(sCetus, 1);
+
+	const int sNew = chunk.AddConstant(Value(std::make_shared<ObjString>("New Value")));
+	chunk.Write(OP_CONSTANT, 2);
+	chunk.Write(sNew, 2);
+	chunk.Write(OP_SET_LOCAL, 2);
+	chunk.Write(0, 2);
+	chunk.Write(OP_POP, 2);
+
+	chunk.Write(OP_GET_LOCAL, 3);
+	chunk.Write(0, 3);
+
 	chunk.Write(OP_RETURN, 9);
 
 	const InterpretResult result = vm.Interpret(chunk);

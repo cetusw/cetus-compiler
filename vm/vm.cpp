@@ -85,3 +85,13 @@ Value VM::Peek(const int distance) const
 {
 	return m_stackTop[-1 - distance];
 }
+
+Value VM::GetStack(const int index) const
+{
+	return m_stack[index];
+}
+
+void VM::SetStack(const int index, const Value& value)
+{
+	m_stack[index] = value;
+}

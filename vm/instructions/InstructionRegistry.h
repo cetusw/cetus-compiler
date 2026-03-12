@@ -1,11 +1,12 @@
 #pragma once
-
-#include "../types/chunk.h"
 #include "BinaryInstruction.h"
 #include "ConstantInstruction.h"
+#include "GetLocalInstruction.h"
 #include "Instruction.h"
 #include "NegateInstruction.h"
+#include "PopInstruction.h"
 #include "ReturnInstruction.h"
+#include "SetLocalInstruction.h"
 #include "types/OpCode.h"
 #include <array>
 
@@ -15,6 +16,9 @@ public:
 	InstructionRegistry()
 	{
 		m_table[OP_CONSTANT] = std::make_unique<ConstantInstruction>();
+		m_table[OP_GET_LOCAL] = std::make_unique<GetLocalInstruction>();
+		m_table[OP_SET_LOCAL] = std::make_unique<SetLocalInstruction>();
+		m_table[OP_POP] = std::make_unique<PopInstruction>();
 
 		m_table[OP_NEGATE] = std::make_unique<NegateInstruction>();
 		m_table[OP_ADD] = std::make_unique<BinaryInstruction<AddOp>>();

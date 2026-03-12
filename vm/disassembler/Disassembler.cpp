@@ -23,6 +23,13 @@ static int ConstantInstruction(const std::string& name, const Chunk& chunk, cons
 	return offset + 2;
 }
 
+static int ByteInstruction(const std::string& name, const Chunk& chunk, const int offset)
+{
+	const uint8_t slot = chunk.GetCode()[offset + 1];
+	std::printf("%-16s %4d\n", name.c_str(), slot);
+	return offset + 2;
+}
+
 void DisassembleChunk(const Chunk& chunk, const std::string& name)
 {
 	std::printf("%s%s%s\n", "== ", name.c_str(), " ==");
@@ -46,6 +53,12 @@ int DisassembleInstruction(const Chunk& chunk, const int offset)
 	{
 	case OP_CONSTANT:
 		return ConstantInstruction("OP_CONSTANT", chunk, offset);
+	case OP_GET_LOCAL:
+		return ByteInstruction("OP_GET_LOCAL", chunk, offset);
+	case OP_SET_LOCAL:
+		return ByteInstruction("OP_SET_LOCAL", chunk, offset);
+	case OP_POP:
+		return SimpleInstruction("OP_POP", offset);
 	case OP_NEGATE:
 		return SimpleInstruction("OP_NEGATE", offset);
 	case OP_ADD:
