@@ -1,6 +1,6 @@
 #include "value.h"
-
 #include <cstdio>
+#include <cmath>
 
 Value::Value()
 	: m_data(nullptr)
@@ -84,6 +84,11 @@ Value Value::operator*(const Value& other) const
 Value Value::operator/(const Value& other) const
 {
 	return Value(AsNumber() / std::get<double>(other.m_data));
+}
+
+Value Value::operator%(const Value& other) const
+{
+	return Value(std::fmod(AsNumber(), std::get<double>(other.m_data)));
 }
 
 Value Value::operator==(const Value& other) const

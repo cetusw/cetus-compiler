@@ -28,6 +28,10 @@ struct DivOp
 {
 	Value operator()(const Value& a, const Value& b) const { return a / b; }
 };
+struct ModOp
+{
+	Value operator()(const Value& a, const Value& b) const { return a % b; }
+};
 struct EqualOp
 {
 	Value operator()(const Value& a, const Value& b) const { return a == b; }

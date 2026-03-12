@@ -43,7 +43,21 @@ int main(int argc, const char* argv[])
 	chunk.Write(bTrue, 5);
 	chunk.Write(OP_EQUAL, 5);
 
-	chunk.Write(OP_RETURN, 6);
+	// 15 % 10 = 5
+	chunk.Write(OP_CONSTANT, 6);
+	chunk.Write(c15, 6);
+	chunk.Write(OP_CONSTANT, 6);
+	chunk.Write(c10, 6);
+	chunk.Write(OP_MODULO, 6);
+
+	// 15 / 10 = 1.5
+	chunk.Write(OP_CONSTANT, 7);
+	chunk.Write(c15, 7);
+	chunk.Write(OP_CONSTANT, 7);
+	chunk.Write(c10, 7);
+	chunk.Write(OP_DIVIDE, 7);
+
+	chunk.Write(OP_RETURN, 8);
 
 	const InterpretResult result = vm.Interpret(chunk);
 

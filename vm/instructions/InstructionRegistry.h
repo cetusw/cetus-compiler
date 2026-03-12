@@ -21,6 +21,7 @@ public:
 		m_table[OP_SUBTRACT] = std::make_unique<BinaryInstruction<SubOp>>();
 		m_table[OP_MULTIPLY] = std::make_unique<BinaryInstruction<MulOp>>();
 		m_table[OP_DIVIDE] = std::make_unique<BinaryInstruction<DivOp>>();
+		m_table[OP_MODULO] = std::make_unique<BinaryInstruction<ModOp>>();
 
 		m_table[OP_GREATER] = std::make_unique<BinaryInstruction<GreaterOp>>();
 		m_table[OP_LESS] = std::make_unique<BinaryInstruction<LessOp>>();

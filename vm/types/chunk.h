@@ -12,9 +12,9 @@ public:
 	void Write(uint8_t byte, int line);
 	int AddConstant(Value value);
 
-	const std::vector<uint8_t>& GetCode() const;
-	const std::vector<int>& GetLines() const;
-	Value GetConstant(int index) const;
+	[[nodiscard]] const std::vector<uint8_t>& GetCode() const;
+	[[nodiscard]] const std::vector<int>& GetLines() const;
+	[[nodiscard]] Value GetConstant(int index) const;
 
 private:
 	std::vector<uint8_t> m_code;

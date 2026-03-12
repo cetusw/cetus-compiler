@@ -1,5 +1,4 @@
 #pragma once
-
 #include "types/InterpretResult.h"
 #include "types/chunk.h"
 #include "types/value.h"
@@ -17,7 +16,7 @@ public:
 
 	void Push(Value value);
 	Value Pop();
-	Value Peek(int distance) const;
+	[[nodiscard]] Value Peek(int distance) const;
 
 private:
 	Value m_stack[STACK_MAX];

@@ -56,6 +56,8 @@ int DisassembleInstruction(const Chunk& chunk, const int offset)
 		return SimpleInstruction("OP_MULTIPLY", offset);
 	case OP_DIVIDE:
 		return SimpleInstruction("OP_DIVIDE", offset);
+	case OP_MODULO:
+		return SimpleInstruction("OP_MODULO", offset);
 	case OP_RETURN:
 		return SimpleInstruction("OP_RETURN", offset);
 	case OP_EQUAL:
