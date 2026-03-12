@@ -27,6 +27,10 @@ add_executable(cetus_compiler
         vm/instructions/NegateInstruction.cpp
         vm/instructions/NegateInstruction.h
         vm/instructions/BinaryInstruction.h
+        vm/objects/Obj.h
+        vm/objects/Obj.cpp
+        vm/objects/ObjString.cpp
+        vm/objects/ObjString.h
 )
 
 remove_definitions(-D_GLIBCXX_DEBUG)

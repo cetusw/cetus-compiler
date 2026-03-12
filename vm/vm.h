@@ -1,4 +1,5 @@
 #pragma once
+#include "common.h"
 #include "types/InterpretResult.h"
 #include "types/chunk.h"
 #include "types/value.h"
@@ -14,7 +15,7 @@ public:
 	uint8_t ReadByte();
 	Value ReadConstant();
 
-	void Push(Value value);
+	void Push(const Value& value);
 	Value Pop();
 	[[nodiscard]] Value Peek(int distance) const;
 

@@ -69,7 +69,7 @@ void VM::TraceExecution() const
 #endif
 }
 
-void VM::Push(const Value value)
+void VM::Push(const Value& value)
 {
 	*m_stackTop = value;
 	m_stackTop++;

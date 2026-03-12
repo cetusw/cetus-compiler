@@ -5,7 +5,7 @@
 
 class VM;
 
-template <typename, bool = true>
+template <typename>
 class BinaryInstruction final : public Instruction
 {
 public:
@@ -57,16 +57,16 @@ struct LessOrEqualOp
 	Value operator()(const Value& a, const Value& b) const { return Value(a <= b); }
 };
 
-template <typename Op, bool MustBeNumber>
-InterpretResult BinaryInstruction<Op, MustBeNumber>::Execute(VM& vm) const
+template <typename Op>
+InterpretResult BinaryInstruction<Op>::Execute(VM& vm) const
 {
-	if (MustBeNumber && (!vm.Peek(0).IsNumber() || !vm.Peek(1).IsNumber()))
-	{
-		std::fprintf(stderr, "Operands must be numbers.\n");
-		return InterpretResult::RUNTIME_ERROR;
-	}
 	Value b = vm.Pop();
 	Value a = vm.Pop();
-	vm.Push(Op()(a, b));
+	const Value result = Op()(a, b);
+	if (result.IsNull())
+	{
+		return InterpretResult::RUNTIME_ERROR;
+	}
+	vm.Push(result);
 	return InterpretResult::OK;
 }

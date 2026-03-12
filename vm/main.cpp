@@ -1,4 +1,5 @@
 #include "disassembler/Disassembler.h"
+#include "objects/ObjString.h"
 #include "types/OpCode.h"
 #include "types/chunk.h"
 #include "vm.h"
@@ -15,6 +16,11 @@ int main(int argc, const char* argv[])
 	const int c0 = chunk.AddConstant(Value(0.0));
 	const int bTrue = chunk.AddConstant(Value(true));
 	const int bFalse = chunk.AddConstant(Value(false));
+
+	const int sHello = chunk.AddConstant(Value(std::make_shared<ObjString>("Hello")));
+	const int sSpace = chunk.AddConstant(Value(std::make_shared<ObjString>(" ")));
+	const int sWorld = chunk.AddConstant(Value(std::make_shared<ObjString>("World!")));
+	const int sCetus = chunk.AddConstant(Value(std::make_shared<ObjString>("Cetus")));
 
 	// 15 + 5 = 20
 	chunk.Write(OP_CONSTANT, 1);
@@ -62,6 +68,30 @@ int main(int argc, const char* argv[])
 	chunk.Write(OP_CONSTANT, 8);
 	chunk.Write(c10, 8);
 	chunk.Write(OP_DIVIDE, 8);
+
+	// "Hello" + " " + "World!"
+	chunk.Write(OP_CONSTANT, 2);
+	chunk.Write(sHello, 2);
+	chunk.Write(OP_CONSTANT, 2);
+	chunk.Write(sSpace, 2);
+	chunk.Write(OP_ADD, 2);
+	chunk.Write(OP_CONSTANT, 2);
+	chunk.Write(sWorld, 2);
+	chunk.Write(OP_ADD, 2);
+
+	// "Cetus" == "Cetus" = true
+	chunk.Write(OP_CONSTANT, 3);
+	chunk.Write(sCetus, 3);
+	chunk.Write(OP_CONSTANT, 3);
+	chunk.Write(sCetus, 3);
+	chunk.Write(OP_EQUAL, 3);
+
+	// "Cetus" != "Hello" = true
+	chunk.Write(OP_CONSTANT, 4);
+	chunk.Write(sCetus, 4);
+	chunk.Write(OP_CONSTANT, 4);
+	chunk.Write(sHello, 4);
+	chunk.Write(OP_NOT_EQUAL, 4);
 
 	chunk.Write(OP_RETURN, 9);
 

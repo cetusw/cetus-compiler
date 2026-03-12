@@ -6,7 +6,7 @@ void Chunk::Write(const uint8_t byte, const int line)
 	m_lines.push_back(line);
 }
 
-int Chunk::AddConstant(const Value value)
+int Chunk::AddConstant(const Value& value)
 {
 	m_constants.push_back(value);
 	return static_cast<int>(m_constants.size() - 1);
