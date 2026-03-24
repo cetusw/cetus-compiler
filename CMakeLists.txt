@@ -36,6 +36,9 @@ add_executable(bytecode_parser
         ${COMMON_SOURCES}
         vm/parser/BytecodeParser.cpp
         vm/parser/BytecodeParser.h
+        compiler/Lexer.cpp
+        compiler/Lexer.h
+        compiler/Token.h
 )
 
 remove_definitions(-D_GLIBCXX_DEBUG)
