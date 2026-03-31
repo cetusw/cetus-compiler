@@ -17,9 +17,7 @@ void BytecodeExecutionDriver::Execute(const Configuration& configuration)
 		return;
 	}
 
-	std::printf("--- Disassembling Parsed Bytecode ---\n");
-	disassembler::DisassembleChunk(chunk, "Parsed Program");
-	std::printf("\n--- Execution ---\n");
+	disassembler::DisassembleChunk(chunk, "Disassembling Parsed Bytecode");
 
 	VM vm;
 	const InterpretResult result = vm.Interpret(chunk);

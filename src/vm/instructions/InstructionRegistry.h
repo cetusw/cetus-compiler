@@ -1,13 +1,15 @@
 #pragma once
+#include "../types/OpCode.h"
 #include "BinaryInstruction.h"
 #include "ConstantInstruction.h"
 #include "GetLocalInstruction.h"
 #include "Instruction.h"
+#include "JumpIfFalseInstruction.h"
+#include "JumpInstruction.h"
 #include "NegateInstruction.h"
 #include "PopInstruction.h"
 #include "ReturnInstruction.h"
 #include "SetLocalInstruction.h"
-#include "../types/OpCode.h"
 #include <array>
 
 class InstructionRegistry
@@ -33,6 +35,9 @@ public:
 		m_table[OP_LESS_OR_EQUAL] = std::make_unique<BinaryInstruction<LessOrEqualOp>>();
 		m_table[OP_EQUAL] = std::make_unique<BinaryInstruction<EqualOp>>();
 		m_table[OP_NOT_EQUAL] = std::make_unique<BinaryInstruction<NotEqualOp>>();
+
+		m_table[OP_JUMP] = std::make_unique<JumpInstruction>();
+		m_table[OP_JUMP_IF_FALSE] = std::make_unique<JumpIfFalseInstruction>();
 
 		m_table[OP_RETURN] = std::make_unique<ReturnInstruction>();
 	}

@@ -45,6 +45,10 @@ set(VIRTUAL_MACHINE_SOURCES
         src/utils/io/TableExporter.h
         src/cli/driver/BytecodeExecutionDriver.cpp
         src/cli/driver/BytecodeExecutionDriver.h
+        src/vm/instructions/JumpInstruction.cpp
+        src/vm/instructions/JumpInstruction.h
+        src/vm/instructions/JumpIfFalseInstruction.cpp
+        src/vm/instructions/JumpIfFalseInstruction.h
 )
 
 add_executable(cetus

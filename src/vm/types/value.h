@@ -16,6 +16,7 @@ public:
 	[[nodiscard]] bool IsNumber() const;
 	[[nodiscard]] bool IsBool() const;
 	[[nodiscard]] bool IsString() const;
+	[[nodiscard]] bool IsFalsey() const;
 
 	[[nodiscard]] double AsNumber() const;
 	[[nodiscard]] bool AsBool() const;

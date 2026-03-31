@@ -44,6 +44,19 @@ bool Value::IsString() const
 	return std::holds_alternative<HeapObject>(m_data) && std::get<HeapObject>(m_data)->GetType() == ObjType::STRING;
 }
 
+bool Value::IsFalsey() const
+{
+	if (IsNull())
+	{
+		return true;
+	}
+	if (IsBool())
+	{
+		return !AsBool();
+	}
+	return false;
+}
+
 double Value::AsNumber() const
 {
 	return std::get<double>(m_data);

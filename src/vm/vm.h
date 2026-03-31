@@ -15,6 +15,9 @@ public:
 	uint8_t ReadByte();
 	Value ReadConstant();
 
+	void Jump(int offset);
+	uint16_t ReadShort();
+
 	void Push(const Value& value);
 	Value Pop();
 	[[nodiscard]] Value Peek(int distance) const;

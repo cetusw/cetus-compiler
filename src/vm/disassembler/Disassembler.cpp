@@ -30,9 +30,17 @@ static int ByteInstruction(const std::string& name, const Chunk& chunk, const in
 	return offset + 2;
 }
 
+static int JumpInstruction(const std::string& name, const int sign, const Chunk& chunk, const int offset)
+{
+	auto jump = static_cast<uint16_t>(chunk.GetCode()[offset + 1] << 8);
+	jump |= chunk.GetCode()[offset + 2];
+	std::printf("%-16s %4d -> %d\n", name.c_str(), offset, offset + 3 + sign * jump);
+	return offset + 3;
+}
+
 void DisassembleChunk(const Chunk& chunk, const std::string& name)
 {
-	std::printf("%s%s%s\n", "== ", name.c_str(), " ==");
+	std::printf("%s%s%s\n\n", "--- ", name.c_str(), " ---");
 
 	const auto& code = chunk.GetCode();
 
@@ -85,7 +93,10 @@ int DisassembleInstruction(const Chunk& chunk, const int offset)
 		return SimpleInstruction("OP_GREATER_OR_EQUAL", offset);
 	case OP_LESS_OR_EQUAL:
 		return SimpleInstruction("OP_LESS_OR_EQUAL", offset);
-
+	case OP_JUMP:
+		return JumpInstruction("OP_JUMP", 1, chunk, offset);
+	case OP_JUMP_IF_FALSE:
+		return JumpInstruction("OP_JUMP_IF_FALSE", 1, chunk, offset);
 	default:
 		std::printf("%s %i\n", "Unknown opcode:", static_cast<int>(instruction));
 		return offset + 1;

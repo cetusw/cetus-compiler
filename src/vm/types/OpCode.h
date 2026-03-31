@@ -22,5 +22,8 @@ enum OpCode : uint8_t
 	OP_GREATER_OR_EQUAL,
 	OP_LESS_OR_EQUAL,
 
+	OP_JUMP,
+	OP_JUMP_IF_FALSE,
+
 	OP_RETURN,
 };

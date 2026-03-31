@@ -33,8 +33,22 @@ Value VM::ReadConstant()
 	return m_chunk->GetConstant(ReadByte());
 }
 
+void VM::Jump(const int offset)
+{
+	m_ip += offset;
+}
+
+uint16_t VM::ReadShort()
+{
+	m_ip += 2;
+	return static_cast<uint16_t>(m_ip[-2] << 8 | m_ip[-1]);
+}
+
 InterpretResult VM::Run()
 {
+#ifdef DEBUG_TRACE_EXECUTION
+	std::printf("\n--- Trace Execution ---\n");
+#endif
 	for (;;)
 	{
 		TraceExecution();

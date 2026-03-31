@@ -1,0 +1,28 @@
+.def
+.name IfElseTest
+.constants
+number 10
+number 5
+string "Greater"
+string "Smaller"
+.code
+1 const 0
+1 set_local 0
+1 pop
+
+# x > 5
+2 get_local 0
+2 const 1
+2 gt
+
+3 jump_if_false 5
+
+# x > 5 == true
+4 const 2
+4 jump 2
+
+# x > 5 == false
+5 const 3        # Кладем "Smaller" на стек
+
+6 return
+.end_def
