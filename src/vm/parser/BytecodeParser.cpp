@@ -87,9 +87,7 @@ void BytecodeParser::ParseInstruction(const std::string& line, Chunk& chunk)
 	const OpCode opcode = StringToOpCode(mnemonic);
 	chunk.Write(opcode, lineNum);
 
-	if (static_cast<uint8_t>(opcode) == static_cast<uint8_t>(OP_CONSTANT)
-		|| static_cast<uint8_t>(opcode) == static_cast<uint8_t>(OP_GET_LOCAL)
-		|| static_cast<uint8_t>(opcode) == static_cast<uint8_t>(OP_SET_LOCAL))
+	if (opcode == OP_CONSTANT || opcode == OP_GET_LOCAL || opcode == OP_SET_LOCAL)
 	{
 		int operand;
 		if (ss >> operand)
@@ -98,12 +96,14 @@ void BytecodeParser::ParseInstruction(const std::string& line, Chunk& chunk)
 		}
 	}
 
-	if (opcode == OP_JUMP || opcode == OP_JUMP_IF_FALSE)
+	if (opcode == OP_JUMP || opcode == OP_JUMP_IF_FALSE || opcode == OP_LOOP)
 	{
 		int offset;
-		ss >> offset;
-		chunk.Write(static_cast<uint8_t>(offset >> 8 & 0xff), lineNum);
-		chunk.Write(static_cast<uint8_t>(offset & 0xff), lineNum);
+		if (ss >> offset)
+		{
+			chunk.Write(static_cast<uint8_t>(offset >> 8 & 0xff), lineNum);
+			chunk.Write(static_cast<uint8_t>(offset & 0xff), lineNum);
+		}
 	}
 }
 
@@ -128,6 +128,7 @@ OpCode BytecodeParser::StringToOpCode(const std::string& mnemonic)
 		{ "le", OP_LESS_OR_EQUAL },
 		{ "jump", OP_JUMP },
 		{ "jump_if_false", OP_JUMP_IF_FALSE },
+		{ "loop", OP_LOOP },
 		{ "return", OP_RETURN }
 	};
 

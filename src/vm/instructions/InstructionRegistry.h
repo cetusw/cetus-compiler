@@ -6,6 +6,7 @@
 #include "Instruction.h"
 #include "JumpIfFalseInstruction.h"
 #include "JumpInstruction.h"
+#include "LoopInstruction.h"
 #include "NegateInstruction.h"
 #include "PopInstruction.h"
 #include "ReturnInstruction.h"
@@ -38,6 +39,7 @@ public:
 
 		m_table[OP_JUMP] = std::make_unique<JumpInstruction>();
 		m_table[OP_JUMP_IF_FALSE] = std::make_unique<JumpIfFalseInstruction>();
+		m_table[OP_LOOP] = std::make_unique<LoopInstruction>();
 
 		m_table[OP_RETURN] = std::make_unique<ReturnInstruction>();
 	}

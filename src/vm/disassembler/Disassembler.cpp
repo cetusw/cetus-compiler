@@ -97,6 +97,8 @@ int DisassembleInstruction(const Chunk& chunk, const int offset)
 		return JumpInstruction("OP_JUMP", 1, chunk, offset);
 	case OP_JUMP_IF_FALSE:
 		return JumpInstruction("OP_JUMP_IF_FALSE", 1, chunk, offset);
+	case OP_LOOP:
+		return JumpInstruction("OP_LOOP", -1, chunk, offset);
 	default:
 		std::printf("%s %i\n", "Unknown opcode:", static_cast<int>(instruction));
 		return offset + 1;

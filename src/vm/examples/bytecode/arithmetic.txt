@@ -1,5 +1,5 @@
 .def
-.name VariableTest
+.name Arithmetic
 .constants
 number 10
 number 5

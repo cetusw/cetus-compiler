@@ -1,5 +1,5 @@
 .def
-.name IfElseTest
+.name ControlFlow
 .constants
 number 10
 number 5
