@@ -2,43 +2,67 @@ cmake_minimum_required(VERSION 4.0)
 project(cetus_compiler)
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-include_directories(vm)
-
-set(COMMON_SOURCES
-        vm/types/OpCode.h
-        vm/types/chunk.cpp
-        vm/types/chunk.h
-        vm/types/value.cpp
-        vm/types/value.h
-        vm/vm.cpp
-        vm/vm.h
-        vm/objects/Obj.cpp
-        vm/objects/Obj.h
-        vm/objects/ObjString.cpp
-        vm/objects/ObjString.h
-        vm/disassembler/Disassembler.cpp
-        vm/disassembler/Disassembler.h
-        vm/instructions/ConstantInstruction.cpp
-        vm/instructions/ReturnInstruction.cpp
-        vm/instructions/NegateInstruction.cpp
-        vm/instructions/PopInstruction.cpp
-        vm/instructions/GetLocalInstruction.cpp
-        vm/instructions/SetLocalInstruction.cpp
+set(COMMAND_LINE_INTERFACE_SOURCES
+        main.cpp
+        src/cli/CommandLineInterface.cpp
+        src/cli/driver/TableGeneratorDriver.cpp
 )
 
-add_executable(cetus_compiler vm/main.cpp ${COMMON_SOURCES})
-
-add_executable(bytecode_parser
-        vm/parser_main.cpp
-        vm/parser/BytecodeParser.cpp
-        vm/parser/BytecodeParser.h
-        ${COMMON_SOURCES}
-        vm/parser/BytecodeParser.cpp
-        vm/parser/BytecodeParser.h
-        compiler/Lexer.cpp
-        compiler/Lexer.h
-        compiler/Token.h
+set(COMMON_LOGIC_SOURCES
+        src/common/grammar/Grammar.cpp
+        src/common/grammar/Production.cpp
+        src/common/grammar/Symbol.cpp
 )
 
-remove_definitions(-D_GLIBCXX_DEBUG)
+set(COMPILER_CORE_SOURCES
+        src/compiler/lexer/Lexer.cpp
+        src/compiler/slr-builder/AutomatonBuilder.cpp
+)
+
+set(UTILITY_SOURCES
+        src/utils/guding-set-provider/GuidingSetProvider.cpp
+        src/utils/io/GrammarLoader.cpp
+        src/utils/io/TableVisualizer.cpp
+)
+
+set(VIRTUAL_MACHINE_SOURCES
+        src/vm/vm.cpp
+        src/vm/types/chunk.cpp
+        src/vm/types/value.cpp
+        src/vm/objects/Obj.cpp
+        src/vm/objects/ObjString.cpp
+        src/vm/disassembler/Disassembler.cpp
+        src/vm/parser/BytecodeParser.cpp
+        src/vm/instructions/ConstantInstruction.cpp
+        src/vm/instructions/GetLocalInstruction.cpp
+        src/vm/instructions/NegateInstruction.cpp
+        src/vm/instructions/PopInstruction.cpp
+        src/vm/instructions/ReturnInstruction.cpp
+        src/vm/instructions/SetLocalInstruction.cpp
+        src/utils/io/TableExporter.cpp
+        src/utils/io/TableExporter.h
+        src/cli/driver/BytecodeExecutionDriver.cpp
+        src/cli/driver/BytecodeExecutionDriver.h
+)
+
+add_executable(cetus
+        ${COMMAND_LINE_INTERFACE_SOURCES}
+        ${COMMON_LOGIC_SOURCES}
+        ${COMPILER_CORE_SOURCES}
+        ${UTILITY_SOURCES}
+        ${VIRTUAL_MACHINE_SOURCES}
+)
+
+target_include_directories(cetus PRIVATE ${CMAKE_SOURCE_DIR})
+
+if (MSVC)
+    target_compile_options(cetus PRIVATE /W4 /WX)
+else ()
+    target_compile_options(cetus PRIVATE -Wall -Wextra -Wpedantic -Werror)
+endif ()
+
+if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
+    remove_definitions(-D_GLIBCXX_DEBUG)
+endif ()

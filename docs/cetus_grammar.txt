@@ -1,0 +1,41 @@
+Con -> Con or Con1
+Con -> Con1
+
+Con1 -> Con1 and Con2
+Con1 -> Con2
+
+Con2 -> not Con2
+Con2 -> true
+Con2 -> false
+Con2 -> RCon
+
+RCon -> Exp ROp Exp
+RCon -> Exp
+
+Exp -> Exp + Exp1
+Exp -> Exp - Exp1
+Exp -> Exp1
+
+Exp1 -> Exp1 MulOp Exp2
+Exp1 -> Exp2
+
+Exp2 -> ( Con )
+Exp2 -> - Exp2
+Exp2 -> LargId
+Exp2 -> num
+
+LargId -> ident
+LargId -> LargId . ident
+LargId -> LargId [ Exp ]
+
+MulOp -> *
+MulOp -> /
+MulOp -> div
+MulOp -> mod
+
+ROp -> <
+ROp -> <=
+ROp -> <>
+ROp -> ==
+ROp -> >
+ROp -> >=
