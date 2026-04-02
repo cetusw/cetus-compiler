@@ -35,6 +35,9 @@ static const std::unordered_map<std::string, OpCodeInfo> INSTRUCTIONS = {
 	{ "const", { OP_CONSTANT, OperandType::BYTE } },
 	{ "get_local", { OP_GET_LOCAL, OperandType::BYTE } },
 	{ "set_local", { OP_SET_LOCAL, OperandType::BYTE } },
+	{ "def_global", { OP_DEFINE_GLOBAL, OperandType::BYTE } },
+	{ "get_global", { OP_GET_GLOBAL, OperandType::BYTE } },
+	{ "set_global", { OP_SET_GLOBAL, OperandType::BYTE } },
 	{ "call", { OP_CALL, OperandType::BYTE } },
 
 	{ "jump", { OP_JUMP, OperandType::SHORT } },

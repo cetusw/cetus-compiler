@@ -1,6 +1,8 @@
 #include "value.h"
 #include "../objects/ObjFunction.h"
 #include "../objects/ObjString.h"
+#include "src/vm/objects/ObjNative.h"
+
 #include <cassert>
 #include <cmath>
 #include <cstdio>
@@ -63,6 +65,11 @@ bool Value::IsFunction() const
 	return std::holds_alternative<HeapObject>(m_data) && std::get<HeapObject>(m_data)->GetType() == ObjType::FUNCTION;
 }
 
+bool Value::IsNative() const
+{
+	return std::holds_alternative<HeapObject>(m_data) && std::get<HeapObject>(m_data)->GetType() == ObjType::NATIVE;
+}
+
 double Value::AsNumber() const
 {
 	return std::get<double>(m_data);
@@ -83,6 +90,12 @@ std::shared_ptr<ObjFunction> Value::AsFunction() const
 {
 	const auto obj = std::get<HeapObject>(m_data);
 	return std::static_pointer_cast<ObjFunction>(obj);
+}
+
+std::shared_ptr<ObjNative> Value::AsNative() const
+{
+	const auto obj = std::get<HeapObject>(m_data);
+	return std::static_pointer_cast<ObjNative>(obj);
 }
 
 void Value::Print() const

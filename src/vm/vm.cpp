@@ -1,6 +1,8 @@
 #include "vm.h"
+#include "NativeFunctions.h"
 #include "disassembler/Disassembler.h"
 #include "instructions/InstructionRegistry.h"
+#include "objects/ObjNative.h"
 
 VM::VM()
 	: m_registry(std::make_unique<InstructionRegistry>())
@@ -8,6 +10,10 @@ VM::VM()
 	, m_frameCount(0)
 {
 	m_stackTop = m_stack;
+
+	DefineGlobal("print", Value(std::make_shared<ObjNative>(NativeFunctions::NativePrint)));
+	DefineGlobal("println", Value(std::make_shared<ObjNative>(NativeFunctions::NativePrintln)));
+	DefineGlobal("len", Value(std::make_shared<ObjNative>(NativeFunctions::NativeLen)));
 }
 
 VM::~VM() = default;
@@ -120,6 +126,16 @@ Value VM::Peek(const int distance) const
 	return m_stackTop[-1 - distance];
 }
 
+void VM::DefineGlobal(const std::string& name, const Value& value)
+{
+	m_globals[name] = value;
+}
+
+bool VM::HasGlobal(const std::string& name) const
+{
+	return m_globals.contains(name);
+}
+
 Value VM::GetStack(const int index)
 {
 	return GetCurrentFrame().slots[index];
@@ -144,6 +160,11 @@ int VM::GetFrameCount() const
 	return m_frameCount;
 }
 
+Value VM::GetGlobal(const std::string& name) const
+{
+	return m_globals.at(name);
+}
+
 void VM::SetStack(const int index, const Value& value)
 {
 	GetCurrentFrame().slots[index] = value;
@@ -162,4 +183,14 @@ void VM::SetFrame(const int index, const CallFrame& frame)
 void VM::SetFrameCount(const int count)
 {
 	m_frameCount = count;
+}
+
+bool VM::SetGlobal(const std::string& name, const Value& value)
+{
+	if (!m_globals.contains(name))
+	{
+		return false;
+	}
+	m_globals[name] = value;
+	return true;
 }

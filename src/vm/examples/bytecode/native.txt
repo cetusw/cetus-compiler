@@ -1,0 +1,27 @@
+.def main
+.constants
+string "len"
+string "println"
+string "print"
+string "Cetus Compiler"
+string "String length: "
+string "Status: "
+string "OK"
+.code
+0 get_global 0
+2 const 3
+4 call 1
+
+6 get_global 1
+8 const 4
+10 get_local 1
+12 call 2
+14 pop
+
+15 get_global 2
+17 const 5
+19 const 6
+21 call 2
+23 pop
+
+24 return

@@ -5,6 +5,7 @@
 #include <variant>
 
 class ObjFunction;
+class ObjNative;
 
 class Value
 {
@@ -20,11 +21,13 @@ public:
 	[[nodiscard]] bool IsString() const;
 	[[nodiscard]] bool IsFalsey() const;
 	[[nodiscard]] bool IsFunction() const;
+	[[nodiscard]] bool IsNative() const;
 
 	[[nodiscard]] double AsNumber() const;
 	[[nodiscard]] bool AsBool() const;
 	[[nodiscard]] const std::string& AsString() const;
 	[[nodiscard]] std::shared_ptr<ObjFunction> AsFunction() const;
+	[[nodiscard]] std::shared_ptr<ObjNative> AsNative() const;
 
 	void Print() const;
 

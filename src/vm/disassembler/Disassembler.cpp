@@ -101,6 +101,12 @@ int DisassembleInstruction(const Chunk& chunk, const int offset)
 		return JumpInstruction("OP_LOOP", -1, chunk, offset);
 	case OP_CALL:
 		return ByteInstruction("OP_CALL", chunk, offset);
+	case OP_DEFINE_GLOBAL:
+		return ConstantInstruction("OP_DEFINE_GLOBAL", chunk, offset);
+	case OP_GET_GLOBAL:
+		return ConstantInstruction("OP_GET_GLOBAL", chunk, offset);
+	case OP_SET_GLOBAL:
+		return ConstantInstruction("OP_SET_GLOBAL", chunk, offset);
 	default:
 		std::printf("%s %i\n", "Unknown opcode:", static_cast<int>(instruction));
 		return offset + 1;

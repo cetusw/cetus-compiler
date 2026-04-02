@@ -57,6 +57,15 @@ set(VIRTUAL_MACHINE_SOURCES
         src/vm/instructions/CallInstruction.cpp
         src/vm/instructions/CallInstruction.h
         src/vm/parser/Types.h
+        src/vm/objects/ObjNative.cpp
+        src/vm/objects/ObjNative.h
+        src/vm/instructions/DefineGlobalInstruction.cpp
+        src/vm/instructions/DefineGlobalInstruction.h
+        src/vm/instructions/GetGlobalInstruction.cpp
+        src/vm/instructions/GetGlobalInstruction.h
+        src/vm/instructions/SetGlobalInstruction.cpp
+        src/vm/instructions/SetGlobalInstruction.h
+        src/vm/NativeFunctions.h
 )
 
 add_executable(cetus

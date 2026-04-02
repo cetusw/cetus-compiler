@@ -3,6 +3,8 @@
 #include "BinaryInstruction.h"
 #include "CallInstruction.h"
 #include "ConstantInstruction.h"
+#include "DefineGlobalInstruction.h"
+#include "GetGlobalInstruction.h"
 #include "GetLocalInstruction.h"
 #include "Instruction.h"
 #include "JumpIfFalseInstruction.h"
@@ -11,6 +13,7 @@
 #include "NegateInstruction.h"
 #include "PopInstruction.h"
 #include "ReturnInstruction.h"
+#include "SetGlobalInstruction.h"
 #include "SetLocalInstruction.h"
 #include <array>
 
@@ -22,6 +25,9 @@ public:
 		m_table[OP_CONSTANT] = std::make_unique<ConstantInstruction>();
 		m_table[OP_GET_LOCAL] = std::make_unique<GetLocalInstruction>();
 		m_table[OP_SET_LOCAL] = std::make_unique<SetLocalInstruction>();
+		m_table[OP_DEFINE_GLOBAL] = std::make_unique<DefineGlobalInstruction>();
+		m_table[OP_GET_GLOBAL] = std::make_unique<GetGlobalInstruction>();
+		m_table[OP_SET_GLOBAL] = std::make_unique<SetGlobalInstruction>();
 		m_table[OP_POP] = std::make_unique<PopInstruction>();
 
 		m_table[OP_NEGATE] = std::make_unique<NegateInstruction>();

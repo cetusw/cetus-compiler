@@ -1,0 +1,15 @@
+.def main
+.constants
+string "g_var"
+number 42
+string "hello"
+.code
+0 const 1
+2 def_global 0
+
+4 const 2
+6 set_global 0
+8 pop
+
+9 get_global 0
+11 return
