@@ -1,6 +1,7 @@
 #pragma once
 #include "../types/OpCode.h"
 #include "BinaryInstruction.h"
+#include "CallInstruction.h"
 #include "ConstantInstruction.h"
 #include "GetLocalInstruction.h"
 #include "Instruction.h"
@@ -40,6 +41,8 @@ public:
 		m_table[OP_JUMP] = std::make_unique<JumpInstruction>();
 		m_table[OP_JUMP_IF_FALSE] = std::make_unique<JumpIfFalseInstruction>();
 		m_table[OP_LOOP] = std::make_unique<LoopInstruction>();
+
+		m_table[OP_CALL] = std::make_unique<CallInstruction>();
 
 		m_table[OP_RETURN] = std::make_unique<ReturnInstruction>();
 	}

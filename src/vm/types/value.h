@@ -4,6 +4,8 @@
 #include <string>
 #include <variant>
 
+class ObjFunction;
+
 class Value
 {
 public:
@@ -17,10 +19,12 @@ public:
 	[[nodiscard]] bool IsBool() const;
 	[[nodiscard]] bool IsString() const;
 	[[nodiscard]] bool IsFalsey() const;
+	[[nodiscard]] bool IsFunction() const;
 
 	[[nodiscard]] double AsNumber() const;
 	[[nodiscard]] bool AsBool() const;
 	[[nodiscard]] const std::string& AsString() const;
+	[[nodiscard]] std::shared_ptr<ObjFunction> AsFunction() const;
 
 	void Print() const;
 

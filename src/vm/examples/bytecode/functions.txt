@@ -1,0 +1,19 @@
+.def AddNums
+.arity 2
+.code
+0 get_local 1
+2 get_local 2
+4 add
+5 return
+
+.def main
+.constants
+function AddNums
+number 10
+number 20
+.code
+0 const 0
+2 const 1
+4 const 2
+6 call 2
+8 return

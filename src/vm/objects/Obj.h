@@ -4,6 +4,7 @@
 enum class ObjType
 {
 	STRING,
+	FUNCTION,
 };
 
 class Obj

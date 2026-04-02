@@ -1,7 +1,21 @@
 #include "ReturnInstruction.h"
 #include "../vm.h"
 
-InterpretResult ReturnInstruction::Execute(VM&) const
+InterpretResult ReturnInstruction::Execute(VM& vm) const
 {
-	return InterpretResult::OK_DONE;
+	const Value result = vm.Pop();
+
+	const int newFrameCount = vm.GetFrameCount() - 1;
+	vm.SetFrameCount(newFrameCount);
+
+	if (newFrameCount == 0)
+	{
+		return InterpretResult::OK_DONE;
+	}
+
+	vm.SetStackTop(vm.GetCurrentFrame().slots);
+
+	vm.Push(result);
+
+	return InterpretResult::OK;
 }

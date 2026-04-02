@@ -1,142 +1,200 @@
 #include "BytecodeParser.h"
 #include "../objects/ObjString.h"
+#include "Types.h"
+#include "src/vm/objects/ObjFunction.h"
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <unordered_map>
 
-bool BytecodeParser::ParseFile(const std::string& path, Chunk& chunk)
+std::shared_ptr<ObjFunction> BytecodeParser::Parse(const std::string& path)
 {
 	std::ifstream file(path);
 	if (!file.is_open())
 	{
-		std::cerr << "Could not open file: " << path << std::endl;
-		return false;
+		return nullptr;
 	}
 
 	std::string line;
-	auto currentSection = Section::NONE;
-
 	while (std::getline(file, line))
 	{
-		if (line.empty() || line[0] == '#')
-		{
-			continue;
-		}
-		if (line == ".constants")
-		{
-			currentSection = Section::CONSTANTS;
-			continue;
-		}
-		if (line == ".code")
-		{
-			currentSection = Section::CODE;
-			continue;
-		}
-		if (line.starts_with(".") || line == ".def" || line == ".end_def")
-		{
-			continue;
-		}
-		if (currentSection == Section::CONSTANTS)
-		{
-			ParseConstant(line, chunk);
-		}
-		else if (currentSection == Section::CODE)
-		{
-			ParseInstruction(line, chunk);
-		}
+		ProcessLine(line);
 	}
-	return true;
+
+	return m_funcRegistry.contains("main")
+		? m_funcRegistry["main"]
+		: m_currentFunc;
 }
 
-void BytecodeParser::ParseConstant(const std::string& line, Chunk& chunk)
+void BytecodeParser::ProcessLine(const std::string& line)
+{
+	if (line.empty() || line[0] == '#')
+	{
+		return;
+	}
+
+	if (line[0] == '.')
+	{
+		HandleDirective(line);
+		return;
+	}
+
+	std::stringstream ss(line);
+	if (m_section == Section::CONSTANTS)
+	{
+		ParseConstant(ss);
+	}
+	else if (m_section == Section::CODE)
+	{
+		int lineNum;
+		ss >> lineNum;
+		ParseInstruction(ss, lineNum);
+	}
+}
+
+void BytecodeParser::HandleDirective(const std::string& line)
 {
 	std::stringstream ss(line);
+	std::string directive;
+	ss >> directive;
+
+	if (directive == ".def")
+	{
+		std::string name;
+		ss >> name;
+		m_currentFunc = GetFunction(name);
+	}
+	else if (directive == ".arity")
+	{
+		if (m_currentFunc)
+		{
+			ss >> m_currentFunc->arity;
+		}
+	}
+	else if (directive == ".constants")
+	{
+		m_section = Section::CONSTANTS;
+	}
+	else if (directive == ".code")
+	{
+		m_section = Section::CODE;
+	}
+}
+
+std::string BytecodeParser::ProcessStringLiteral(const std::string& input)
+{
+	if (input.length() < 2 || input.front() != '"' || input.back() != '"')
+	{
+		return input;
+	}
+
+	std::string result;
+	result.reserve(input.length() - 2);
+
+	for (size_t i = 1; i < input.length() - 1; ++i)
+	{
+		if (input[i] == '\\' && i + 1 < input.length() - 1)
+		{
+			switch (input[++i])
+			{
+			case 'n':
+				result += '\n';
+				break;
+			case 't':
+				result += '\t';
+				break;
+			case 'r':
+				result += '\r';
+				break;
+			case '\\':
+				result += '\\';
+				break;
+			case '"':
+				result += '"';
+				break;
+			case '\'':
+				result += '\'';
+				break;
+			default:
+				result += input[i];
+				break;
+			}
+		}
+		else
+		{
+			result += input[i];
+		}
+	}
+
+	return result;
+}
+
+void BytecodeParser::ParseConstant(std::stringstream& ss)
+{
+	if (!m_currentFunc)
+	{
+		return;
+	}
+
 	std::string type, value;
 	ss >> type;
 	std::getline(ss >> std::ws, value);
 
 	if (type == "number")
 	{
-		chunk.AddConstant(Value(std::stod(value)));
+		m_currentFunc->chunk.AddConstant(Value(std::stod(value)));
 	}
 	else if (type == "string")
 	{
-		if (value.length() >= 2 && value.front() == '"' && value.back() == '"')
-		{
-			value = value.substr(1, value.length() - 2);
-		}
-		chunk.AddConstant(Value(std::make_shared<ObjString>(value)));
+		std::string processed = ProcessStringLiteral(value);
+		m_currentFunc->chunk.AddConstant(Value(std::make_shared<ObjString>(processed)));
 	}
-	else if (type == "bool")
+	else if (type == "function")
 	{
-		chunk.AddConstant(Value(value == "true"));
-	}
-	else
-	{
-		std::cerr << "Unknown constant type: " << type << std::endl;
+		m_currentFunc->chunk.AddConstant(Value(GetFunction(value)));
 	}
 }
 
-void BytecodeParser::ParseInstruction(const std::string& line, Chunk& chunk)
+void BytecodeParser::ParseInstruction(std::stringstream& ss, const int lineNum) const
 {
-	std::stringstream ss(line);
-	int lineNum;
+	if (!m_currentFunc)
+	{
+		return;
+	}
+
 	std::string mnemonic;
-	ss >> lineNum >> mnemonic;
+	ss >> mnemonic;
 
-	const OpCode opcode = StringToOpCode(mnemonic);
-	chunk.Write(opcode, lineNum);
-
-	if (opcode == OP_CONSTANT || opcode == OP_GET_LOCAL || opcode == OP_SET_LOCAL)
+	if (!INSTRUCTIONS.contains(mnemonic))
 	{
-		int operand;
-		if (ss >> operand)
-		{
-			chunk.Write(static_cast<uint8_t>(operand), lineNum);
-		}
+		return;
 	}
 
-	if (opcode == OP_JUMP || opcode == OP_JUMP_IF_FALSE || opcode == OP_LOOP)
+	const auto& info = INSTRUCTIONS.at(mnemonic);
+	m_currentFunc->chunk.Write(info.opcode, lineNum);
+
+	if (info.operand == OperandType::BYTE)
 	{
-		int offset;
-		if (ss >> offset)
-		{
-			chunk.Write(static_cast<uint8_t>(offset >> 8 & 0xff), lineNum);
-			chunk.Write(static_cast<uint8_t>(offset & 0xff), lineNum);
-		}
+		int val;
+		ss >> val;
+		m_currentFunc->chunk.Write(static_cast<uint8_t>(val), lineNum);
+	}
+	else if (info.operand == OperandType::SHORT)
+	{
+		int val;
+		ss >> val;
+		m_currentFunc->chunk.Write(static_cast<uint8_t>((val >> 8) & 0xff), lineNum);
+		m_currentFunc->chunk.Write(static_cast<uint8_t>(val & 0xff), lineNum);
 	}
 }
 
-OpCode BytecodeParser::StringToOpCode(const std::string& mnemonic)
+std::shared_ptr<ObjFunction> BytecodeParser::GetFunction(const std::string& name)
 {
-	static std::unordered_map<std::string, OpCode> mapping = {
-		{ "const", OP_CONSTANT },
-		{ "pop", OP_POP },
-		{ "get_local", OP_GET_LOCAL },
-		{ "set_local", OP_SET_LOCAL },
-		{ "add", OP_ADD },
-		{ "sub", OP_SUBTRACT },
-		{ "mul", OP_MULTIPLY },
-		{ "div", OP_DIVIDE },
-		{ "mod", OP_MODULO },
-		{ "neg", OP_NEGATE },
-		{ "eq", OP_EQUAL },
-		{ "ne", OP_NOT_EQUAL },
-		{ "gt", OP_GREATER },
-		{ "lt", OP_LESS },
-		{ "ge", OP_GREATER_OR_EQUAL },
-		{ "le", OP_LESS_OR_EQUAL },
-		{ "jump", OP_JUMP },
-		{ "jump_if_false", OP_JUMP_IF_FALSE },
-		{ "loop", OP_LOOP },
-		{ "return", OP_RETURN }
-	};
-
-	if (mapping.contains(mnemonic))
+	if (!m_funcRegistry.contains(name))
 	{
-		return mapping[mnemonic];
+		const auto func = std::make_shared<ObjFunction>();
+		func->name = std::make_shared<ObjString>(name);
+		m_funcRegistry[name] = func;
 	}
-
-	std::cerr << "Unknown mnemonic: " << mnemonic << ". Defaulting to return." << std::endl;
-	return OP_RETURN;
+	return m_funcRegistry[name];
 }

@@ -11,16 +11,19 @@ void BytecodeExecutionDriver::Execute(const Configuration& configuration)
 		throw std::runtime_error("Input bytecode file path is required for bytecode execution.");
 	}
 
-	Chunk chunk;
-	if (!BytecodeParser::ParseFile(configuration.inputFilePath, chunk))
+	BytecodeParser parser;
+	const std::shared_ptr<ObjFunction> mainFunction = parser.Parse(configuration.inputFilePath);
+
+	if (!mainFunction)
 	{
+		std::fprintf(stderr, "Error: Could not find 'main' function or parsing failed.\n");
 		return;
 	}
 
-	disassembler::DisassembleChunk(chunk, "Disassembling Parsed Bytecode");
+	disassembler::DisassembleChunk(mainFunction->chunk, mainFunction->name->GetData());
 
 	VM vm;
-	const InterpretResult result = vm.Interpret(chunk);
+	const InterpretResult result = vm.Interpret(mainFunction);
 
 	if (result == InterpretResult::OK)
 	{

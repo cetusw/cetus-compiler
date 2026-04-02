@@ -3,45 +3,54 @@
 #include "instructions/InstructionRegistry.h"
 
 VM::VM()
-	: m_ip(nullptr)
-	, m_chunk(nullptr)
-	, m_registry(std::make_unique<InstructionRegistry>())
+	: m_registry(std::make_unique<InstructionRegistry>())
+	, m_frames{}
+	, m_frameCount(0)
 {
 	m_stackTop = m_stack;
 }
 
 VM::~VM() = default;
 
-InterpretResult VM::Interpret(const Chunk& chunk)
+InterpretResult VM::Interpret(const std::shared_ptr<ObjFunction>& function)
 {
-	m_chunk = &chunk;
-	m_ip = chunk.GetCode().data();
+	if (!function)
+	{
+		return InterpretResult::RUNTIME_ERROR;
+	}
+
+	Push(Value(function));
+	CallFrame frame;
+	frame.function = function;
+	frame.ip = function->chunk.GetCode().data();
+	frame.slots = m_stack;
+
+	m_frames[0] = frame;
+	m_frameCount = 1;
+
 	return Run();
 }
 
 inline uint8_t VM::ReadByte()
 {
-	if (m_ip >= m_chunk->GetCode().data() + m_chunk->GetCode().size())
-	{
-		throw std::out_of_range("Bytecode overread");
-	}
-	return *m_ip++;
+	return *GetCurrentFrame().ip++;
 }
 
 Value VM::ReadConstant()
 {
-	return m_chunk->GetConstant(ReadByte());
+	return GetCurrentFrame().function->chunk.GetConstant(ReadByte());
 }
 
 void VM::Jump(const int offset)
 {
-	m_ip += offset;
+	GetCurrentFrame().ip += offset;
 }
 
 uint16_t VM::ReadShort()
 {
-	m_ip += 2;
-	return static_cast<uint16_t>(m_ip[-2] << 8 | m_ip[-1]);
+	auto& frame = GetCurrentFrame();
+	frame.ip += 2;
+	return static_cast<uint16_t>(frame.ip[-2] << 8 | frame.ip[-1]);
 }
 
 InterpretResult VM::Run()
@@ -60,16 +69,26 @@ InterpretResult VM::Run()
 		}
 
 		const InterpretResult result = instruction->Execute(*this);
+
+		if (result == InterpretResult::OK_DONE)
+		{
+			return InterpretResult::OK;
+		}
 		if (result != InterpretResult::OK)
 		{
-			return result == InterpretResult::OK_DONE ? InterpretResult::OK : result;
+			return result;
 		}
 	}
 }
 
-void VM::TraceExecution() const
+void VM::TraceExecution()
 {
 #ifdef DEBUG_TRACE_EXECUTION
+	if (m_frameCount == 0)
+	{
+		return;
+	}
+
 	for (const Value* slot = m_stack; slot < m_stackTop; slot++)
 	{
 		std::printf("[ ");
@@ -78,8 +97,9 @@ void VM::TraceExecution() const
 	}
 	std::printf("\n");
 
-	const int offset = static_cast<int>(m_ip - m_chunk->GetCode().data());
-	disassembler::DisassembleInstruction(*m_chunk, offset);
+	const CallFrame& frame = GetCurrentFrame();
+	const int offset = static_cast<int>(frame.ip - frame.function->chunk.GetCode().data());
+	disassembler::DisassembleInstruction(frame.function->chunk, offset);
 #endif
 }
 
@@ -100,12 +120,46 @@ Value VM::Peek(const int distance) const
 	return m_stackTop[-1 - distance];
 }
 
-Value VM::GetStack(const int index) const
+Value VM::GetStack(const int index)
 {
-	return m_stack[index];
+	return GetCurrentFrame().slots[index];
+}
+Value* VM::GetStackTop() const
+{
+	return m_stackTop;
+}
+
+CallFrame VM::GetFrame(const int index) const
+{
+	return m_frames[index];
+}
+
+CallFrame& VM::GetCurrentFrame()
+{
+	return m_frames[m_frameCount - 1];
+}
+
+int VM::GetFrameCount() const
+{
+	return m_frameCount;
 }
 
 void VM::SetStack(const int index, const Value& value)
 {
-	m_stack[index] = value;
+	GetCurrentFrame().slots[index] = value;
+}
+
+void VM::SetStackTop(Value* value)
+{
+	m_stackTop = value;
+}
+
+void VM::SetFrame(const int index, const CallFrame& frame)
+{
+	m_frames[index] = frame;
+}
+
+void VM::SetFrameCount(const int count)
+{
+	m_frameCount = count;
 }

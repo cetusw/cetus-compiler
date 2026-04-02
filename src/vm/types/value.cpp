@@ -1,4 +1,5 @@
 #include "value.h"
+#include "../objects/ObjFunction.h"
 #include "../objects/ObjString.h"
 #include <cassert>
 #include <cmath>
@@ -57,6 +58,11 @@ bool Value::IsFalsey() const
 	return false;
 }
 
+bool Value::IsFunction() const
+{
+	return std::holds_alternative<HeapObject>(m_data) && std::get<HeapObject>(m_data)->GetType() == ObjType::FUNCTION;
+}
+
 double Value::AsNumber() const
 {
 	return std::get<double>(m_data);
@@ -71,6 +77,12 @@ const std::string& Value::AsString() const
 {
 	const auto obj = std::get<HeapObject>(m_data);
 	return std::static_pointer_cast<ObjString>(obj)->GetData();
+}
+
+std::shared_ptr<ObjFunction> Value::AsFunction() const
+{
+	const auto obj = std::get<HeapObject>(m_data);
+	return std::static_pointer_cast<ObjFunction>(obj);
 }
 
 void Value::Print() const
@@ -93,6 +105,11 @@ void Value::Print() const
 			if (arg->GetType() == ObjType::STRING)
 			{
 				std::printf("%s", std::static_pointer_cast<ObjString>(arg)->GetData().c_str());
+			}
+			else if (arg->GetType() == ObjType::FUNCTION)
+			{
+				auto func = std::static_pointer_cast<ObjFunction>(arg);
+				std::printf("<fn %s>", func->name->GetData() == "" ? "script" : func->name->GetData().c_str());
 			}
 		}
 	},

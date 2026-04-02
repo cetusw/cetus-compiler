@@ -51,6 +51,12 @@ set(VIRTUAL_MACHINE_SOURCES
         src/vm/instructions/JumpIfFalseInstruction.h
         src/vm/instructions/LoopInstruction.cpp
         src/vm/instructions/LoopInstruction.h
+        src/vm/objects/ObjFunction.cpp
+        src/vm/objects/ObjFunction.h
+        src/vm/types/CallFrame.h
+        src/vm/instructions/CallInstruction.cpp
+        src/vm/instructions/CallInstruction.h
+        src/vm/parser/Types.h
 )
 
 add_executable(cetus

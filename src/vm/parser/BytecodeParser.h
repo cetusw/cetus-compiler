@@ -1,24 +1,31 @@
 #pragma once
-#include "../types/OpCode.h"
 #include "../types/chunk.h"
-#include <fstream>
 #include <string>
+#include <unordered_map>
 
 class BytecodeParser
 {
 public:
 	BytecodeParser() = default;
-	static bool ParseFile(const std::string& path, Chunk& chunk);
+	std::shared_ptr<ObjFunction> Parse(const std::string& path);
 
 private:
+	void ProcessLine(const std::string& line);
+	void HandleDirective(const std::string& line);
+	static std::string ProcessStringLiteral(const std::string& input);
+
+	void ParseConstant(std::stringstream& ss);
+	void ParseInstruction(std::stringstream& ss, int lineNum) const;
+
+	std::shared_ptr<ObjFunction> GetFunction(const std::string& name);
+
+	std::unordered_map<std::string, std::shared_ptr<ObjFunction>> m_funcRegistry;
+	std::shared_ptr<ObjFunction> m_currentFunc = nullptr;
 	enum class Section
 	{
 		NONE,
 		CONSTANTS,
 		CODE
-	};
-
-	static void ParseConstant(const std::string& line, Chunk& chunk);
-	static void ParseInstruction(const std::string& line, Chunk& chunk);
-	static OpCode StringToOpCode(const std::string& mnemonic);
+	} m_section
+		= Section::NONE;
 };
