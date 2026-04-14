@@ -11,32 +11,37 @@ class LALRBuilder
 {
 public:
 	explicit LALRBuilder(Grammar grammar);
-
 	ParseTable Build();
 
 private:
-	void InitializeAugmentedGrammar();
-	void BuildStatesGraph();
-	void PropagateLookaheads();
-	void ConstructResultTable();
+	struct IndexedRule
+	{
+		Symbol lhs;
+		std::vector<Symbol> rhs;
+	};
 
-	void ProcessStateTransitions(int stateIndex);
-	void CreateTransition(int stateIndex, const Symbol& symbol, const LALRState& nextKernel);
-	[[nodiscard]] LALRState ShiftDot(const LALRState& state, const Symbol& symbol) const;
-	[[nodiscard]] std::set<LR0Item> ExtractKernel(const LALRState& state) const;
+	void PrepareGrammar();
+	void BuildStateGraph();
+	void PropagateLookaheads();
+	void FillParseTable();
+
+	void DiscoverTransitions(int stateIndex);
+	int GetOrCreateState(const LALRState& kernel);
+	LALRState ComputeNextKernel(const LALRState& state, const Symbol& symbol) const;
+	std::set<LR0Item> ExtractKernelCore(const LALRState& state) const;
+
+	void AddAction(int state, const Symbol& symbol, Action action);
+	bool IsStartSymbol(const Symbol& lhs) const;
 
 	Grammar m_grammar;
 	Symbol m_augmentedStartSymbol;
-	const Symbol m_endOfFileSymbol = Symbol("⊥", true);
+	const Symbol m_eofSymbol = Symbol("⊥", true);
 
-	std::vector<Symbol> m_lhsRule;
-	std::vector<std::vector<Symbol>> m_rhsRule;
-
+	std::vector<IndexedRule> m_rules;
 	std::vector<LALRState> m_states;
+	std::map<std::set<LR0Item>, int> m_kernelToId;
+	std::map<int, std::map<Symbol, int>> m_transitions;
+
 	ParseTable m_table;
-
-	std::unique_ptr<LR1ClosureCalculator> m_closureCalculator;
-
-	std::map<std::set<LR0Item>, int> m_kernelToIndexMap;
-	std::map<int, std::map<Symbol, int>> m_transitionMap;
+	std::unique_ptr<LR1ClosureCalculator> m_closure;
 };

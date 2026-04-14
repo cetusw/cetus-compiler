@@ -1,5 +1,6 @@
 #include "LALRBuilder.h"
-#include <algorithm>
+
+#include <iostream>
 
 LALRBuilder::LALRBuilder(Grammar grammar)
 	: m_grammar(std::move(grammar))
@@ -8,78 +9,68 @@ LALRBuilder::LALRBuilder(Grammar grammar)
 
 ParseTable LALRBuilder::Build()
 {
-	InitializeAugmentedGrammar();
-	m_closureCalculator = std::make_unique<LR1ClosureCalculator>(m_grammar);
+	PrepareGrammar();
+	m_closure = std::make_unique<LR1ClosureCalculator>(m_grammar);
 
-	BuildStatesGraph();
+	BuildStateGraph();
 	PropagateLookaheads();
-	ConstructResultTable();
+	FillParseTable();
 
 	return m_table;
 }
 
-void LALRBuilder::InitializeAugmentedGrammar()
+void LALRBuilder::PrepareGrammar()
 {
-	const Symbol originalStart = m_grammar.GetStartSymbol();
-	m_augmentedStartSymbol = Symbol(originalStart.GetValue() + "'", false);
+	const Symbol oldStart = m_grammar.GetStartSymbol();
+	m_augmentedStartSymbol = Symbol(oldStart.GetValue() + "'", false);
 
-	m_lhsRule.clear();
-	m_rhsRule.clear();
-	m_lhsRule.push_back(m_augmentedStartSymbol);
-	m_rhsRule.push_back({ originalStart });
-
+	m_rules.push_back({ m_augmentedStartSymbol, { oldStart } });
 	for (const auto& rule : m_grammar.GetRules())
 	{
-		m_lhsRule.push_back(rule.GetLhs());
-		m_rhsRule.push_back(rule.GetRhs());
+		m_rules.push_back({ rule.GetLhs(), rule.GetRhs() });
 	}
 
 	m_grammar.SetRules({});
-	for (size_t i = 0; i < m_lhsRule.size(); ++i)
+	for (const auto& r : m_rules)
 	{
-		m_grammar.AddRule(m_lhsRule[i], m_rhsRule[i]);
+		m_grammar.AddRule(r.lhs, r.rhs);
 	}
 	m_grammar.SetStartSymbol(m_augmentedStartSymbol);
 
-	auto terminals = m_grammar.GetTerminals();
-	terminals.insert(m_endOfFileSymbol);
-	m_grammar.SetTerminals(terminals);
+	auto terms = m_grammar.GetTerminals();
+	terms.insert(m_eofSymbol);
+	m_grammar.SetTerminals(terms);
 }
 
-void LALRBuilder::BuildStatesGraph()
+void LALRBuilder::BuildStateGraph()
 {
-	LR1Item initialItem;
-	initialItem.core = { 0, 0 };
-	initialItem.lookahead = m_endOfFileSymbol;
-
-	const LALRState initialKernel = { initialItem };
-	m_states.push_back(initialKernel);
-	m_kernelToIndexMap[ExtractKernel(initialKernel)] = 0;
+	const LALRState initialKernel = { { { 0, 0 }, m_eofSymbol } };
+	GetOrCreateState(initialKernel);
 
 	for (int i = 0; i < static_cast<int>(m_states.size()); ++i)
 	{
-		ProcessStateTransitions(i);
+		DiscoverTransitions(i);
 	}
 }
 
-void LALRBuilder::ProcessStateTransitions(const int stateIndex)
+void LALRBuilder::DiscoverTransitions(const int stateIndex)
 {
-	const LALRState fullState = m_closureCalculator->ComputeClosure(m_states[stateIndex]);
+	const LALRState fullState = m_closure->ComputeClosure(m_states[stateIndex]);
 
-	std::set<Symbol> grammarSymbols;
+	std::set<Symbol> nextSymbols;
 	for (const auto& item : fullState)
 	{
-		const auto& rightHandSide = m_rhsRule[item.core.ruleIndex];
-		if (item.core.dotPos < rightHandSide.size())
+		const auto& rhs = m_rules[item.core.ruleIndex].rhs;
+		if (item.core.dotPos < rhs.size())
 		{
-			grammarSymbols.insert(rightHandSide[item.core.dotPos]);
+			nextSymbols.insert(rhs[item.core.dotPos]);
 		}
 	}
 
-	for (const auto& symbol : grammarSymbols)
+	for (const auto& symbol : nextSymbols)
 	{
-		LALRState nextKernel = ShiftDot(fullState, symbol);
-		CreateTransition(stateIndex, symbol, nextKernel);
+		LALRState nextKernel = ComputeNextKernel(fullState, symbol);
+		m_transitions[stateIndex][symbol] = GetOrCreateState(nextKernel);
 	}
 }
 
@@ -89,16 +80,16 @@ void LALRBuilder::PropagateLookaheads()
 	while (changed)
 	{
 		changed = false;
-		for (auto const& [sourceIndex, targetMap] : m_transitionMap)
+		for (auto const& [srcId, targets] : m_transitions)
 		{
-			LALRState sourceFull = m_closureCalculator->ComputeClosure(m_states[sourceIndex]);
+			LALRState sourceFull = m_closure->ComputeClosure(m_states[srcId]);
 
-			for (auto const& [symbol, targetIndex] : targetMap)
+			for (auto const& [sym, destId] : targets)
 			{
-				LALRState shifted = ShiftDot(sourceFull, symbol);
-				for (const auto& item : shifted)
+				LALRState moved = ComputeNextKernel(sourceFull, sym);
+				for (const auto& item : moved)
 				{
-					if (m_states[targetIndex].insert(item).second)
+					if (m_states[destId].insert(item).second)
 					{
 						changed = true;
 					}
@@ -108,84 +99,101 @@ void LALRBuilder::PropagateLookaheads()
 	}
 }
 
-void LALRBuilder::ConstructResultTable()
+void LALRBuilder::FillParseTable()
 {
 	for (int i = 0; i < static_cast<int>(m_states.size()); ++i)
 	{
-		LALRState fullState = m_closureCalculator->ComputeClosure(m_states[i]);
+		LALRState fullState = m_closure->ComputeClosure(m_states[i]);
 
 		for (const auto& item : fullState)
 		{
-			const auto& rightHandSide = m_rhsRule[item.core.ruleIndex];
+			const auto& rule = m_rules[item.core.ruleIndex];
 
-			if (item.core.dotPos < rightHandSide.size())
+			if (item.core.dotPos < rule.rhs.size())
 			{
-				const Symbol& symbol = rightHandSide[item.core.dotPos];
-				if (m_transitionMap.contains(i) && m_transitionMap.at(i).contains(symbol))
-				{
-					const int target = m_transitionMap.at(i).at(symbol);
-					const ActionType type = symbol.IsTerminal() ? ActionType::SHIFT : ActionType::GOTO;
-					m_table[i][symbol] = { type, target };
-				}
+				Symbol nextSym = rule.rhs[item.core.dotPos];
+				const int target = m_transitions[i][nextSym];
+				const ActionType type = nextSym.IsTerminal() ? ActionType::SHIFT : ActionType::GOTO;
+				AddAction(i, nextSym, { type, target });
 			}
-			else if (m_lhsRule[item.core.ruleIndex] == m_augmentedStartSymbol)
+			else if (IsStartSymbol(rule.lhs))
 			{
-				m_table[i][m_endOfFileSymbol] = { ActionType::ACCEPT, 0 };
+				AddAction(i, m_eofSymbol, { ActionType::ACCEPT, 0 });
 			}
 			else
 			{
-				m_table[i][item.lookahead] = { ActionType::REDUCE, item.core.ruleIndex };
+				AddAction(i, item.lookahead, { ActionType::REDUCE, item.core.ruleIndex });
 			}
 		}
 	}
 }
 
-void LALRBuilder::CreateTransition(const int stateIndex, const Symbol& symbol, const LALRState& nextKernel)
+int LALRBuilder::GetOrCreateState(const LALRState& kernel)
 {
-	const std::set<LR0Item> core = ExtractKernel(nextKernel);
-	int targetIndex;
-
-	if (m_kernelToIndexMap.contains(core))
+	const auto core = ExtractKernelCore(kernel);
+	if (m_kernelToId.contains(core))
 	{
-		targetIndex = m_kernelToIndexMap[core];
-		for (const auto& item : nextKernel)
+		const int id = m_kernelToId[core];
+		for (const auto& item : kernel)
 		{
-			m_states[targetIndex].insert(item);
+			m_states[id].insert(item);
 		}
-	}
-	else
-	{
-		targetIndex = static_cast<int>(m_states.size());
-		m_states.push_back(nextKernel);
-		m_kernelToIndexMap[core] = targetIndex;
+		return id;
 	}
 
-	m_transitionMap[stateIndex][symbol] = targetIndex;
+	const int newId = static_cast<int>(m_states.size());
+	m_states.push_back(kernel);
+	m_kernelToId[core] = newId;
+	return newId;
 }
 
-LALRState LALRBuilder::ShiftDot(const LALRState& state, const Symbol& symbol) const
+LALRState LALRBuilder::ComputeNextKernel(const LALRState& state, const Symbol& symbol) const
 {
-	LALRState movedItems;
+	LALRState next;
 	for (const auto& item : state)
 	{
-		const auto& rightHandSide = m_rhsRule[item.core.ruleIndex];
-		if (item.core.dotPos < rightHandSide.size() && rightHandSide[item.core.dotPos] == symbol)
+		const auto& rhs = m_rules[item.core.ruleIndex].rhs;
+		if (item.core.dotPos < rhs.size() && rhs[item.core.dotPos] == symbol)
 		{
-			movedItems.insert({ { item.core.ruleIndex, item.core.dotPos + 1 }, item.lookahead });
+			next.insert({ { item.core.ruleIndex, item.core.dotPos + 1 }, item.lookahead });
 		}
 	}
-	return movedItems;
+	return next;
 }
 
-std::set<LR0Item> LALRBuilder::ExtractKernel(const LALRState& state) const
+std::set<LR0Item> LALRBuilder::ExtractKernelCore(const LALRState& state) const
 {
-	std::set<LR0Item> kernel;
+	std::set<LR0Item> core;
 	for (const auto& item : state)
 	{
-		if (item.core.dotPos > 0 || m_lhsRule[item.core.ruleIndex] == m_augmentedStartSymbol)
+		if (item.core.dotPos > 0 || IsStartSymbol(m_rules[item.core.ruleIndex].lhs))
 		{
-			kernel.insert(item.core);
+			core.insert(item.core);
 		}
 	}
-	return kernel;
+	return core;
+}
+
+void LALRBuilder::AddAction(const int state, const Symbol& symbol, const Action action)
+{
+	if (m_table[state].contains(symbol))
+	{
+		const Action oldAction = m_table[state][symbol];
+
+		if (oldAction.type != action.type || oldAction.value != action.value)
+		{
+			const std::string type = (oldAction.type == ActionType::SHIFT && action.type == ActionType::REDUCE)
+				? "Shift/Reduce"
+				: "Reduce/Reduce";
+			throw std::runtime_error(type + " conflict in state " + std::to_string(state) + " on symbol '" + symbol.GetValue() + "'");
+		}
+		return;
+	}
+
+	m_table[state][symbol] = action;
+}
+
+bool LALRBuilder::IsStartSymbol(const Symbol& lhs) const
+{
+	return lhs == m_augmentedStartSymbol;
 }

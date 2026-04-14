@@ -15,7 +15,7 @@ struct Configuration
 {
 	CompilerMode mode = CompilerMode::HELP;
 	std::string inputFilePath;
-	std::string outputFilePath = "out.bin";
+	std::string outputFilePath = "out.csv";
 	bool verbose = false;
 };
 
