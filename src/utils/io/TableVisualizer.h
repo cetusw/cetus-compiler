@@ -1,11 +1,11 @@
 #pragma once
-
-#include "../../compiler/slr-builder/AutomatonBuilder.h"
+#include "src/common/grammar/Grammar.h"
+#include "src/compiler/lalr/types/LALR.h"
 
 class TableVisualizer
 {
 public:
-	static void PrintTable(const SLRTable& table, const Grammar& grammar);
+	static void PrintTable(const ParseTable& table, const Grammar& grammar);
 
 private:
 	static std::string ActionToString(const Action& action);

@@ -13,19 +13,19 @@ Configuration CommandLineInterface::ParseArguments(const int argumentCount, char
 
 	const std::string command = argumentValues[1];
 
-	if (command == "compile")
+	if (command == "--compile")
 	{
 		configuration.mode = CompilerMode::COMPILE;
 	}
-	else if (command == "parse")
+	else if (command == "--parse")
 	{
 		configuration.mode = CompilerMode::PARSE;
 	}
-	else if (command == "table")
+	else if (command == "--table")
 	{
 		configuration.mode = CompilerMode::GENERATE_TABLE;
 	}
-	else if (command == "run")
+	else if (command == "--run")
 	{
 		configuration.mode = CompilerMode::RUN_VM;
 	}

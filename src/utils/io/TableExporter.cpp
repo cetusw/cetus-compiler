@@ -1,7 +1,7 @@
 #include "TableExporter.h"
 #include <fstream>
 
-void TableExporter::ExportToCsv(const SLRTable& table, const Grammar& grammar, const std::string& filePath)
+void TableExporter::ExportToCsv(const ParseTable& table, const Grammar& grammar, const std::string& filePath)
 {
 	std::ofstream fileStream(filePath);
 
@@ -44,7 +44,7 @@ void TableExporter::WriteHeader(std::ostream& outputStream, const std::vector<Sy
 }
 
 void TableExporter::WriteRows(std::ostream& outputStream,
-	const SLRTable& table,
+	const ParseTable& table,
 	const std::vector<Symbol>& allSymbols)
 {
 	for (const auto& [stateIdentifier, rowMap] : table)
@@ -72,11 +72,11 @@ std::string TableExporter::ActionToString(const Action& action)
 	switch (action.type)
 	{
 	case ActionType::SHIFT:
-		return "s" + std::to_string(action.value);
+		return "S" + std::to_string(action.value);
 	case ActionType::REDUCE:
-		return "r" + std::to_string(action.value);
+		return "R" + std::to_string(action.value);
 	case ActionType::GOTO:
-		return "g" + std::to_string(action.value);
+		return "G" + std::to_string(action.value);
 	case ActionType::ACCEPT:
 		return "ACC";
 	default:

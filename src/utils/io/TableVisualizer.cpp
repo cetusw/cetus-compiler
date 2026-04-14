@@ -3,7 +3,7 @@
 #include <iomanip>
 #include <iostream>
 
-void TableVisualizer::PrintTable(const SLRTable& table, const Grammar& grammar)
+void TableVisualizer::PrintTable(const ParseTable& table, const Grammar& grammar)
 {
 	if constexpr (!DEBUG_MODE)
 	{
@@ -45,11 +45,11 @@ std::string TableVisualizer::ActionToString(const Action& action)
 	switch (action.type)
 	{
 	case ActionType::SHIFT:
-		return "s" + std::to_string(action.value);
+		return "S" + std::to_string(action.value);
 	case ActionType::REDUCE:
-		return "r" + std::to_string(action.value);
+		return "R" + std::to_string(action.value);
 	case ActionType::GOTO:
-		return "g" + std::to_string(action.value);
+		return "G" + std::to_string(action.value);
 	case ActionType::ACCEPT:
 		return "ACC";
 	default:

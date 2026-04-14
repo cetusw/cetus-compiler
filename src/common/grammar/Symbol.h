@@ -8,6 +8,7 @@ public:
 	Symbol(std::string value, bool isTerminal);
 	Symbol();
 
+	std::strong_ordering operator<=>(const Symbol& other) const = default;
 	bool operator<(const Symbol& other) const;
 	bool operator==(const Symbol& other) const;
 	bool operator!=(const Symbol& other) const;

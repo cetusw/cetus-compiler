@@ -1,9 +1,8 @@
 #include "TableGeneratorDriver.h"
-#include "../../compiler/slr-builder/AutomatonBuilder.h"
 #include "../../utils/io/GrammarLoader.h"
 #include "../../utils/io/TableVisualizer.h"
+#include "src/compiler/lalr/LALRBuilder.h"
 #include "src/utils/io/TableExporter.h"
-
 #include <iostream>
 #include <stdexcept>
 
@@ -26,8 +25,8 @@ void TableGeneratorDriver::Execute(const Configuration& configuration)
 
 	const Grammar grammar = GrammarLoader::LoadFromFile(configuration.inputFilePath);
 
-	AutomatonBuilder builder(grammar);
-	const SLRTable table = builder.Build();
+	LALRBuilder builder(grammar);
+	const ParseTable table = builder.Build();
 
 	TableVisualizer::PrintTable(table, grammar);
 	TableExporter::ExportToCsv(table, grammar, configuration.outputFilePath);

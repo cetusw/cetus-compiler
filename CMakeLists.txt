@@ -18,7 +18,12 @@ set(COMMON_LOGIC_SOURCES
 
 set(COMPILER_CORE_SOURCES
         src/compiler/lexer/Lexer.cpp
-        src/compiler/slr-builder/AutomatonBuilder.cpp
+        src/compiler/lalr/LALRBuilder.cpp
+        src/compiler/lalr/LALRBuilder.h
+        src/compiler/lalr/LR1ClosureCalculator.cpp
+        src/compiler/lalr/LR1ClosureCalculator.h
+        src/compiler/lalr/types/LR.h
+        src/compiler/lalr/types/LALR.h
 )
 
 set(UTILITY_SOURCES
