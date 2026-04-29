@@ -2,9 +2,10 @@
 #include <fstream>
 #include <sstream>
 
+constexpr char COMMENT_CHAR = '#';
+
 Grammar GrammarLoader::LoadFromFile(const std::string& path)
 {
-	Grammar grammar;
 	std::ifstream file(path);
 
 	if (!file.is_open())
@@ -12,12 +13,18 @@ Grammar GrammarLoader::LoadFromFile(const std::string& path)
 		throw std::runtime_error("Failed to open grammar file: " + path);
 	}
 
+	return ParseFile(std::move(file));
+}
+
+Grammar GrammarLoader::ParseFile(std::ifstream file)
+{
+	Grammar grammar;
 	std::string line;
 	bool isFirstRule = true;
 
 	while (std::getline(file, line))
 	{
-		if (line.empty() || line[0] == '#')
+		if (line.empty() || line[0] == COMMENT_CHAR)
 		{
 			continue;
 		}
@@ -37,15 +44,20 @@ Grammar GrammarLoader::LoadFromFile(const std::string& path)
 std::string GrammarLoader::ParseLine(const std::string& line, Grammar& grammar)
 {
 	std::stringstream lineStream(line);
-	std::string leftHandSideValue;
+	std::string lhsValue;
 	std::string arrow;
 
-	if (!(lineStream >> leftHandSideValue >> arrow))
+	if (!(lineStream >> lhsValue >> arrow))
 	{
 		return "";
 	}
 
-	const Symbol leftHandSide(leftHandSideValue, false);
+	const Symbol lhsSymbol = ParseSymbolToken(lhsValue);
+	if (lhsSymbol.IsTerminal())
+	{
+		throw std::runtime_error("lhs must be a non-terminal wrapped in '~': " + lhsValue);
+	}
+
 	std::vector<std::string> tokens;
 	std::string token;
 
@@ -54,20 +66,20 @@ std::string GrammarLoader::ParseLine(const std::string& line, Grammar& grammar)
 		tokens.push_back(token);
 	}
 
-	AddProductions(grammar, leftHandSide, tokens);
-	return leftHandSideValue;
+	AddProductions(grammar, lhsSymbol, tokens);
+	return lhsSymbol.GetValue();
 }
 
 void GrammarLoader::AddProductions(Grammar& grammar, const Symbol& lhs, const std::vector<std::string>& tokens)
 {
-	std::vector<Symbol> currentRightHandSide;
+	std::vector<Symbol> rhs;
 
 	for (const std::string& token : tokens)
 	{
 		if (token == "|")
 		{
-			grammar.AddRule(lhs, currentRightHandSide);
-			currentRightHandSide.clear();
+			grammar.AddRule(lhs, rhs);
+			rhs.clear();
 			continue;
 		}
 
@@ -76,18 +88,34 @@ void GrammarLoader::AddProductions(Grammar& grammar, const Symbol& lhs, const st
 			continue;
 		}
 
-		currentRightHandSide.emplace_back(token, IsTerminal(token));
+		rhs.push_back(ParseSymbolToken(token));
 	}
 
-	grammar.AddRule(lhs, currentRightHandSide);
+	grammar.AddRule(lhs, rhs);
 }
 
-bool GrammarLoader::IsTerminal(const std::string& value)
+bool GrammarLoader::IsNonTerminal(const std::string& value)
 {
-	if (value.empty())
+	return value.size() >= 2 && value.front() == '~' && value.back() == '~';
+}
+
+Symbol GrammarLoader::ParseSymbolToken(const std::string& token)
+{
+	if (token.empty())
 	{
-		return false;
+		throw std::runtime_error("Encountered empty grammar symbol.");
 	}
-	const char firstCharacter = value[0];
-	return !(firstCharacter >= 'A' && firstCharacter <= 'Z');
+
+	if (!IsNonTerminal(token))
+	{
+		return {token, true};
+	}
+
+	const std::string symbolValue = token.substr(1, token.size() - 2);
+	if (symbolValue.empty())
+	{
+		throw std::runtime_error("Non-terminal wrapper '~' must contain a symbol name.");
+	}
+
+	return {symbolValue, false};
 }

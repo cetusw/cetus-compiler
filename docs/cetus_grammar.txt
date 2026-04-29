@@ -1,41 +1,41 @@
-Con -> Con || Con1
-Con -> Con1
+~Con~ -> ~Con~ OR_OR ~Con1~
+~Con~ -> ~Con1~
 
-Con1 -> Con1 && Con2
-Con1 -> Con2
+~Con1~ -> ~Con1~ AND_AND ~Con2~
+~Con1~ -> ~Con2~
 
-Con2 -> ! Con2
-Con2 -> true
-Con2 -> false
-Con2 -> RCon
+~Con2~ -> BANG ~Con2~
+~Con2~ -> TRUE
+~Con2~ -> FALSE
+~Con2~ -> ~RCon~
 
-RCon -> Exp ROp Exp
-RCon -> Exp
+~RCon~ -> ~Exp~ ~ROp~ ~Exp~
+~RCon~ -> ~Exp~
 
-Exp -> Exp + Exp1
-Exp -> Exp - Exp1
-Exp -> Exp1
+~Exp~ -> ~Exp~ PLUS ~Exp1~
+~Exp~ -> ~Exp~ MINUS ~Exp1~
+~Exp~ -> ~Exp1~
 
-Exp1 -> Exp1 MulOp Exp2
-Exp1 -> Exp2
+~Exp1~ -> ~Exp1~ ~MulOp~ ~Exp2~
+~Exp1~ -> ~Exp2~
 
-Exp2 -> ( Con )
-Exp2 -> - Exp2
-Exp2 -> LargId
-Exp2 -> INT_LIT
-Exp2 -> FLOAT_LIT
+~Exp2~ -> LPAREN ~Con~ RPAREN
+~Exp2~ -> MINUS ~Exp2~
+~Exp2~ -> ~LargId~
+~Exp2~ -> INT_LIT
+~Exp2~ -> FLOAT_LIT
 
-LargId -> IDENTIFIER
-LargId -> LargId . IDENTIFIER
-LargId -> LargId [ Exp ]
+~LargId~ -> IDENTIFIER
+~LargId~ -> ~LargId~ DOT IDENTIFIER
+~LargId~ -> ~LargId~ LBRACKET ~Exp~ RBRACKET
 
-MulOp -> *
-MulOp -> /
-MulOp -> %
+~MulOp~ -> STAR
+~MulOp~ -> SLASH
+~MulOp~ -> PERCENT
 
-ROp -> <
-ROp -> <=
-ROp -> !=
-ROp -> ==
-ROp -> >
-ROp -> >=
+~ROp~ -> LESS
+~ROp~ -> LESS_EQUAL
+~ROp~ -> BANG_EQUAL
+~ROp~ -> EQUAL_EQUAL
+~ROp~ -> GREATER
+~ROp~ -> GREATER_EQUAL

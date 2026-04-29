@@ -24,6 +24,8 @@ set(COMPILER_CORE_SOURCES
         src/compiler/lalr/LR1ClosureCalculator.h
         src/compiler/lalr/types/LR.h
         src/compiler/lalr/types/LALR.h
+        src/compiler/parser/TokenSymbolMapper.cpp
+        src/compiler/parser/TokenSymbolMapper.h
 )
 
 set(UTILITY_SOURCES
