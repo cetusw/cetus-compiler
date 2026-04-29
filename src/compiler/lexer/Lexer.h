@@ -31,7 +31,9 @@ private:
 	bool HandlePunctuation(char c);
 	bool HandleOperator(char c);
 
+	[[nodiscard]] int GetEofLine() const;
 	void AddToken(TokenType type, std::string lexeme);
+	void AddToken(TokenType type, std::string lexeme, int line);
 	void AddToken(TokenType type);
 
 	bool MatchToken(char expected, TokenType ifMatch, TokenType ifNoMatch);

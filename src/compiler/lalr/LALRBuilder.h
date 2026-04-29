@@ -2,6 +2,7 @@
 #include "LR1ClosureCalculator.h"
 #include "src/common/grammar/Grammar.h"
 #include "types/LALR.h"
+#include "types/ParserDefinition.h"
 #include <map>
 #include <memory>
 #include <set>
@@ -11,7 +12,7 @@ class LALRBuilder
 {
 public:
 	explicit LALRBuilder(Grammar grammar);
-	ParseTable Build();
+	ParserDefinition Build();
 
 private:
 	struct IndexedRule
@@ -27,11 +28,11 @@ private:
 
 	void DiscoverTransitions(int stateIndex);
 	int GetOrCreateState(const LALRState& kernel);
-	LALRState ComputeNextKernel(const LALRState& state, const Symbol& symbol) const;
-	std::set<LR0Item> ExtractKernelCore(const LALRState& state) const;
+	[[nodiscard]] LALRState ComputeNextKernel(const LALRState& state, const Symbol& symbol) const;
+	[[nodiscard]] std::set<LR0Item> ExtractKernelCore(const LALRState& state) const;
 
 	void AddAction(int state, const Symbol& symbol, Action action);
-	bool IsStartSymbol(const Symbol& lhs) const;
+	[[nodiscard]] bool IsStartSymbol(const Symbol& lhs) const;
 
 	Grammar m_grammar;
 	Symbol m_augmentedStartSymbol;

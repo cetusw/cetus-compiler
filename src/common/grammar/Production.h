@@ -8,8 +8,8 @@ class Production
 public:
 	Production(Symbol lhs, std::vector<Symbol> rhs);
 
-	[[nodiscard]] Symbol GetLhs() const;
-	[[nodiscard]] std::vector<Symbol> GetRhs() const;
+	[[nodiscard]] const Symbol& GetLhs() const;
+	[[nodiscard]] const std::vector<Symbol>& GetRhs() const;
 	[[nodiscard]] std::string ToString() const;
 	[[nodiscard]] bool IsChainRule() const;
 

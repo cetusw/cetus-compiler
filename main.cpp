@@ -1,5 +1,6 @@
 #include "src/cli/CommandLineInterface.h"
 #include "src/cli/driver/BytecodeExecutionDriver.h"
+#include "src/cli/driver/ParserDriver.h"
 #include "src/cli/driver/TableGeneratorDriver.h"
 #include "src/vm/vm.h"
 #include <iostream>
@@ -16,7 +17,7 @@ int main(const int argc, char* argv[])
 			// CompilerDriver::Execute(configuration);
 			break;
 		case CompilerMode::PARSE:
-			// ParserDriver::Execute(configuration);
+			ParserDriver::Execute(configuration);
 			break;
 		case CompilerMode::GENERATE_TABLE:
 			TableGeneratorDriver::Execute(configuration);

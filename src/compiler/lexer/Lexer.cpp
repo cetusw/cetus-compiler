@@ -42,7 +42,7 @@ std::vector<Token> Lexer::ScanTokens()
 		m_start = m_current;
 		ScanToken();
 	}
-	AddToken(TokenType::EOF_TOKEN, "");
+	AddToken(TokenType::EOF_TOKEN, "", GetEofLine());
 	return m_tokens;
 }
 
@@ -400,12 +400,27 @@ bool Lexer::HandleOperator(const char c)
 
 void Lexer::AddToken(const TokenType type, std::string lexeme)
 {
-	m_tokens.push_back({ type, std::move(lexeme), m_line });
+	AddToken(type, std::move(lexeme), m_line);
+}
+
+void Lexer::AddToken(const TokenType type, std::string lexeme, const int line)
+{
+	m_tokens.push_back({ type, std::move(lexeme), line });
+}
+
+int Lexer::GetEofLine() const
+{
+	if (m_tokens.empty())
+	{
+		return 1;
+	}
+
+	return m_tokens.back().line;
 }
 
 void Lexer::AddToken(const TokenType type)
 {
-	m_tokens.push_back({ type, m_source.substr(m_start, m_current - m_start), m_line });
+	AddToken(type, m_source.substr(m_start, m_current - m_start), m_line);
 }
 
 bool Lexer::MatchToken(const char expected, const TokenType ifMatch, const TokenType ifNoMatch)

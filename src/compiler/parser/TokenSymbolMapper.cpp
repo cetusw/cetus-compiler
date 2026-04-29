@@ -73,5 +73,5 @@ Symbol TokenSymbolMapper::MapTokenToGrammarSymbol(const Token& token)
 		throw std::runtime_error("Token is not supported by the current grammar: '" + token.lexeme + "'");
 	}
 
-	return {std::string(terminal), true};
+	return { std::string(terminal), true };
 }

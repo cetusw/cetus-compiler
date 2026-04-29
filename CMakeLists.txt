@@ -7,6 +7,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(COMMAND_LINE_INTERFACE_SOURCES
         main.cpp
         src/cli/CommandLineInterface.cpp
+        src/cli/driver/ParserDriver.cpp
+        src/cli/driver/ParserDriver.h
         src/cli/driver/TableGeneratorDriver.cpp
 )
 
@@ -24,6 +26,10 @@ set(COMPILER_CORE_SOURCES
         src/compiler/lalr/LR1ClosureCalculator.h
         src/compiler/lalr/types/LR.h
         src/compiler/lalr/types/LALR.h
+        src/compiler/lalr/types/ParserDefinition.h
+        src/compiler/parser/ParseResult.h
+        src/compiler/parser/TableDrivenParser.cpp
+        src/compiler/parser/TableDrivenParser.h
         src/compiler/parser/TokenSymbolMapper.cpp
         src/compiler/parser/TokenSymbolMapper.h
 )

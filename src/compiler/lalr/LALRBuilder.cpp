@@ -1,22 +1,29 @@
 #include "LALRBuilder.h"
 
-#include <iostream>
-
 LALRBuilder::LALRBuilder(Grammar grammar)
 	: m_grammar(std::move(grammar))
 {
 }
 
-ParseTable LALRBuilder::Build()
+ParserDefinition LALRBuilder::Build()
 {
 	PrepareGrammar();
 	m_closure = std::make_unique<LR1ClosureCalculator>(m_grammar);
-
 	BuildStateGraph();
 	PropagateLookaheads();
 	FillParseTable();
 
-	return m_table;
+	ParserDefinition definition;
+	definition.table = m_table;
+	definition.startSymbol = m_grammar.GetStartSymbol();
+	definition.eofSymbol = m_eofSymbol;
+
+	for (int index = 0; index < static_cast<int>(m_rules.size()); ++index)
+	{
+		definition.rules.push_back({ index, m_rules[index].lhs, m_rules[index].rhs });
+	}
+
+	return definition;
 }
 
 void LALRBuilder::PrepareGrammar()

@@ -26,8 +26,8 @@ void TableGeneratorDriver::Execute(const Configuration& configuration)
 	const Grammar grammar = GrammarLoader::LoadFromFile(configuration.inputFilePath);
 
 	LALRBuilder builder(grammar);
-	const ParseTable table = builder.Build();
+	const ParserDefinition definition = builder.Build();
 
-	TableVisualizer::PrintTable(table, grammar);
-	TableExporter::ExportToCsv(table, grammar, configuration.outputFilePath);
+	TableVisualizer::PrintTable(definition.table, grammar);
+	TableExporter::ExportToCsv(definition.table, grammar, configuration.outputFilePath);
 }

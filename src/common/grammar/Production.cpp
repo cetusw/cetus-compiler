@@ -8,12 +8,12 @@ Production::Production(Symbol lhs, std::vector<Symbol> rhs)
 {
 }
 
-Symbol Production::GetLhs() const
+const Symbol& Production::GetLhs() const
 {
 	return m_lhs;
 }
 
-std::vector<Symbol> Production::GetRhs() const
+const std::vector<Symbol>& Production::GetRhs() const
 {
 	return m_rhs;
 }
