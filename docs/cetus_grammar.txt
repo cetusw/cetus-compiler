@@ -1,10 +1,10 @@
-Con -> Con or Con1
+Con -> Con || Con1
 Con -> Con1
 
-Con1 -> Con1 and Con2
+Con1 -> Con1 && Con2
 Con1 -> Con2
 
-Con2 -> not Con2
+Con2 -> ! Con2
 Con2 -> true
 Con2 -> false
 Con2 -> RCon
@@ -22,20 +22,20 @@ Exp1 -> Exp2
 Exp2 -> ( Con )
 Exp2 -> - Exp2
 Exp2 -> LargId
-Exp2 -> num
+Exp2 -> INT_LIT
+Exp2 -> FLOAT_LIT
 
-LargId -> ident
-LargId -> LargId . ident
+LargId -> IDENTIFIER
+LargId -> LargId . IDENTIFIER
 LargId -> LargId [ Exp ]
 
 MulOp -> *
 MulOp -> /
-MulOp -> div
-MulOp -> mod
+MulOp -> %
 
 ROp -> <
 ROp -> <=
-ROp -> <>
+ROp -> !=
 ROp -> ==
 ROp -> >
 ROp -> >=
