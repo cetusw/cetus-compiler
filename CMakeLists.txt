@@ -1,100 +1,104 @@
-cmake_minimum_required(VERSION 4.0)
+cmake_minimum_required(VERSION 3.31)
 project(cetus_compiler)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(COMMAND_LINE_INTERFACE_SOURCES
-        main.cpp
-        src/cli/CommandLineInterface.cpp
-        src/cli/driver/ParserDriver.cpp
-        src/cli/driver/ParserDriver.h
-        src/cli/driver/TableGeneratorDriver.cpp
+add_library(cetus_support STATIC
+        src/support/io/FileReader.cpp
 )
 
-set(COMMON_LOGIC_SOURCES
-        src/common/grammar/Grammar.cpp
-        src/common/grammar/Production.cpp
-        src/common/grammar/Symbol.cpp
+add_library(cetus_frontend STATIC
+        src/frontend/lexer/Lexer.cpp
+        src/frontend/syntax/SyntaxAnalyzer.cpp
+        src/frontend/syntax/analysis/guiding-set-provider/GuidingSetProvider.cpp
+        src/frontend/syntax/grammar/Grammar.cpp
+        src/frontend/syntax/grammar/GrammarLoader.cpp
+        src/frontend/syntax/grammar/Production.cpp
+        src/frontend/syntax/grammar/Symbol.cpp
+        src/frontend/syntax/lalr/LALRBuilder.cpp
+        src/frontend/syntax/lalr/LR1ClosureCalculator.cpp
+        src/frontend/syntax/parser/TableDrivenParser.cpp
+        src/frontend/syntax/parser/TokenSymbolMapper.cpp
 )
 
-set(COMPILER_CORE_SOURCES
-        src/compiler/lexer/Lexer.cpp
-        src/compiler/lalr/LALRBuilder.cpp
-        src/compiler/lalr/LALRBuilder.h
-        src/compiler/lalr/LR1ClosureCalculator.cpp
-        src/compiler/lalr/LR1ClosureCalculator.h
-        src/compiler/lalr/types/LR.h
-        src/compiler/lalr/types/LALR.h
-        src/compiler/lalr/types/ParserDefinition.h
-        src/compiler/parser/ParseResult.h
-        src/compiler/parser/TableDrivenParser.cpp
-        src/compiler/parser/TableDrivenParser.h
-        src/compiler/parser/TokenSymbolMapper.cpp
-        src/compiler/parser/TokenSymbolMapper.h
+add_library(cetus_tooling STATIC
+        src/utils/syntax/TableExporter.cpp
+        src/utils/syntax/TableVisualizer.cpp
 )
 
-set(UTILITY_SOURCES
-        src/utils/guding-set-provider/GuidingSetProvider.cpp
-        src/utils/io/GrammarLoader.cpp
-        src/utils/io/TableVisualizer.cpp
+add_library(cetus_backend_vm STATIC
+        src/backend/vm/vm.cpp
+        src/backend/vm/types/Chunk.cpp
+        src/backend/vm/types/Value.cpp
+        src/backend/vm/objects/Obj.cpp
+        src/backend/vm/objects/ObjString.cpp
+        src/backend/vm/disassembler/Disassembler.cpp
+        src/backend/vm/parser/BytecodeParser.cpp
+        src/backend/vm/instructions/CallInstruction.cpp
+        src/backend/vm/instructions/ConstantInstruction.cpp
+        src/backend/vm/instructions/DefineGlobalInstruction.cpp
+        src/backend/vm/instructions/GetGlobalInstruction.cpp
+        src/backend/vm/instructions/GetLocalInstruction.cpp
+        src/backend/vm/instructions/JumpIfFalseInstruction.cpp
+        src/backend/vm/instructions/JumpInstruction.cpp
+        src/backend/vm/instructions/LoopInstruction.cpp
+        src/backend/vm/instructions/NegateInstruction.cpp
+        src/backend/vm/instructions/PopInstruction.cpp
+        src/backend/vm/instructions/ReturnInstruction.cpp
+        src/backend/vm/instructions/SetGlobalInstruction.cpp
+        src/backend/vm/instructions/SetLocalInstruction.cpp
+        src/backend/vm/objects/ObjFunction.cpp
+        src/backend/vm/objects/ObjNative.cpp
 )
 
-set(VIRTUAL_MACHINE_SOURCES
-        src/vm/vm.cpp
-        src/vm/types/chunk.cpp
-        src/vm/types/value.cpp
-        src/vm/objects/Obj.cpp
-        src/vm/objects/ObjString.cpp
-        src/vm/disassembler/Disassembler.cpp
-        src/vm/parser/BytecodeParser.cpp
-        src/vm/instructions/ConstantInstruction.cpp
-        src/vm/instructions/GetLocalInstruction.cpp
-        src/vm/instructions/NegateInstruction.cpp
-        src/vm/instructions/PopInstruction.cpp
-        src/vm/instructions/ReturnInstruction.cpp
-        src/vm/instructions/SetLocalInstruction.cpp
-        src/utils/io/TableExporter.cpp
-        src/utils/io/TableExporter.h
-        src/cli/driver/BytecodeExecutionDriver.cpp
-        src/cli/driver/BytecodeExecutionDriver.h
-        src/vm/instructions/JumpInstruction.cpp
-        src/vm/instructions/JumpInstruction.h
-        src/vm/instructions/JumpIfFalseInstruction.cpp
-        src/vm/instructions/JumpIfFalseInstruction.h
-        src/vm/instructions/LoopInstruction.cpp
-        src/vm/instructions/LoopInstruction.h
-        src/vm/objects/ObjFunction.cpp
-        src/vm/objects/ObjFunction.h
-        src/vm/types/CallFrame.h
-        src/vm/instructions/CallInstruction.cpp
-        src/vm/instructions/CallInstruction.h
-        src/vm/parser/Types.h
-        src/vm/objects/ObjNative.cpp
-        src/vm/objects/ObjNative.h
-        src/vm/instructions/DefineGlobalInstruction.cpp
-        src/vm/instructions/DefineGlobalInstruction.h
-        src/vm/instructions/GetGlobalInstruction.cpp
-        src/vm/instructions/GetGlobalInstruction.h
-        src/vm/instructions/SetGlobalInstruction.cpp
-        src/vm/instructions/SetGlobalInstruction.h
-        src/vm/NativeFunctions.h
+add_library(cetus_app_cli STATIC
+        src/app/cli/CommandLineInterface.cpp
+        src/app/cli/commands/BytecodeExecutionDriver.cpp
+        src/app/cli/commands/ParserDriver.cpp
+        src/app/cli/commands/TableGeneratorDriver.cpp
 )
+
+foreach(target
+        cetus_support
+        cetus_frontend
+        cetus_tooling
+        cetus_backend_vm
+        cetus_app_cli)
+    target_include_directories(${target} PUBLIC ${CMAKE_SOURCE_DIR})
+endforeach()
+
+target_link_libraries(cetus_frontend PUBLIC cetus_support)
+target_link_libraries(cetus_tooling PUBLIC cetus_frontend cetus_backend_vm)
+target_link_libraries(cetus_app_cli PUBLIC cetus_frontend cetus_tooling cetus_backend_vm)
 
 add_executable(cetus
-        ${COMMAND_LINE_INTERFACE_SOURCES}
-        ${COMMON_LOGIC_SOURCES}
-        ${COMPILER_CORE_SOURCES}
-        ${UTILITY_SOURCES}
-        ${VIRTUAL_MACHINE_SOURCES}
+        src/app/main.cpp
 )
 
 target_include_directories(cetus PRIVATE ${CMAKE_SOURCE_DIR})
+target_link_libraries(cetus PRIVATE cetus_app_cli)
 
 if (MSVC)
-    target_compile_options(cetus PRIVATE /W4 /WX)
+    foreach(target
+            cetus_support
+            cetus_frontend
+            cetus_tooling
+            cetus_backend_vm
+            cetus_app_cli
+            cetus)
+        target_compile_options(${target} PRIVATE /W4 /WX)
+    endforeach()
 else ()
-    target_compile_options(cetus PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    foreach(target
+            cetus_support
+            cetus_frontend
+            cetus_tooling
+            cetus_backend_vm
+            cetus_app_cli
+            cetus)
+        target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror)
+    endforeach()
 endif ()
 
 if (NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
