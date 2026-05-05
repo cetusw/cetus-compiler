@@ -2,9 +2,9 @@
 
 #include <utility>
 
-void Grammar::AddRule(const Symbol& lhs, const std::vector<Symbol>& rhs)
+void Grammar::AddRule(const Symbol& lhs, const std::vector<Symbol>& rhs, const SemanticTag semanticTag)
 {
-	m_rules.emplace_back(lhs, rhs);
+	m_rules.emplace_back(lhs, rhs, semanticTag);
 	m_nonTerminals.insert(lhs);
 	for (const auto& symbol : rhs)
 	{

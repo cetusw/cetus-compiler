@@ -1,9 +1,8 @@
 #pragma once
 
+#include "AstReductionBuilder.h"
 #include "ParseResult.h"
-#include "src/frontend/lexer/Token.h"
 #include "src/frontend/syntax/lalr/types/ParserDefinition.h"
-#include <optional>
 #include <vector>
 
 class TableDrivenParser
@@ -17,6 +16,7 @@ private:
 	struct ParseContext
 	{
 		std::vector<int> stateStack = { 0 };
+		std::vector<AstSemanticValue> semanticStack;
 		std::size_t tokenIndex = 0;
 	};
 
@@ -28,7 +28,19 @@ private:
 		ParseContext& ctx,
 		const Token& token,
 		int ruleIndex) const;
-	[[nodiscard]] static ParseResult BuildSuccessResult(const Token& token);
+	[[nodiscard]] static std::optional<ParseResult> ValidateReduceContext(
+		const ParseContext& ctx,
+		size_t rhsSize, int line);
+	static void PopStates(ParseContext& ctx, std::size_t count);
+	[[nodiscard]] static std::optional<ParseResult> ValidateGotoAfterReduce(
+		ActionType actionType, int line);
+	static void ApplyReducedSemanticValue(
+		ParseContext& ctx,
+		const ParserRule& rule,
+		std::vector<AstSemanticValue> values);
+	[[nodiscard]] static ParseResult BuildSuccessResult(ParseContext& ctx, const Token& token);
+	[[nodiscard]] static AstSemanticValue BuildShiftValue(const Token& token);
+	[[nodiscard]] static std::vector<AstSemanticValue> PopSemanticValues(ParseContext& ctx, std::size_t count);
 	[[nodiscard]] const ParserRule& GetRule(int ruleIndex) const;
 	[[nodiscard]] Action GetAction(int state, const Symbol& symbol) const;
 	[[nodiscard]] ParseResult BuildUnexpectedTokenResult(int state, const Token& token) const;

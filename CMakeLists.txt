@@ -18,6 +18,7 @@ add_library(cetus_frontend STATIC
         src/frontend/syntax/grammar/Symbol.cpp
         src/frontend/syntax/lalr/LALRBuilder.cpp
         src/frontend/syntax/lalr/LR1ClosureCalculator.cpp
+        src/frontend/syntax/parser/AstReductionBuilder.cpp
         src/frontend/syntax/parser/TableDrivenParser.cpp
         src/frontend/syntax/parser/TokenSymbolMapper.cpp
 )

@@ -7,11 +7,13 @@ LALRBuilder::LALRBuilder(Grammar grammar)
 
 ParserDefinition LALRBuilder::Build()
 {
+	EnsureBuildCanStart();
 	PrepareGrammar();
 	m_closure = std::make_unique<LR1ClosureCalculator>(m_grammar);
 	BuildStateGraph();
 	PropagateLookaheads();
 	FillParseTable();
+	m_isBuilt = true;
 
 	ParserDefinition definition;
 	definition.table = m_table;
@@ -20,10 +22,18 @@ ParserDefinition LALRBuilder::Build()
 
 	for (int index = 0; index < static_cast<int>(m_rules.size()); ++index)
 	{
-		definition.rules.push_back({ index, m_rules[index].lhs, m_rules[index].rhs });
+		definition.rules.push_back({ index, m_rules[index].lhs, m_rules[index].rhs, m_rules[index].semanticTag });
 	}
 
 	return definition;
+}
+
+void LALRBuilder::EnsureBuildCanStart() const
+{
+	if (m_isBuilt)
+	{
+		throw std::logic_error("LALRBuilder::Build() cannot be called more than once on the same instance.");
+	}
 }
 
 void LALRBuilder::PrepareGrammar()
@@ -31,16 +41,16 @@ void LALRBuilder::PrepareGrammar()
 	const Symbol oldStart = m_grammar.GetStartSymbol();
 	m_augmentedStartSymbol = Symbol(oldStart.GetValue() + "'", false);
 
-	m_rules.push_back({ m_augmentedStartSymbol, { oldStart } });
+	m_rules.push_back({ m_augmentedStartSymbol, { oldStart }, {} });
 	for (const auto& rule : m_grammar.GetRules())
 	{
-		m_rules.push_back({ rule.GetLhs(), rule.GetRhs() });
+		m_rules.push_back({ rule.GetLhs(), rule.GetRhs(), rule.GetSemanticTag() });
 	}
 
 	m_grammar.SetRules({});
 	for (const auto& r : m_rules)
 	{
-		m_grammar.AddRule(r.lhs, r.rhs);
+		m_grammar.AddRule(r.lhs, r.rhs, r.semanticTag);
 	}
 	m_grammar.SetStartSymbol(m_augmentedStartSymbol);
 

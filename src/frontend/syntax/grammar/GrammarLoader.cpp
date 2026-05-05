@@ -3,6 +3,7 @@
 #include <sstream>
 
 constexpr char COMMENT_CHAR = '#';
+constexpr char SEMANTIC_TAG_CHAR = '@';
 
 Grammar GrammarLoader::LoadFromFile(const std::string& path)
 {
@@ -43,13 +44,20 @@ Grammar GrammarLoader::ParseFile(std::ifstream file)
 
 std::string GrammarLoader::ParseLine(const std::string& line, Grammar& grammar)
 {
+	const ParsedLine parsed = ParseProductionLine(line);
+	AddProductions(grammar, parsed);
+	return parsed.lhs.GetValue();
+}
+
+GrammarLoader::ParsedLine GrammarLoader::ParseProductionLine(const std::string& line)
+{
 	std::stringstream lineStream(line);
 	std::string lhsValue;
 	std::string arrow;
 
 	if (!(lineStream >> lhsValue >> arrow))
 	{
-		return "";
+		throw std::runtime_error("Failed to parse grammar line: " + line);
 	}
 
 	const Symbol lhsSymbol = ParseSymbolToken(lhsValue);
@@ -58,27 +66,40 @@ std::string GrammarLoader::ParseLine(const std::string& line, Grammar& grammar)
 		throw std::runtime_error("lhs must be a non-terminal wrapped in '~': " + lhsValue);
 	}
 
-	std::vector<std::string> tokens;
+	ParsedLine parsed{ lhsSymbol, {}, {} };
 	std::string token;
-
 	while (lineStream >> token)
 	{
-		tokens.push_back(token);
+		if (!token.empty() && token.front() == SEMANTIC_TAG_CHAR)
+		{
+			if (parsed.hasSemanticTag)
+			{
+				throw std::runtime_error("Multiple semantic tags in grammar line: " + line);
+			}
+			parsed.semanticTag = ParseSemanticTagName(token.substr(1));
+			parsed.hasSemanticTag = true;
+			continue;
+		}
+
+		parsed.rhs.push_back(token);
 	}
 
-	AddProductions(grammar, lhsSymbol, tokens);
-	return lhsSymbol.GetValue();
+	return parsed;
 }
 
-void GrammarLoader::AddProductions(Grammar& grammar, const Symbol& lhs, const std::vector<std::string>& tokens)
+void GrammarLoader::AddProductions(Grammar& grammar, const ParsedLine& line)
 {
 	std::vector<Symbol> rhs;
 
-	for (const std::string& token : tokens)
+	for (const std::string& token : line.rhs)
 	{
 		if (token == "|")
 		{
-			grammar.AddRule(lhs, rhs);
+			if (line.hasSemanticTag)
+			{
+				throw std::runtime_error("Tagged grammar alternatives must be split into separate lines.");
+			}
+			grammar.AddRule(line.lhs, rhs, line.semanticTag);
 			rhs.clear();
 			continue;
 		}
@@ -91,7 +112,7 @@ void GrammarLoader::AddProductions(Grammar& grammar, const Symbol& lhs, const st
 		rhs.push_back(ParseSymbolToken(token));
 	}
 
-	grammar.AddRule(lhs, rhs);
+	grammar.AddRule(line.lhs, rhs, line.semanticTag);
 }
 
 bool GrammarLoader::IsNonTerminal(const std::string& value)
@@ -108,7 +129,7 @@ Symbol GrammarLoader::ParseSymbolToken(const std::string& token)
 
 	if (!IsNonTerminal(token))
 	{
-		return {token, true};
+		return { token, true };
 	}
 
 	const std::string symbolValue = token.substr(1, token.size() - 2);
@@ -117,5 +138,5 @@ Symbol GrammarLoader::ParseSymbolToken(const std::string& token)
 		throw std::runtime_error("Non-terminal wrapper '~' must contain a symbol name.");
 	}
 
-	return {symbolValue, false};
+	return { symbolValue, false };
 }

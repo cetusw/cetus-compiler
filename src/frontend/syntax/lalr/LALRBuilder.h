@@ -19,9 +19,11 @@ private:
 	{
 		Symbol lhs;
 		std::vector<Symbol> rhs;
+		SemanticTag semanticTag = SemanticTag::NONE;
 	};
 
 	void PrepareGrammar();
+	void EnsureBuildCanStart() const;
 	void BuildStateGraph();
 	void PropagateLookaheads();
 	void FillParseTable();
@@ -45,4 +47,5 @@ private:
 
 	ParseTable m_table;
 	std::unique_ptr<LR1ClosureCalculator> m_closure;
+	bool m_isBuilt = false;
 };

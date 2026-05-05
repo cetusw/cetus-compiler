@@ -2,9 +2,10 @@
 
 #include <utility>
 
-Production::Production(Symbol lhs, std::vector<Symbol> rhs)
+Production::Production(Symbol lhs, std::vector<Symbol> rhs, const SemanticTag semanticTag)
 	: m_lhs(std::move(lhs))
 	, m_rhs(std::move(rhs))
+	, m_semanticTag(semanticTag)
 {
 }
 
@@ -16,6 +17,11 @@ const Symbol& Production::GetLhs() const
 const std::vector<Symbol>& Production::GetRhs() const
 {
 	return m_rhs;
+}
+
+SemanticTag Production::GetSemanticTag() const
+{
+	return m_semanticTag;
 }
 
 std::string Production::ToString() const

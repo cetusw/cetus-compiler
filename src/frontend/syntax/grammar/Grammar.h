@@ -8,7 +8,7 @@
 class Grammar
 {
 public:
-	void AddRule(const Symbol& lhs, const std::vector<Symbol>& rhs);
+	void AddRule(const Symbol& lhs, const std::vector<Symbol>& rhs, SemanticTag semanticTag = SemanticTag::NONE);
 
 	[[nodiscard]] std::set<Symbol> GetTerminals() const;
 	[[nodiscard]] std::set<Symbol> GetNonTerminals() const;
