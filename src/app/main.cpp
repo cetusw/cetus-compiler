@@ -16,6 +16,7 @@ int main(const int argc, char* argv[])
 			// CompilerDriver::Execute(configuration);
 			break;
 		case CompilerMode::PARSE:
+		case CompilerMode::PARSE_AST:
 			ParserDriver::Execute(configuration);
 			break;
 		case CompilerMode::GENERATE_TABLE:

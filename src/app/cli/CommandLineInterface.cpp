@@ -21,6 +21,10 @@ Configuration CommandLineInterface::ParseArguments(const int argumentCount, char
 	{
 		configuration.mode = CompilerMode::PARSE;
 	}
+	else if (command == "--parse-ast")
+	{
+		configuration.mode = CompilerMode::PARSE_AST;
+	}
 	else if (command == "--table")
 	{
 		configuration.mode = CompilerMode::GENERATE_TABLE;
@@ -48,6 +52,7 @@ void CommandLineInterface::PrintHelp()
 			  << "Commands:\n"
 			  << "  compile <file>   Compile source to bytecode\n"
 			  << "  parse <file>     Check syntax only\n"
+			  << "  parse-ast <file> Check syntax and print AST\n"
 			  << "  table <file>     Generate SLR(1) table from grammar\n"
 			  << "  run <file>       Execute bytecode in VM\n";
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ExprVisitor.h"
 #include <memory>
 #include <string>
 
@@ -26,99 +27,117 @@ enum class BinaryOperator
 	GREATER_EQUAL
 };
 
-struct Expr
+class Expr
 {
+public:
 	virtual ~Expr() = default;
+	virtual void Accept(ExprVisitor& visitor) const = 0;
 };
 
 using ExprPtr = std::unique_ptr<Expr>;
 
-struct BoolLiteralExpr final : Expr
+class BoolLiteralExpr final : public Expr
 {
-	explicit BoolLiteralExpr(const bool value)
-		: value(value)
-	{
-	}
+public:
+	explicit BoolLiteralExpr(bool value);
 
-	bool value;
+	[[nodiscard]] bool GetValue() const;
+	void Accept(ExprVisitor& visitor) const override;
+
+private:
+	bool m_value;
 };
 
-struct IntLiteralExpr final : Expr
+class IntLiteralExpr final : public Expr
 {
-	explicit IntLiteralExpr(std::string value)
-		: value(std::move(value))
-	{
-	}
+public:
+	explicit IntLiteralExpr(std::string value);
 
-	std::string value;
+	[[nodiscard]] const std::string& GetValue() const;
+	void Accept(ExprVisitor& visitor) const override;
+
+private:
+	std::string m_value;
 };
 
-struct FloatLiteralExpr final : Expr
+class FloatLiteralExpr final : public Expr
 {
-	explicit FloatLiteralExpr(std::string value)
-		: value(std::move(value))
-	{
-	}
+public:
+	explicit FloatLiteralExpr(std::string value);
 
-	std::string value;
+	[[nodiscard]] const std::string& GetValue() const;
+	void Accept(ExprVisitor& visitor) const override;
+
+private:
+	std::string m_value;
 };
 
-struct IdentifierExpr final : Expr
+class IdentifierExpr final : public Expr
 {
-	explicit IdentifierExpr(std::string name)
-		: name(std::move(name))
-	{
-	}
+public:
+	explicit IdentifierExpr(std::string name);
 
-	std::string name;
+	[[nodiscard]] const std::string& GetName() const;
+	void Accept(ExprVisitor& visitor) const override;
+
+private:
+	std::string m_name;
 };
 
-struct UnaryExpr final : Expr
+class UnaryExpr final : public Expr
 {
-	UnaryExpr(const UnaryOperator op, ExprPtr operand)
-		: op(op)
-		, operand(std::move(operand))
-	{
-	}
+public:
+	UnaryExpr(UnaryOperator op, ExprPtr operand);
 
-	UnaryOperator op;
-	ExprPtr operand;
+	[[nodiscard]] UnaryOperator GetOperator() const;
+	[[nodiscard]] const Expr& GetOperand() const;
+	void Accept(ExprVisitor& visitor) const override;
+
+private:
+	UnaryOperator m_op;
+	ExprPtr m_operand;
 };
 
-struct BinaryExpr final : Expr
+class BinaryExpr final : public Expr
 {
-	BinaryExpr(ExprPtr left, const BinaryOperator op, ExprPtr right)
-		: left(std::move(left))
-		, op(op)
-		, right(std::move(right))
-	{
-	}
+public:
+	BinaryExpr(ExprPtr left, BinaryOperator op, ExprPtr right);
 
-	ExprPtr left;
-	BinaryOperator op;
-	ExprPtr right;
+	[[nodiscard]] const Expr& GetLeft() const;
+	[[nodiscard]] BinaryOperator GetOperator() const;
+	[[nodiscard]] const Expr& GetRight() const;
+	void Accept(ExprVisitor& visitor) const override;
+
+private:
+	ExprPtr m_left;
+	BinaryOperator m_op;
+	ExprPtr m_right;
 };
 
-struct MemberAccessExpr final : Expr
+class MemberAccessExpr final : public Expr
 {
-	MemberAccessExpr(ExprPtr object, std::string member)
-		: object(std::move(object))
-		, member(std::move(member))
-	{
-	}
+public:
+	MemberAccessExpr(ExprPtr object, std::string member);
 
-	ExprPtr object;
-	std::string member;
+	[[nodiscard]] const Expr& GetObject() const;
+	[[nodiscard]] const std::string& GetMember() const;
+	void Accept(ExprVisitor& visitor) const override;
+
+private:
+	ExprPtr m_object;
+	std::string m_member;
 };
 
-struct IndexExpr final : Expr
+class IndexExpr final : public Expr
 {
-	IndexExpr(ExprPtr object, ExprPtr index)
-		: object(std::move(object))
-		, index(std::move(index))
-	{
-	}
+public:
+	IndexExpr(ExprPtr object, ExprPtr index);
 
-	ExprPtr object;
-	ExprPtr index;
+	[[nodiscard]] const Expr& GetObject() const;
+	[[nodiscard]] const Expr& GetIndex() const;
+	void Accept(ExprVisitor& visitor) const override;
+
+private:
+	ExprPtr m_object;
+	ExprPtr m_index;
 };

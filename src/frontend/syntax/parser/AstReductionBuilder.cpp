@@ -111,6 +111,10 @@ AstSemanticValue AstReductionBuilder::PassExpr(std::vector<AstSemanticValue> val
 	{
 		throw std::logic_error("PassExpr index is out of range.");
 	}
+	if (!values[index].expr)
+	{
+		throw std::logic_error("PassExpr expects expression semantic value.");
+	}
 	return { std::move(values[index].expr), std::nullopt };
 }
 

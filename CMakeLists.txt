@@ -11,6 +11,8 @@ add_library(cetus_support STATIC
 add_library(cetus_frontend STATIC
         src/frontend/lexer/Lexer.cpp
         src/frontend/syntax/SyntaxAnalyzer.cpp
+        src/frontend/syntax/ast/AstDumper.cpp
+        src/frontend/syntax/ast/Expr.cpp
         src/frontend/syntax/analysis/guiding-set-provider/GuidingSetProvider.cpp
         src/frontend/syntax/grammar/Grammar.cpp
         src/frontend/syntax/grammar/GrammarLoader.cpp

@@ -6,6 +6,7 @@ enum class CompilerMode
 {
 	COMPILE,
 	PARSE,
+	PARSE_AST,
 	GENERATE_TABLE,
 	RUN_VM,
 	HELP
