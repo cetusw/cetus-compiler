@@ -12,6 +12,7 @@ enum OpCode : uint8_t
 	OP_POP,
 
 	OP_NEGATE,
+	OP_NOT,
 	OP_ADD,
 	OP_SUBTRACT,
 	OP_MULTIPLY,

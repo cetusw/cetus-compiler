@@ -24,6 +24,7 @@ static const std::unordered_map<std::string, OpCodeInfo> INSTRUCTIONS = {
 	{ "div", { OP_DIVIDE, OperandType::NONE } },
 	{ "mod", { OP_MODULO, OperandType::NONE } },
 	{ "neg", { OP_NEGATE, OperandType::NONE } },
+	{ "not", { OP_NOT, OperandType::NONE } },
 	{ "eq", { OP_EQUAL, OperandType::NONE } },
 	{ "ne", { OP_NOT_EQUAL, OperandType::NONE } },
 	{ "gt", { OP_GREATER, OperandType::NONE } },

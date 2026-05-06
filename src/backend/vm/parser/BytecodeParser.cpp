@@ -144,6 +144,17 @@ void BytecodeParser::ParseConstant(std::stringstream& ss)
 	{
 		m_currentFunc->chunk.AddConstant(Value(std::stod(value)));
 	}
+	else if (type == "bool")
+	{
+		if (value == "true")
+		{
+			m_currentFunc->chunk.AddConstant(Value(true));
+		}
+		else if (value == "false")
+		{
+			m_currentFunc->chunk.AddConstant(Value(false));
+		}
+	}
 	else if (type == "string")
 	{
 		std::string processed = ProcessStringLiteral(value);

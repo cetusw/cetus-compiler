@@ -32,6 +32,7 @@ public:
 	void Print() const;
 
 	Value operator-() const;
+	[[nodiscard]] Value LogicalNot() const;
 	Value operator+(const Value& other) const;
 	Value operator-(const Value& other) const;
 	Value operator*(const Value& other) const;

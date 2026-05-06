@@ -69,6 +69,8 @@ int DisassembleInstruction(const Chunk& chunk, const int offset)
 		return SimpleInstruction("OP_POP", offset);
 	case OP_NEGATE:
 		return SimpleInstruction("OP_NEGATE", offset);
+	case OP_NOT:
+		return SimpleInstruction("OP_NOT", offset);
 	case OP_ADD:
 		return SimpleInstruction("OP_ADD", offset);
 	case OP_SUBTRACT:

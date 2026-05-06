@@ -11,6 +11,7 @@
 #include "JumpInstruction.h"
 #include "LoopInstruction.h"
 #include "NegateInstruction.h"
+#include "NotInstruction.h"
 #include "PopInstruction.h"
 #include "ReturnInstruction.h"
 #include "SetGlobalInstruction.h"
@@ -31,6 +32,7 @@ public:
 		m_table[OP_POP] = std::make_unique<PopInstruction>();
 
 		m_table[OP_NEGATE] = std::make_unique<NegateInstruction>();
+		m_table[OP_NOT] = std::make_unique<NotInstruction>();
 		m_table[OP_ADD] = std::make_unique<BinaryInstruction<AddOp>>();
 		m_table[OP_SUBTRACT] = std::make_unique<BinaryInstruction<SubOp>>();
 		m_table[OP_MULTIPLY] = std::make_unique<BinaryInstruction<MulOp>>();

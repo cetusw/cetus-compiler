@@ -25,6 +25,7 @@ InterpretResult VM::Interpret(const std::shared_ptr<ObjFunction>& function)
 		return InterpretResult::RUNTIME_ERROR;
 	}
 
+	m_lastResult = Value();
 	Push(Value(function));
 	CallFrame frame;
 	frame.function = function;
@@ -165,6 +166,11 @@ Value VM::GetGlobal(const std::string& name) const
 	return m_globals.at(name);
 }
 
+Value VM::GetLastResult() const
+{
+	return m_lastResult;
+}
+
 void VM::SetStack(const int index, const Value& value)
 {
 	GetCurrentFrame().slots[index] = value;
@@ -183,6 +189,11 @@ void VM::SetFrame(const int index, const CallFrame& frame)
 void VM::SetFrameCount(const int count)
 {
 	m_frameCount = count;
+}
+
+void VM::SetLastResult(const Value& value)
+{
+	m_lastResult = value;
 }
 
 bool VM::SetGlobal(const std::string& name, const Value& value)

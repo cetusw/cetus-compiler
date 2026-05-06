@@ -10,6 +10,8 @@ InterpretResult ReturnInstruction::Execute(VM& vm) const
 
 	if (newFrameCount == 0)
 	{
+		// TODO Убрать, как только будет весь язык
+		vm.SetLastResult(result);
 		return InterpretResult::OK_DONE;
 	}
 

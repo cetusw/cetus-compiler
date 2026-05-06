@@ -138,6 +138,15 @@ Value Value::operator-() const
 	return Value(-AsNumber());
 }
 
+Value Value::LogicalNot() const
+{
+	if (!IsBool())
+	{
+		return {};
+	}
+	return Value(!AsBool());
+}
+
 Value Value::operator+(const Value& other) const
 {
 	if (IsNumber() && other.IsNumber())
