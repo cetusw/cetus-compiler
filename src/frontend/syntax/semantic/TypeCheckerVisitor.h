@@ -1,0 +1,32 @@
+#pragma once
+
+#include "TypeCheckResult.h"
+#include "TypeEnvironment.h"
+#include "src/frontend/syntax/ast/Expr.h"
+#include <string>
+
+class TypeCheckerVisitor final : public ExprVisitor
+{
+public:
+	explicit TypeCheckerVisitor(TypeEnvironment environment);
+
+	[[nodiscard]] TypeCheckResult Check(const Expr& expr);
+
+	void Visit(const BoolLiteralExpr& expr) override;
+	void Visit(const IntLiteralExpr& expr) override;
+	void Visit(const FloatLiteralExpr& expr) override;
+	void Visit(const IdentifierExpr& expr) override;
+	void Visit(const UnaryExpr& expr) override;
+	void Visit(const BinaryExpr& expr) override;
+	void Visit(const MemberAccessExpr& expr) override;
+	void Visit(const IndexExpr& expr) override;
+
+private:
+	[[nodiscard]] Type CheckChild(const Expr& expr);
+	void SetTypeCheckResult(TypeCheckResult result);
+	void Fail(std::string message);
+
+	TypeEnvironment m_environment;
+	Type m_currentType = Type::ERROR;
+	std::optional<std::string> m_error;
+};

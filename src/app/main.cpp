@@ -2,6 +2,7 @@
 #include "src/app/cli/commands/BytecodeExecutionDriver.h"
 #include "src/app/cli/commands/ParserDriver.h"
 #include "src/app/cli/commands/TableGeneratorDriver.h"
+#include "src/app/cli/commands/TypeCheckDriver.h"
 #include <iostream>
 
 int main(const int argc, char* argv[])
@@ -18,6 +19,9 @@ int main(const int argc, char* argv[])
 		case CompilerMode::PARSE:
 		case CompilerMode::PARSE_AST:
 			ParserDriver::Execute(configuration);
+			break;
+		case CompilerMode::TYPECHECK:
+			TypeCheckDriver::Execute(configuration);
 			break;
 		case CompilerMode::GENERATE_TABLE:
 			TableGeneratorDriver::Execute(configuration);

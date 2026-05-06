@@ -7,6 +7,7 @@ enum class CompilerMode
 	COMPILE,
 	PARSE,
 	PARSE_AST,
+	TYPECHECK,
 	GENERATE_TABLE,
 	RUN_VM,
 	HELP

@@ -20,6 +20,9 @@ add_library(cetus_frontend STATIC
         src/frontend/syntax/grammar/Symbol.cpp
         src/frontend/syntax/lalr/LALRBuilder.cpp
         src/frontend/syntax/lalr/LR1ClosureCalculator.cpp
+        src/frontend/syntax/semantic/TypeEnvironment.cpp
+        src/frontend/syntax/semantic/TypeRules.cpp
+        src/frontend/syntax/semantic/TypeCheckerVisitor.cpp
         src/frontend/syntax/parser/AstReductionBuilder.cpp
         src/frontend/syntax/parser/TableDrivenParser.cpp
         src/frontend/syntax/parser/TokenSymbolMapper.cpp
@@ -60,6 +63,7 @@ add_library(cetus_app_cli STATIC
         src/app/cli/commands/BytecodeExecutionDriver.cpp
         src/app/cli/commands/ParserDriver.cpp
         src/app/cli/commands/TableGeneratorDriver.cpp
+        src/app/cli/commands/TypeCheckDriver.cpp
 )
 
 foreach(target
