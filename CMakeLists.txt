@@ -9,6 +9,7 @@ add_library(cetus_support STATIC
 )
 
 add_library(cetus_frontend STATIC
+        src/frontend/codegen/CodegenVisitor.cpp
         src/frontend/lexer/Lexer.cpp
         src/frontend/syntax/SyntaxAnalyzer.cpp
         src/frontend/syntax/ast/AstDumper.cpp
@@ -20,7 +21,7 @@ add_library(cetus_frontend STATIC
         src/frontend/syntax/grammar/Symbol.cpp
         src/frontend/syntax/lalr/LALRBuilder.cpp
         src/frontend/syntax/lalr/LR1ClosureCalculator.cpp
-        src/frontend/syntax/semantic/TypeEnvironment.cpp
+        src/frontend/syntax/semantic/SymbolTable.cpp
         src/frontend/syntax/semantic/TypeRules.cpp
         src/frontend/syntax/semantic/TypeCheckerVisitor.cpp
         src/frontend/syntax/parser/AstReductionBuilder.cpp
@@ -50,6 +51,7 @@ add_library(cetus_backend_vm STATIC
         src/backend/vm/instructions/JumpInstruction.cpp
         src/backend/vm/instructions/LoopInstruction.cpp
         src/backend/vm/instructions/NegateInstruction.cpp
+        src/backend/vm/instructions/NotInstruction.cpp
         src/backend/vm/instructions/PopInstruction.cpp
         src/backend/vm/instructions/ReturnInstruction.cpp
         src/backend/vm/instructions/SetGlobalInstruction.cpp
@@ -62,6 +64,8 @@ add_library(cetus_app_cli STATIC
         src/app/cli/CommandLineInterface.cpp
         src/app/cli/commands/BytecodeExecutionDriver.cpp
         src/app/cli/commands/ParserDriver.cpp
+        src/app/cli/commands/PredefinedSymbols.cpp
+        src/app/cli/commands/RunExpressionDriver.cpp
         src/app/cli/commands/TableGeneratorDriver.cpp
         src/app/cli/commands/TypeCheckDriver.cpp
 )

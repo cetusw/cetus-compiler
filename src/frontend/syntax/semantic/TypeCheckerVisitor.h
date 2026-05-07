@@ -1,14 +1,14 @@
 #pragma once
 
 #include "TypeCheckResult.h"
-#include "TypeEnvironment.h"
+#include "SymbolTable.h"
 #include "src/frontend/syntax/ast/Expr.h"
 #include <string>
 
 class TypeCheckerVisitor final : public ExprVisitor
 {
 public:
-	explicit TypeCheckerVisitor(TypeEnvironment environment);
+	explicit TypeCheckerVisitor(SymbolTable symbols);
 
 	[[nodiscard]] TypeCheckResult Check(const Expr& expr);
 
@@ -23,10 +23,12 @@ public:
 
 private:
 	[[nodiscard]] Type CheckChild(const Expr& expr);
-	void SetTypeCheckResult(TypeCheckResult result);
+	void SetCurrentType(const Expr& expr, Type type);
+	void SetTypeCheckResult(const Expr& expr, TypeCheckResult result);
 	void Fail(std::string message);
 
-	TypeEnvironment m_environment;
+	SymbolTable m_symbols;
 	Type m_currentType = Type::ERROR;
 	std::optional<std::string> m_error;
+	TypeCheckResult::NodeTypes m_nodeTypes;
 };

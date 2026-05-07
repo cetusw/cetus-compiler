@@ -10,7 +10,9 @@ public:
 
 	void Write(uint8_t byte, int line);
 	int AddConstant(const Value& value);
+	void PatchByte(int offset, uint8_t byte);
 
+	[[nodiscard]] int GetCodeSize() const;
 	[[nodiscard]] const std::vector<uint8_t>& GetCode() const;
 	[[nodiscard]] const std::vector<int>& GetLines() const;
 	[[nodiscard]] Value GetConstant(int index) const;

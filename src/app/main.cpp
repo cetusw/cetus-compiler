@@ -1,6 +1,7 @@
 #include "src/app/cli/CommandLineInterface.h"
 #include "src/app/cli/commands/BytecodeExecutionDriver.h"
 #include "src/app/cli/commands/ParserDriver.h"
+#include "src/app/cli/commands/RunExpressionDriver.h"
 #include "src/app/cli/commands/TableGeneratorDriver.h"
 #include "src/app/cli/commands/TypeCheckDriver.h"
 #include <iostream>
@@ -23,6 +24,9 @@ int main(const int argc, char* argv[])
 		case CompilerMode::TYPECHECK:
 			TypeCheckDriver::Execute(configuration);
 			break;
+		case CompilerMode::RUN_EXPR:
+			RunExpressionDriver::Execute(configuration);
+			break;
 		case CompilerMode::GENERATE_TABLE:
 			TableGeneratorDriver::Execute(configuration);
 			break;
@@ -31,6 +35,7 @@ int main(const int argc, char* argv[])
 			break;
 		case CompilerMode::HELP:
 		default:
+			CommandLineInterface::PrintHelp();
 			break;
 		}
 	}

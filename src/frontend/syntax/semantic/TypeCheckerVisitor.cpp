@@ -3,8 +3,8 @@
 #include "TypeRules.h"
 #include "src/frontend/syntax/ast/Expr.h"
 
-TypeCheckerVisitor::TypeCheckerVisitor(TypeEnvironment environment)
-	: m_environment(std::move(environment))
+TypeCheckerVisitor::TypeCheckerVisitor(SymbolTable symbols)
+	: m_symbols(std::move(symbols))
 {
 }
 
@@ -12,35 +12,41 @@ TypeCheckResult TypeCheckerVisitor::Check(const Expr& expr)
 {
 	m_currentType = Type::ERROR;
 	m_error.reset();
+	m_nodeTypes.clear();
 	expr.Accept(*this);
-	return { m_currentType, m_error };
+	if (m_error.has_value())
+	{
+		return TypeCheckResult::Error(*m_error, std::move(m_nodeTypes));
+	}
+
+	return TypeCheckResult::Success(m_currentType, std::move(m_nodeTypes));
 }
 
-void TypeCheckerVisitor::Visit(const BoolLiteralExpr&)
+void TypeCheckerVisitor::Visit(const BoolLiteralExpr& expr)
 {
-	m_currentType = Type::BOOL;
+	SetCurrentType(expr, Type::BOOL);
 }
 
-void TypeCheckerVisitor::Visit(const IntLiteralExpr&)
+void TypeCheckerVisitor::Visit(const IntLiteralExpr& expr)
 {
-	m_currentType = Type::INT;
+	SetCurrentType(expr, Type::INT);
 }
 
-void TypeCheckerVisitor::Visit(const FloatLiteralExpr&)
+void TypeCheckerVisitor::Visit(const FloatLiteralExpr& expr)
 {
-	m_currentType = Type::FLOAT;
+	SetCurrentType(expr, Type::FLOAT);
 }
 
 void TypeCheckerVisitor::Visit(const IdentifierExpr& expr)
 {
-	const std::optional<Type> type = m_environment.Resolve(expr.GetName());
-	if (!type.has_value())
+	const Symbol* symbol = m_symbols.Resolve(expr.GetName());
+	if (!symbol)
 	{
 		Fail("Undefined identifier: " + expr.GetName());
 		return;
 	}
 
-	m_currentType = *type;
+	SetCurrentType(expr, symbol->type);
 }
 
 void TypeCheckerVisitor::Visit(const UnaryExpr& expr)
@@ -51,7 +57,7 @@ void TypeCheckerVisitor::Visit(const UnaryExpr& expr)
 		return;
 	}
 
-	SetTypeCheckResult(TypeRules::CheckUnaryOperator(expr.GetOperator(), operandType));
+	SetTypeCheckResult(expr, TypeRules::CheckUnaryOperator(expr.GetOperator(), operandType));
 }
 
 void TypeCheckerVisitor::Visit(const BinaryExpr& expr)
@@ -68,7 +74,7 @@ void TypeCheckerVisitor::Visit(const BinaryExpr& expr)
 		return;
 	}
 
-	SetTypeCheckResult(TypeRules::CheckBinaryOperator(expr.GetOperator(), leftType, rightType));
+	SetTypeCheckResult(expr, TypeRules::CheckBinaryOperator(expr.GetOperator(), leftType, rightType));
 }
 
 void TypeCheckerVisitor::Visit(const MemberAccessExpr&)
@@ -87,7 +93,13 @@ Type TypeCheckerVisitor::CheckChild(const Expr& expr)
 	return m_currentType;
 }
 
-void TypeCheckerVisitor::SetTypeCheckResult(TypeCheckResult result)
+void TypeCheckerVisitor::SetCurrentType(const Expr& expr, const Type type)
+{
+	m_currentType = type;
+	m_nodeTypes[&expr] = type;
+}
+
+void TypeCheckerVisitor::SetTypeCheckResult(const Expr& expr, TypeCheckResult result)
 {
 	if (result.error.has_value())
 	{
@@ -95,7 +107,7 @@ void TypeCheckerVisitor::SetTypeCheckResult(TypeCheckResult result)
 		return;
 	}
 
-	m_currentType = result.type;
+	SetCurrentType(expr, result.type);
 }
 
 void TypeCheckerVisitor::Fail(std::string message)

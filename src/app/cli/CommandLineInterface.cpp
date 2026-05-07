@@ -3,14 +3,12 @@
 
 Configuration CommandLineInterface::ParseArguments(const int argumentCount, char* argumentValues[])
 {
-	Configuration configuration;
-
 	if (argumentCount < 2)
 	{
-		configuration.mode = CompilerMode::HELP;
-		return configuration;
+		return MakeHelpConfiguration();
 	}
 
+	Configuration configuration;
 	const std::string command = argumentValues[1];
 
 	if (command == "--compile")
@@ -29,6 +27,10 @@ Configuration CommandLineInterface::ParseArguments(const int argumentCount, char
 	{
 		configuration.mode = CompilerMode::TYPECHECK;
 	}
+	else if (command == "--run-expr")
+	{
+		configuration.mode = CompilerMode::RUN_EXPR;
+	}
 	else if (command == "--table")
 	{
 		configuration.mode = CompilerMode::GENERATE_TABLE;
@@ -36,6 +38,10 @@ Configuration CommandLineInterface::ParseArguments(const int argumentCount, char
 	else if (command == "--run")
 	{
 		configuration.mode = CompilerMode::RUN_VM;
+	}
+	else
+	{
+		return MakeHelpConfiguration();
 	}
 
 	if (argumentCount > 2)
@@ -54,10 +60,18 @@ void CommandLineInterface::PrintHelp()
 {
 	std::cout << "Usage: cetus <command> <file>\n"
 			  << "Commands:\n"
-			  << "  compile <file>   Compile source to bytecode\n"
-			  << "  parse <file>     Check syntax only\n"
-			  << "  parse-ast <file> Check syntax and print AST\n"
-			  << "  typecheck <file> Check syntax and infer expression type\n"
-			  << "  table <file>     Generate SLR(1) table from grammar\n"
-			  << "  run <file>       Execute bytecode in VM\n";
+			  << "  --compile <file>   Compile source to bytecode\n"
+			  << "  --parse <file>     Check syntax only\n"
+			  << "  --parse-ast <file> Check syntax and print AST\n"
+			  << "  --typecheck <file> Check syntax and infer expression type\n"
+			  << "  --run-expr <file>  Execute source expression through frontend and VM\n"
+			  << "  --table <file>     Generate SLR(1) table from grammar\n"
+			  << "  --run <file>       Execute bytecode in VM\n";
+}
+
+Configuration CommandLineInterface::MakeHelpConfiguration()
+{
+	Configuration configuration;
+	configuration.mode = CompilerMode::HELP;
+	return configuration;
 }

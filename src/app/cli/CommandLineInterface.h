@@ -8,6 +8,7 @@ enum class CompilerMode
 	PARSE,
 	PARSE_AST,
 	TYPECHECK,
+	RUN_EXPR,
 	GENERATE_TABLE,
 	RUN_VM,
 	HELP
@@ -25,7 +26,8 @@ class CommandLineInterface
 {
 public:
 	static Configuration ParseArguments(int argumentCount, char* argumentValues[]);
+	static void PrintHelp();
 
 private:
-	static void PrintHelp();
+	static Configuration MakeHelpConfiguration();
 };

@@ -9,13 +9,13 @@ TypeCheckResult TypeRules::CheckUnaryOperator(const UnaryOperator op, const Type
 		{
 			return MakeError(std::string("Unary '-' expects numeric operand, got ") + ToString(operandType));
 		}
-		return { operandType, std::nullopt };
+		return TypeCheckResult::Success(operandType, {});
 	case UnaryOperator::NOT:
 		if (operandType != Type::BOOL)
 		{
 			return MakeError(std::string("Unary '!' expects bool operand, got ") + ToString(operandType));
 		}
-		return { Type::BOOL, std::nullopt };
+		return TypeCheckResult::Success(Type::BOOL, {});
 	}
 
 	return MakeError("Unsupported unary operator.");
@@ -71,7 +71,7 @@ TypeCheckResult TypeRules::CheckLogicalOperator(const Type leftType, const Type 
 		return MakeError("Logical operator expects bool operands.");
 	}
 
-	return { Type::BOOL, std::nullopt };
+	return TypeCheckResult::Success(Type::BOOL, {});
 }
 
 TypeCheckResult TypeRules::CheckArithmeticOperator(const Type leftType, const Type rightType)
@@ -81,7 +81,7 @@ TypeCheckResult TypeRules::CheckArithmeticOperator(const Type leftType, const Ty
 		return MakeError("Arithmetic operator expects numeric operands.");
 	}
 
-	return { MergeNumeric(leftType, rightType), std::nullopt };
+	return TypeCheckResult::Success(MergeNumeric(leftType, rightType), {});
 }
 
 TypeCheckResult TypeRules::CheckModuloOperator(const Type leftType, const Type rightType)
@@ -91,7 +91,7 @@ TypeCheckResult TypeRules::CheckModuloOperator(const Type leftType, const Type r
 		return MakeError("Modulo operator expects int operands.");
 	}
 
-	return { Type::INT, std::nullopt };
+	return TypeCheckResult::Success(Type::INT, {});
 }
 
 TypeCheckResult TypeRules::CheckComparisonOperator(const Type leftType, const Type rightType)
@@ -101,7 +101,7 @@ TypeCheckResult TypeRules::CheckComparisonOperator(const Type leftType, const Ty
 		return MakeError("Comparison operator expects numeric operands.");
 	}
 
-	return { Type::BOOL, std::nullopt };
+	return TypeCheckResult::Success(Type::BOOL, {});
 }
 
 TypeCheckResult TypeRules::CheckEqualityOperator(const Type leftType, const Type rightType)
@@ -111,12 +111,12 @@ TypeCheckResult TypeRules::CheckEqualityOperator(const Type leftType, const Type
 		return MakeError("Equality operator expects compatible operands.");
 	}
 
-	return { Type::BOOL, std::nullopt };
+	return TypeCheckResult::Success(Type::BOOL, {});
 }
 
 TypeCheckResult TypeRules::MakeError(std::string message)
 {
-	return { Type::ERROR, std::move(message) };
+	return TypeCheckResult::Error(std::move(message));
 }
 
 bool TypeRules::IsNumeric(const Type type)

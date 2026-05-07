@@ -12,6 +12,16 @@ int Chunk::AddConstant(const Value& value)
 	return static_cast<int>(m_constants.size() - 1);
 }
 
+void Chunk::PatchByte(const int offset, const uint8_t byte)
+{
+	m_code.at(offset) = byte;
+}
+
+int Chunk::GetCodeSize() const
+{
+	return static_cast<int>(m_code.size());
+}
+
 const std::vector<uint8_t>& Chunk::GetCode() const
 {
 	return m_code;
