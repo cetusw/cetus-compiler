@@ -25,6 +25,8 @@ public:
 	void Visit(const BinaryExpr& expr) override;
 	void Visit(const MemberAccessExpr& expr) override;
 	void Visit(const IndexExpr& expr) override;
+	void Visit(const AssignmentExpr& expr) override;
+	void Visit(const SequenceExpr& expr) override;
 
 private:
 	static constexpr int DEFAULT_LINE = 1;

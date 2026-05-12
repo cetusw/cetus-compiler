@@ -1,3 +1,12 @@
+~Program~ -> ~StmtList~ @pass_expr
+
+~StmtList~ -> ~StmtList~ SEMICOLON ~Stmt~ @sequence
+~StmtList~ -> ~Stmt~ @pass_expr
+
+~Stmt~ -> IDENTIFIER COLON_EQUAL ~Con~ @assignment
+~Stmt~ -> ~Con~ @pass_expr
+
+
 ~Con~ -> ~Con~ OR_OR ~Con1~ @binary
 ~Con~ -> ~Con1~ @pass_expr
 

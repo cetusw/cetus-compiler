@@ -151,3 +151,39 @@ void IndexExpr::Accept(ExprVisitor& visitor) const
 {
 	visitor.Visit(*this);
 }
+
+AssignmentExpr::AssignmentExpr(std::string name, ExprPtr value)
+	: m_name(std::move(name))
+	, m_value(std::move(value))
+{
+}
+
+const std::string& AssignmentExpr::GetName() const
+{
+	return m_name;
+}
+
+const Expr& AssignmentExpr::GetValue() const
+{
+	return *m_value;
+}
+
+void AssignmentExpr::Accept(ExprVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}
+
+SequenceExpr::SequenceExpr(std::vector<ExprPtr> expressions)
+	: m_expressions(std::move(expressions))
+{
+}
+
+const std::vector<ExprPtr>& SequenceExpr::GetExpressions() const
+{
+	return m_expressions;
+}
+
+void SequenceExpr::Accept(ExprVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}

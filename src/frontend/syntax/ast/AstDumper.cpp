@@ -60,6 +60,21 @@ void AstDumper::Visit(const IndexExpr& expr)
 	DumpChild(expr.GetIndex());
 }
 
+void AstDumper::Visit(const AssignmentExpr& expr)
+{
+	DumpLine("AssignmentExpr(" + expr.GetName() + ")");
+	DumpChild(expr.GetValue());
+}
+
+void AstDumper::Visit(const SequenceExpr& expr)
+{
+	DumpLine("SequenceExpr");
+	for (const ExprPtr& child : expr.GetExpressions())
+	{
+		DumpChild(*child);
+	}
+}
+
 void AstDumper::DumpChild(const Expr& expr)
 {
 	m_indent += 2;

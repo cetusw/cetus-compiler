@@ -87,6 +87,49 @@ void TypeCheckerVisitor::Visit(const IndexExpr&)
 	Fail("Index access type checking is not implemented yet.");
 }
 
+void TypeCheckerVisitor::Visit(const AssignmentExpr& expr)
+{
+	const Type valueType = CheckChild(expr.GetValue());
+	if (m_error.has_value())
+	{
+		return;
+	}
+
+	const Symbol* existing = m_symbols.Resolve(expr.GetName());
+	if (existing && existing->type != valueType)
+	{
+		Fail("Cannot assign value of different type to identifier: " + expr.GetName());
+		return;
+	}
+	if (!existing)
+	{
+		m_symbols.Define(Symbol{ expr.GetName(), valueType });
+	}
+
+	SetCurrentType(expr, valueType);
+}
+
+void TypeCheckerVisitor::Visit(const SequenceExpr& expr)
+{
+	if (expr.GetExpressions().empty())
+	{
+		Fail("Sequence expression cannot be empty.");
+		return;
+	}
+
+	Type lastType = Type::ERROR;
+	for (const ExprPtr& child : expr.GetExpressions())
+	{
+		lastType = CheckChild(*child);
+		if (m_error.has_value())
+		{
+			return;
+		}
+	}
+
+	SetCurrentType(expr, lastType);
+}
+
 Type TypeCheckerVisitor::CheckChild(const Expr& expr)
 {
 	expr.Accept(*this);

@@ -15,6 +15,8 @@ public:
 	void Visit(const BinaryExpr& expr) override;
 	void Visit(const MemberAccessExpr& expr) override;
 	void Visit(const IndexExpr& expr) override;
+	void Visit(const AssignmentExpr& expr) override;
+	void Visit(const SequenceExpr& expr) override;
 
 private:
 	explicit AstDumper(std::ostream& output);

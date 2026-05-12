@@ -28,6 +28,10 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildMemberAccess(std::move(values));
 	case SemanticTag::INDEX_ACCESS:
 		return BuildIndexAccess(std::move(values));
+	case SemanticTag::ASSIGNMENT:
+		return BuildAssignment(std::move(values));
+	case SemanticTag::SEQUENCE:
+		return BuildSequence(std::move(values));
 	case SemanticTag::NONE:
 		throw std::logic_error("Missing semantic tag for reduced parser rule.");
 	}
@@ -103,6 +107,22 @@ AstSemanticValue AstReductionBuilder::BuildIndexAccess(std::vector<AstSemanticVa
 {
 	RequireValueCount(values, 4, "Index access reduction");
 	return { std::make_unique<IndexExpr>(TakeExpr(values, 0), TakeExpr(values, 2)), std::nullopt };
+}
+
+AstSemanticValue AstReductionBuilder::BuildAssignment(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 3, "Assignment reduction");
+	return { std::make_unique<AssignmentExpr>(TakeToken(values, 0).lexeme, TakeExpr(values, 2)), std::nullopt };
+}
+
+AstSemanticValue AstReductionBuilder::BuildSequence(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 3, "Sequence reduction");
+
+	std::vector<ExprPtr> expressions;
+	expressions.push_back(TakeExpr(values, 0));
+	expressions.push_back(TakeExpr(values, 2));
+	return { std::make_unique<SequenceExpr>(std::move(expressions)), std::nullopt };
 }
 
 AstSemanticValue AstReductionBuilder::PassExpr(std::vector<AstSemanticValue> values, const std::size_t index)

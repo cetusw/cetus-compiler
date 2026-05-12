@@ -147,6 +147,16 @@ void CodegenVisitor::Visit(const IndexExpr&)
 	Fail("Index access code generation is not implemented yet.");
 }
 
+void CodegenVisitor::Visit(const AssignmentExpr&)
+{
+	Fail("Assignment code generation is not implemented for VM bytecode yet.");
+}
+
+void CodegenVisitor::Visit(const SequenceExpr&)
+{
+	Fail("Sequence code generation is not implemented for VM bytecode yet.");
+}
+
 Chunk& CodegenVisitor::CurrentChunk() const
 {
 	return m_function->chunk;

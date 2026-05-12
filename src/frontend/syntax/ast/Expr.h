@@ -3,6 +3,7 @@
 #include "ExprVisitor.h"
 #include <memory>
 #include <string>
+#include <vector>
 
 enum class UnaryOperator
 {
@@ -140,4 +141,30 @@ public:
 private:
 	ExprPtr m_object;
 	ExprPtr m_index;
+};
+
+class AssignmentExpr final : public Expr
+{
+public:
+	AssignmentExpr(std::string name, ExprPtr value);
+
+	[[nodiscard]] const std::string& GetName() const;
+	[[nodiscard]] const Expr& GetValue() const;
+	void Accept(ExprVisitor& visitor) const override;
+
+private:
+	std::string m_name;
+	ExprPtr m_value;
+};
+
+class SequenceExpr final : public Expr
+{
+public:
+	explicit SequenceExpr(std::vector<ExprPtr> expressions);
+
+	[[nodiscard]] const std::vector<ExprPtr>& GetExpressions() const;
+	void Accept(ExprVisitor& visitor) const override;
+
+private:
+	std::vector<ExprPtr> m_expressions;
 };

@@ -27,6 +27,8 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildIdentifier(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildMemberAccess(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildIndexAccess(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildAssignment(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildSequence(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue PassExpr(std::vector<AstSemanticValue> values, std::size_t index);
 	[[nodiscard]] static AstSemanticValue PassToken(std::vector<AstSemanticValue> values, std::size_t index);
 	[[nodiscard]] static ExprPtr TakeExpr(std::vector<AstSemanticValue>& values, std::size_t index);

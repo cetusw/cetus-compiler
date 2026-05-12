@@ -8,6 +8,8 @@ class UnaryExpr;
 class BinaryExpr;
 class MemberAccessExpr;
 class IndexExpr;
+class AssignmentExpr;
+class SequenceExpr;
 
 class ExprVisitor
 {
@@ -22,4 +24,6 @@ public:
 	virtual void Visit(const BinaryExpr& expr) = 0;
 	virtual void Visit(const MemberAccessExpr& expr) = 0;
 	virtual void Visit(const IndexExpr& expr) = 0;
+	virtual void Visit(const AssignmentExpr& expr) = 0;
+	virtual void Visit(const SequenceExpr& expr) = 0;
 };
