@@ -2,12 +2,12 @@
 
 1. Компилируем исходный код в ассемблер
 ```bash
-./cmake-build-debug/cetus --asm input.txt out.s
+./cmake-build-debug/cetus --asm input.txt out.asm
 ```
 
 2. Компилируем ассемблерный код в исполняемый файл
 ```bash
-gcc -no-pie out.s -o out
+gcc -no-pie out.asm -o out
 ```
 
 3. Запускаем исполняемый файл
