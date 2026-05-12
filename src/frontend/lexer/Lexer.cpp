@@ -35,15 +35,20 @@ Lexer::Lexer(std::string source)
 {
 }
 
-std::vector<Token> Lexer::ScanTokens()
+LexerResult Lexer::ScanTokens()
 {
 	while (!IsEnd())
 	{
 		m_start = m_current;
 		ScanToken();
+		if (m_error.has_value())
+		{
+			return { std::move(m_tokens), std::move(m_error), m_line };
+		}
 	}
+
 	AddToken(TokenType::EOF_TOKEN, "", GetEofLine());
-	return m_tokens;
+	return { std::move(m_tokens), std::nullopt, GetEofLine() };
 }
 
 void Lexer::ScanToken()
@@ -66,7 +71,7 @@ void Lexer::ScanToken()
 	}
 	else
 	{
-		AddToken(TokenType::ERROR, std::string(1, c));
+		ReportError("Unexpected character: " + std::string(1, c));
 	}
 }
 
@@ -95,6 +100,7 @@ void Lexer::PeekDigits()
 
 void Lexer::String(const char quoteType)
 {
+	const int startLine = m_line;
 	while (Peek() != quoteType && !IsEnd())
 	{
 		PeekEndOfLine();
@@ -106,7 +112,7 @@ void Lexer::String(const char quoteType)
 	}
 	if (IsEnd())
 	{
-		AddToken(TokenType::ERROR, "Unterminated string");
+		ReportError("Unterminated string", startLine);
 		return;
 	}
 	Advance();
@@ -180,6 +186,7 @@ void Lexer::SkipSingleLineComment()
 
 void Lexer::SkipMultiLineComment()
 {
+	const int startLine = m_line;
 	while (!IsEnd())
 	{
 		PeekEndOfLine();
@@ -192,7 +199,7 @@ void Lexer::SkipMultiLineComment()
 		Advance();
 	}
 
-	AddToken(TokenType::ERROR, "Unterminated block comment");
+	ReportError("Unterminated block comment", startLine);
 }
 
 bool Lexer::HandleWhitespace(const char c)
@@ -305,7 +312,7 @@ bool Lexer::HandleDot()
 		}
 		else
 		{
-			AddToken(TokenType::ERROR, "Unexpected '..', did you mean '...'?");
+			ReportError("Unexpected '..', did you mean '...'?");
 		}
 	}
 	else
@@ -344,7 +351,7 @@ bool Lexer::HandleQuestion()
 	}
 	else
 	{
-		AddToken(TokenType::ERROR, R"(Unexpected '?', did you mean '?.' or '??'?)");
+		ReportError(R"(Unexpected '?', did you mean '?.' or '??'?)");
 	}
 	return true;
 }
@@ -421,6 +428,20 @@ int Lexer::GetEofLine() const
 void Lexer::AddToken(const TokenType type)
 {
 	AddToken(type, m_source.substr(m_start, m_current - m_start), m_line);
+}
+
+void Lexer::ReportError(std::string message)
+{
+	ReportError(std::move(message), m_line);
+}
+
+void Lexer::ReportError(std::string message, const int line)
+{
+	if (!m_error.has_value())
+	{
+		m_error = std::move(message);
+		m_line = line;
+	}
 }
 
 bool Lexer::MatchToken(const char expected, const TokenType ifMatch, const TokenType ifNoMatch)
