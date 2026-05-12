@@ -1,8 +1,6 @@
 #include "AsmCodegenVisitor.h"
-
 #include "src/frontend/syntax/ast/Expr.h"
 #include "src/frontend/syntax/semantic/Type.h"
-
 #include <utility>
 
 AsmCodegenVisitor::AsmCodegenVisitor(const TypeCheckResult& typeInfo)
@@ -184,7 +182,6 @@ void AsmCodegenVisitor::Visit(const BinaryExpr& expr)
 	case BinaryOperator::OR:
 	case BinaryOperator::AND:
 		Fail("Logical operator should be emitted via short-circuit code path.");
-		return;
 	}
 }
 
@@ -368,7 +365,7 @@ void AsmCodegenVisitor::EnsureVariableDeclared(const std::string& name)
 	}
 }
 
-std::string AsmCodegenVisitor::NextLabel(std::string prefix)
+std::string AsmCodegenVisitor::NextLabel(const std::string& prefix)
 {
 	return prefix + "_" + std::to_string(m_nextLabelId++);
 }

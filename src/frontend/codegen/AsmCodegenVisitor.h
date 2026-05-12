@@ -35,7 +35,7 @@ private:
 	void EmitLogicalAnd(const BinaryExpr& expr);
 	void EmitLogicalOr(const BinaryExpr& expr);
 	void EnsureVariableDeclared(const std::string& name);
-	[[nodiscard]] std::string NextLabel(std::string prefix);
+	[[nodiscard]] std::string NextLabel(const std::string& prefix);
 	void Fail(std::string message);
 	[[nodiscard]] bool EnsureTyped(const Expr& expr);
 	[[nodiscard]] bool EnsureSupportedType(const Expr& expr);

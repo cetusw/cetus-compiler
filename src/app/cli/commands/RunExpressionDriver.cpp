@@ -17,7 +17,7 @@ void RunExpressionDriver::Execute(const Configuration& configuration)
 	}
 
 	const SyntaxAnalyzer analyzer;
-	const ParseResult parseResult = analyzer.ParseFile(configuration.inputFilePath);
+	const ParseResult parseResult = analyzer.Analyze(configuration.inputFilePath);
 	if (!parseResult.success)
 	{
 		throw std::runtime_error(parseResult.message);

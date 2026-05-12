@@ -58,7 +58,7 @@ Configuration CommandLineInterface::ParseArguments(const int argumentCount, char
 	}
 	else if (configuration.mode == CompilerMode::ASM)
 	{
-		configuration.outputFilePath = "out.s";
+		configuration.outputFilePath = "out.asm";
 	}
 
 	return configuration;

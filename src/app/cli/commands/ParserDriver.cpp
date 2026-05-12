@@ -13,7 +13,7 @@ void ParserDriver::Execute(const Configuration& configuration)
 	}
 
 	const SyntaxAnalyzer analyzer;
-	const ParseResult result = analyzer.ParseFile(configuration.inputFilePath);
+	const ParseResult result = analyzer.Analyze(configuration.inputFilePath);
 	if (!result.success)
 	{
 		throw std::runtime_error(result.message);
