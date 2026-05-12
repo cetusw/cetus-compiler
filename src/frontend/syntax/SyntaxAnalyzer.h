@@ -1,7 +1,6 @@
 #pragma once
 
 #include "parser/ParseResult.h"
-#include "src/frontend/lexer/Token.h"
 #include <string>
 #include <vector>
 
