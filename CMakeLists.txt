@@ -9,6 +9,7 @@ add_library(cetus_support STATIC
 )
 
 add_library(cetus_frontend STATIC
+        src/frontend/codegen/AsmProgram.cpp
         src/frontend/codegen/CodegenVisitor.cpp
         src/frontend/lexer/Lexer.cpp
         src/frontend/syntax/SyntaxAnalyzer.cpp
@@ -27,6 +28,7 @@ add_library(cetus_frontend STATIC
         src/frontend/syntax/parser/AstReductionBuilder.cpp
         src/frontend/syntax/parser/TableDrivenParser.cpp
         src/frontend/syntax/parser/TokenSymbolMapper.cpp
+        src/frontend/codegen/AsmCodegenVisitor.cpp
 )
 
 add_library(cetus_tooling STATIC
@@ -65,6 +67,7 @@ add_library(cetus_app_cli STATIC
         src/app/cli/commands/BytecodeExecutionDriver.cpp
         src/app/cli/commands/ParserDriver.cpp
         src/app/cli/commands/PredefinedSymbols.cpp
+        src/app/cli/commands/RunAsmExpressionDriver.cpp
         src/app/cli/commands/RunExpressionDriver.cpp
         src/app/cli/commands/TableGeneratorDriver.cpp
         src/app/cli/commands/TypeCheckDriver.cpp

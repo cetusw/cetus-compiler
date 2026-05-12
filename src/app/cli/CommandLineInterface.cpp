@@ -39,6 +39,10 @@ Configuration CommandLineInterface::ParseArguments(const int argumentCount, char
 	{
 		configuration.mode = CompilerMode::RUN_VM;
 	}
+	else if (command == "--asm")
+	{
+		configuration.mode = CompilerMode::ASM;
+	}
 	else
 	{
 		return MakeHelpConfiguration();
@@ -51,6 +55,10 @@ Configuration CommandLineInterface::ParseArguments(const int argumentCount, char
 	if (argumentCount > 3)
 	{
 		configuration.outputFilePath = argumentValues[3];
+	}
+	else if (configuration.mode == CompilerMode::ASM)
+	{
+		configuration.outputFilePath = "out.s";
 	}
 
 	return configuration;
@@ -66,7 +74,8 @@ void CommandLineInterface::PrintHelp()
 			  << "  --typecheck <file> Check syntax and infer expression type\n"
 			  << "  --run-expr <file>  Execute source expression through frontend and VM\n"
 			  << "  --table <file>     Generate SLR(1) table from grammar\n"
-			  << "  --run <file>       Execute bytecode in VM\n";
+			  << "  --run <file>       Execute bytecode in VM\n"
+			  << "  --asm <file> [out] Generate x86-64 GNU assembly\n";
 }
 
 Configuration CommandLineInterface::MakeHelpConfiguration()

@@ -1,3 +1,4 @@
+#include "cli/commands/RunAsmExpressionDriver.h"
 #include "src/app/cli/CommandLineInterface.h"
 #include "src/app/cli/commands/BytecodeExecutionDriver.h"
 #include "src/app/cli/commands/ParserDriver.h"
@@ -32,6 +33,9 @@ int main(const int argc, char* argv[])
 			break;
 		case CompilerMode::RUN_VM:
 			BytecodeExecutionDriver::Execute(configuration);
+			break;
+		case CompilerMode::ASM:
+			RunAsmExpressionDriver::Execute(configuration);
 			break;
 		case CompilerMode::HELP:
 		default:
