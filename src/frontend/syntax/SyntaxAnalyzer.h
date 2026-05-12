@@ -12,7 +12,5 @@ public:
 	[[nodiscard]] ParseResult Analyze(const std::string& sourceFilePath) const;
 
 private:
-	[[nodiscard]] ParseResult ParseSource(const std::string& source) const;
-
 	std::string m_grammarPath;
 };

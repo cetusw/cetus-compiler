@@ -13,11 +13,7 @@ SyntaxAnalyzer::SyntaxAnalyzer(std::string grammarPath)
 ParseResult SyntaxAnalyzer::Analyze(const std::string& sourceFilePath) const
 {
 	const std::string source = FileReader::ReadAll(sourceFilePath);
-	return ParseSource(source);
-}
 
-ParseResult SyntaxAnalyzer::ParseSource(const std::string& source) const
-{
 	Lexer lexer(source);
 	LexerResult lexerResult = lexer.ScanTokens();
 	if (lexerResult.error.has_value())
