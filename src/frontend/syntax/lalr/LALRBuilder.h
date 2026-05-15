@@ -1,8 +1,9 @@
 #pragma once
 #include "LR1ClosureCalculator.h"
 #include "src/frontend/syntax/grammar/Grammar.h"
+#include "src/frontend/syntax/grammar/transformation/GrammarTransformation.h"
 #include "types/LALR.h"
-#include "types/ParserDefinition.h"
+#include "types/PreparedGrammar.h"
 #include <map>
 #include <memory>
 #include <set>
@@ -12,7 +13,8 @@ class LALRBuilder
 {
 public:
 	explicit LALRBuilder(Grammar grammar);
-	ParserDefinition Build();
+
+	PreparedGrammar Build();
 
 private:
 	struct IndexedRule
@@ -23,6 +25,7 @@ private:
 	};
 
 	void PrepareGrammar();
+	void LoadRulesFromGrammar();
 	void EnsureBuildCanStart() const;
 	void BuildStateGraph();
 	void PropagateLookaheads();

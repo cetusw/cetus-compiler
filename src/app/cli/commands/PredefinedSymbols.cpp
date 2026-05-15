@@ -5,10 +5,10 @@
 SymbolTable PredefinedSymbols::CreateSymbolTable()
 {
 	return SymbolTable({
-		{"a", Symbol{"a", Type::INT}},
-		{"b", Symbol{"b", Type::FLOAT}},
-		{"x", Symbol{"x", Type::INT}},
-		{"flag", Symbol{"flag", Type::BOOL}}
+		{"a", SemanticSymbol{"a", Type::INT}},
+		{"b", SemanticSymbol{"b", Type::FLOAT}},
+		{"x", SemanticSymbol{"x", Type::INT}},
+		{"flag", SemanticSymbol{"flag", Type::BOOL}}
 	});
 }
 

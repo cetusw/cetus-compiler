@@ -3,7 +3,7 @@
 #include "src/backend/vm/objects/ObjFunction.h"
 #include "src/backend/vm/objects/ObjString.h"
 #include "src/backend/vm/types/Chunk.h"
-#include "src/frontend/syntax/ast/Expr.h"
+#include "src/frontend/syntax/ast/ASTNode.h"
 #include <limits>
 
 CodegenVisitor::CodegenVisitor(const SymbolTable& symbols, const TypeCheckResult& typeInfo)
@@ -12,7 +12,7 @@ CodegenVisitor::CodegenVisitor(const SymbolTable& symbols, const TypeCheckResult
 {
 }
 
-CodegenResult CodegenVisitor::Generate(const Expr& expr)
+CodegenResult CodegenVisitor::Generate(const ASTNode& expr)
 {
 	m_function = std::make_shared<ObjFunction>();
 	m_function->name = std::make_shared<ObjString>("expr");
@@ -33,7 +33,7 @@ CodegenResult CodegenVisitor::Generate(const Expr& expr)
 	return CodegenResult::Success(m_function);
 }
 
-void CodegenVisitor::Visit(const BoolLiteralExpr& expr)
+void CodegenVisitor::Visit(const BoolLiteralASTNode& expr)
 {
 	if (!EnsureTyped(expr))
 	{
@@ -43,7 +43,7 @@ void CodegenVisitor::Visit(const BoolLiteralExpr& expr)
 	EmitConstant(Value(expr.GetValue()));
 }
 
-void CodegenVisitor::Visit(const IntLiteralExpr& expr)
+void CodegenVisitor::Visit(const IntLiteralASTNode& expr)
 {
 	if (!EnsureTyped(expr))
 	{
@@ -53,7 +53,7 @@ void CodegenVisitor::Visit(const IntLiteralExpr& expr)
 	EmitConstant(Value(std::stod(expr.GetValue())));
 }
 
-void CodegenVisitor::Visit(const FloatLiteralExpr& expr)
+void CodegenVisitor::Visit(const FloatLiteralASTNode& expr)
 {
 	if (!EnsureTyped(expr))
 	{
@@ -63,7 +63,7 @@ void CodegenVisitor::Visit(const FloatLiteralExpr& expr)
 	EmitConstant(Value(std::stod(expr.GetValue())));
 }
 
-void CodegenVisitor::Visit(const IdentifierExpr& expr)
+void CodegenVisitor::Visit(const IdentifierASTNode& expr)
 {
 	if (!EnsureTyped(expr))
 	{
@@ -78,7 +78,7 @@ void CodegenVisitor::Visit(const IdentifierExpr& expr)
 	EmitGlobalLoad(expr.GetName());
 }
 
-void CodegenVisitor::Visit(const UnaryExpr& expr)
+void CodegenVisitor::Visit(const UnaryASTNode& expr)
 {
 	if (!EnsureTyped(expr))
 	{
@@ -104,7 +104,7 @@ void CodegenVisitor::Visit(const UnaryExpr& expr)
 	Fail("Unsupported unary operator during code generation.");
 }
 
-void CodegenVisitor::Visit(const BinaryExpr& expr)
+void CodegenVisitor::Visit(const BinaryASTNode& expr)
 {
 	if (!EnsureTyped(expr))
 	{
@@ -137,22 +137,22 @@ void CodegenVisitor::Visit(const BinaryExpr& expr)
 	EmitBinaryOperation(expr.GetOperator());
 }
 
-void CodegenVisitor::Visit(const MemberAccessExpr&)
+void CodegenVisitor::Visit(const MemberAccessASTNode&)
 {
 	Fail("Member access code generation is not implemented yet.");
 }
 
-void CodegenVisitor::Visit(const IndexExpr&)
+void CodegenVisitor::Visit(const IndexASTNode&)
 {
 	Fail("Index access code generation is not implemented yet.");
 }
 
-void CodegenVisitor::Visit(const AssignmentExpr&)
+void CodegenVisitor::Visit(const AssignmentASTNode&)
 {
 	Fail("Assignment code generation is not implemented for VM bytecode yet.");
 }
 
-void CodegenVisitor::Visit(const SequenceExpr&)
+void CodegenVisitor::Visit(const SequenceASTNode&)
 {
 	Fail("Sequence code generation is not implemented for VM bytecode yet.");
 }
@@ -248,7 +248,7 @@ void CodegenVisitor::EmitBinaryOperation(const BinaryOperator op)
 	Fail("Unsupported binary operator during code generation.");
 }
 
-void CodegenVisitor::EmitLogicalAnd(const BinaryExpr& expr)
+void CodegenVisitor::EmitLogicalAnd(const BinaryASTNode& expr)
 {
 	expr.GetLeft().Accept(*this);
 	if (m_error.has_value())
@@ -267,7 +267,7 @@ void CodegenVisitor::EmitLogicalAnd(const BinaryExpr& expr)
 	PatchJump(falseJump);
 }
 
-void CodegenVisitor::EmitLogicalOr(const BinaryExpr& expr)
+void CodegenVisitor::EmitLogicalOr(const BinaryASTNode& expr)
 {
 	expr.GetLeft().Accept(*this);
 	if (m_error.has_value())
@@ -295,9 +295,9 @@ void CodegenVisitor::EmitGlobalLoad(const std::string& name)
 	EmitOperandByte(constantIndex);
 }
 
-bool CodegenVisitor::EnsureTyped(const Expr& expr)
+bool CodegenVisitor::EnsureTyped(const ASTNode& expr)
 {
-	if (m_typeInfo.GetNodeType(expr).has_value())
+	if (expr.GetInferredType().has_value())
 	{
 		return true;
 	}

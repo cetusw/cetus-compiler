@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/frontend/syntax/semantic/SymbolTable.h"
+#include "../../../frontend/semantic/symbols/SymbolTable.h"
 
 class VM;
 

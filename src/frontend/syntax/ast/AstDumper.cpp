@@ -3,7 +3,7 @@
 #include <ostream>
 #include <stdexcept>
 
-void AstDumper::Dump(const Expr& expr, std::ostream& output)
+void AstDumper::Dump(const ASTNode& expr, std::ostream& output)
 {
 	AstDumper dumper(output);
 	expr.Accept(dumper);
@@ -14,68 +14,68 @@ AstDumper::AstDumper(std::ostream& output)
 {
 }
 
-void AstDumper::Visit(const BoolLiteralExpr& expr)
+void AstDumper::Visit(const BoolLiteralASTNode& expr)
 {
-	DumpLine(std::string("BoolLiteralExpr(") + (expr.GetValue() ? "true" : "false") + ")");
+	DumpLine(std::string("BoolLiteralASTNode(") + (expr.GetValue() ? "true" : "false") + ")");
 }
 
-void AstDumper::Visit(const IntLiteralExpr& expr)
+void AstDumper::Visit(const IntLiteralASTNode& expr)
 {
-	DumpLine("IntLiteralExpr(" + expr.GetValue() + ")");
+	DumpLine("IntLiteralASTNode(" + expr.GetValue() + ")");
 }
 
-void AstDumper::Visit(const FloatLiteralExpr& expr)
+void AstDumper::Visit(const FloatLiteralASTNode& expr)
 {
-	DumpLine("FloatLiteralExpr(" + expr.GetValue() + ")");
+	DumpLine("FloatLiteralASTNode(" + expr.GetValue() + ")");
 }
 
-void AstDumper::Visit(const IdentifierExpr& expr)
+void AstDumper::Visit(const IdentifierASTNode& expr)
 {
-	DumpLine("IdentifierExpr(" + expr.GetName() + ")");
+	DumpLine("IdentifierASTNode(" + expr.GetName() + ")");
 }
 
-void AstDumper::Visit(const UnaryExpr& expr)
+void AstDumper::Visit(const UnaryASTNode& expr)
 {
-	DumpLine(std::string("UnaryExpr(") + ToString(expr.GetOperator()) + ")");
+	DumpLine(std::string("UnaryASTNode(") + ToString(expr.GetOperator()) + ")");
 	DumpChild(expr.GetOperand());
 }
 
-void AstDumper::Visit(const BinaryExpr& expr)
+void AstDumper::Visit(const BinaryASTNode& expr)
 {
-	DumpLine(std::string("BinaryExpr(") + ToString(expr.GetOperator()) + ")");
+	DumpLine(std::string("BinaryASTNode(") + ToString(expr.GetOperator()) + ")");
 	DumpChild(expr.GetLeft());
 	DumpChild(expr.GetRight());
 }
 
-void AstDumper::Visit(const MemberAccessExpr& expr)
+void AstDumper::Visit(const MemberAccessASTNode& expr)
 {
-	DumpLine("MemberAccessExpr(" + expr.GetMember() + ")");
+	DumpLine("MemberAccessASTNode(" + expr.GetMember() + ")");
 	DumpChild(expr.GetObject());
 }
 
-void AstDumper::Visit(const IndexExpr& expr)
+void AstDumper::Visit(const IndexASTNode& expr)
 {
-	DumpLine("IndexExpr");
+	DumpLine("IndexASTNode");
 	DumpChild(expr.GetObject());
 	DumpChild(expr.GetIndex());
 }
 
-void AstDumper::Visit(const AssignmentExpr& expr)
+void AstDumper::Visit(const AssignmentASTNode& expr)
 {
-	DumpLine("AssignmentExpr(" + expr.GetName() + ")");
+	DumpLine("AssignmentASTNode(" + expr.GetName() + ")");
 	DumpChild(expr.GetValue());
 }
 
-void AstDumper::Visit(const SequenceExpr& expr)
+void AstDumper::Visit(const SequenceASTNode& expr)
 {
-	DumpLine("SequenceExpr");
-	for (const ExprPtr& child : expr.GetExpressions())
+	DumpLine("SequenceASTNode");
+	for (const ASTNodePtr& child : expr.GetExpressions())
 	{
 		DumpChild(*child);
 	}
 }
 
-void AstDumper::DumpChild(const Expr& expr)
+void AstDumper::DumpChild(const ASTNode& expr)
 {
 	m_indent += 2;
 	expr.Accept(*this);

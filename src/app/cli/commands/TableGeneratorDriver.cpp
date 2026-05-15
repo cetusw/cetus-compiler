@@ -1,8 +1,10 @@
 #include "TableGeneratorDriver.h"
+
+#include "../../../frontend/syntax/presentation/presenters/ConsolePresenter.h"
 #include "src/frontend/syntax/grammar/GrammarLoader.h"
 #include "src/frontend/syntax/lalr/LALRBuilder.h"
-#include "src/utils/syntax/TableExporter.h"
-#include "src/utils/syntax/TableVisualizer.h"
+#include "src/frontend/syntax/presentation/presenters/CsvPresenter.h"
+
 #include <iostream>
 #include <stdexcept>
 
@@ -26,8 +28,11 @@ void TableGeneratorDriver::Execute(const Configuration& configuration)
 	const Grammar grammar = GrammarLoader::LoadFromFile(configuration.inputFilePath);
 
 	LALRBuilder builder(grammar);
-	const ParserDefinition definition = builder.Build();
+	const PreparedGrammar preparedGrammar = builder.Build();
 
-	TableVisualizer::PrintTable(definition.table, grammar);
-	TableExporter::ExportToCsv(definition.table, grammar, configuration.outputFilePath);
+	const ConsolePresenter presenter;
+	presenter.Present(preparedGrammar.table, grammar);
+
+	const CsvPresenter exporter(configuration.outputFilePath);
+	exporter.Present(preparedGrammar.table, grammar);
 }

@@ -48,15 +48,23 @@ Configuration CommandLineInterface::ParseArguments(const int argumentCount, char
 		return MakeHelpConfiguration();
 	}
 
-	if (argumentCount > 2)
+	for (int i = 2; i < argumentCount; ++i)
 	{
-		configuration.inputFilePath = argumentValues[2];
+		const std::string argument = argumentValues[i];
+		if (argument == "--regen-table")
+		{
+			configuration.regenerateTable = true;
+		}
+		else if (configuration.inputFilePath.empty())
+		{
+			configuration.inputFilePath = argument;
+		}
+		else
+		{
+			configuration.outputFilePath = argument;
+		}
 	}
-	if (argumentCount > 3)
-	{
-		configuration.outputFilePath = argumentValues[3];
-	}
-	else if (configuration.mode == CompilerMode::ASM)
+	if (configuration.outputFilePath == "out.csv" && configuration.mode == CompilerMode::ASM)
 	{
 		configuration.outputFilePath = "out.asm";
 	}
@@ -75,7 +83,8 @@ void CommandLineInterface::PrintHelp()
 			  << "  --run-expr <file>  Execute source expression through frontend and VM\n"
 			  << "  --table <file>     Generate SLR(1) table from grammar\n"
 			  << "  --run <file>       Execute bytecode in VM\n"
-			  << "  --asm <file> [out] Generate x86-64 GNU assembly\n";
+			  << "  --asm <file> [out] Generate x86-64 GNU assembly\n"
+			  << "  --regen-table     Regenerate and save parser table before parsing\n";
 }
 
 Configuration CommandLineInterface::MakeHelpConfiguration()

@@ -1,27 +1,27 @@
 #pragma once
 
-#include "Expr.h"
+#include "ASTNode.h"
 #include <iosfwd>
 
-class AstDumper final : public ExprVisitor
+class AstDumper final : public ASTNodeVisitor
 {
 public:
-	static void Dump(const Expr& expr, std::ostream& output);
-	void Visit(const BoolLiteralExpr& expr) override;
-	void Visit(const IntLiteralExpr& expr) override;
-	void Visit(const FloatLiteralExpr& expr) override;
-	void Visit(const IdentifierExpr& expr) override;
-	void Visit(const UnaryExpr& expr) override;
-	void Visit(const BinaryExpr& expr) override;
-	void Visit(const MemberAccessExpr& expr) override;
-	void Visit(const IndexExpr& expr) override;
-	void Visit(const AssignmentExpr& expr) override;
-	void Visit(const SequenceExpr& expr) override;
+	static void Dump(const ASTNode& expr, std::ostream& output);
+	void Visit(const BoolLiteralASTNode& expr) override;
+	void Visit(const IntLiteralASTNode& expr) override;
+	void Visit(const FloatLiteralASTNode& expr) override;
+	void Visit(const IdentifierASTNode& expr) override;
+	void Visit(const UnaryASTNode& expr) override;
+	void Visit(const BinaryASTNode& expr) override;
+	void Visit(const MemberAccessASTNode& expr) override;
+	void Visit(const IndexASTNode& expr) override;
+	void Visit(const AssignmentASTNode& expr) override;
+	void Visit(const SequenceASTNode& expr) override;
 
 private:
 	explicit AstDumper(std::ostream& output);
 
-	void DumpChild(const Expr& expr);
+	void DumpChild(const ASTNode& expr);
 	void DumpLine(const std::string& text) const;
 	static const char* ToString(UnaryOperator op);
 	static const char* ToString(BinaryOperator op);

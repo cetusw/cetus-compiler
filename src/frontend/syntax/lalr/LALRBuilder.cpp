@@ -1,11 +1,14 @@
 #include "LALRBuilder.h"
+#include "src/frontend/syntax/grammar/transformation/transformations/AugmentStartGrammarTransformation.h"
+
+#include <stdexcept>
 
 LALRBuilder::LALRBuilder(Grammar grammar)
 	: m_grammar(std::move(grammar))
 {
 }
 
-ParserDefinition LALRBuilder::Build()
+PreparedGrammar LALRBuilder::Build()
 {
 	EnsureBuildCanStart();
 	PrepareGrammar();
@@ -15,17 +18,17 @@ ParserDefinition LALRBuilder::Build()
 	FillParseTable();
 	m_isBuilt = true;
 
-	ParserDefinition definition;
-	definition.table = m_table;
-	definition.startSymbol = m_grammar.GetStartSymbol();
-	definition.eofSymbol = m_eofSymbol;
+	PreparedGrammar preparedGrammar;
+	preparedGrammar.table = m_table;
+	preparedGrammar.startSymbol = m_grammar.GetStartSymbol();
+	preparedGrammar.eofSymbol = m_eofSymbol;
 
 	for (int index = 0; index < static_cast<int>(m_rules.size()); ++index)
 	{
-		definition.rules.push_back({ index, m_rules[index].lhs, m_rules[index].rhs, m_rules[index].semanticTag });
+		preparedGrammar.rules.push_back({ index, m_rules[index].lhs, m_rules[index].rhs, m_rules[index].semanticTag });
 	}
 
-	return definition;
+	return preparedGrammar;
 }
 
 void LALRBuilder::EnsureBuildCanStart() const
@@ -38,25 +41,18 @@ void LALRBuilder::EnsureBuildCanStart() const
 
 void LALRBuilder::PrepareGrammar()
 {
-	const Symbol oldStart = m_grammar.GetStartSymbol();
-	m_augmentedStartSymbol = Symbol(oldStart.GetValue() + "'", false);
+	m_grammar = std::make_shared<AugmentStartGrammarTransformation>()->Apply(m_grammar);
+	m_augmentedStartSymbol = m_grammar.GetStartSymbol();
+	LoadRulesFromGrammar();
+}
 
-	m_rules.push_back({ m_augmentedStartSymbol, { oldStart }, {} });
-	for (const auto& rule : m_grammar.GetRules())
+void LALRBuilder::LoadRulesFromGrammar()
+{
+	m_rules.clear();
+	for (const Production& rule : m_grammar.GetRules())
 	{
 		m_rules.push_back({ rule.GetLhs(), rule.GetRhs(), rule.GetSemanticTag() });
 	}
-
-	m_grammar.SetRules({});
-	for (const auto& r : m_rules)
-	{
-		m_grammar.AddRule(r.lhs, r.rhs, r.semanticTag);
-	}
-	m_grammar.SetStartSymbol(m_augmentedStartSymbol);
-
-	auto terms = m_grammar.GetTerminals();
-	terms.insert(m_eofSymbol);
-	m_grammar.SetTerminals(terms);
 }
 
 void LALRBuilder::BuildStateGraph()

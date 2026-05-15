@@ -1,28 +1,50 @@
 #include "RunAsmExpressionDriver.h"
-#include "src/frontend/codegen/AsmCodegenVisitor.h"
+#include "../../../frontend/codegen/asm/AsmCodegenVisitor.h"
+#include "src/frontend/semantic/SemanticAnalyzer.h"
+#include "src/frontend/syntax/GrammarPreparator.h"
 #include "src/frontend/syntax/SyntaxAnalyzer.h"
-#include "src/frontend/syntax/semantic/TypeCheckerVisitor.h"
-#include <fstream>
+#include "src/support/io/FileReader.h"
 #include <stdexcept>
 #include <utility>
 
 void RunAsmExpressionDriver::Execute(const Configuration& configuration)
 {
-	const ExprPtr ast = ParseSourceFile(configuration);
+	const std::string source = ReadSource(configuration);
+	const std::vector<Token> tokens = Tokenize(source);
+	const ASTNodePtr ast = ParseTokens(tokens, configuration.regenerateTable);
 	const TypeCheckResult typeResult = TypeCheckAst(*ast);
-	const AsmCodegenResult codegenResult = GenerateAssembly(*ast, typeResult);
-	WriteAssemblyOutput(configuration, codegenResult);
+	const AsmCodegenResult asmResult = GenerateAssembly(*ast, typeResult);
+	WriteAssemblyOutput(configuration, asmResult);
 }
 
-ExprPtr RunAsmExpressionDriver::ParseSourceFile(const Configuration& configuration)
+std::string RunAsmExpressionDriver::ReadSource(const Configuration& configuration)
 {
 	if (configuration.inputFilePath.empty())
 	{
 		throw std::runtime_error("Input source file path is required for asm code generation.");
 	}
+	return FileReader::ReadAll(configuration.inputFilePath);
+}
 
-	const SyntaxAnalyzer analyzer;
-	ParseResult parseResult = analyzer.Analyze(configuration.inputFilePath);
+std::vector<Token> RunAsmExpressionDriver::Tokenize(const std::string& source)
+{
+	LexicalAnalyzer lexicalAnalyzer(source);
+	LexerResult lexerResult = lexicalAnalyzer.ScanTokens();
+	if (lexerResult.error.has_value())
+	{
+		throw std::runtime_error(
+		"Lexical error at line " + std::to_string(lexerResult.errorLine) + ": " + *lexerResult.error);
+	}
+	return lexerResult.tokens;
+}
+
+ASTNodePtr RunAsmExpressionDriver::ParseTokens(const std::vector<Token>& tokens, const bool regenerateTable)
+{
+	GrammarPreparator preparator;
+	const PreparedGrammar preparedGrammar = preparator.Prepare(regenerateTable);
+
+	const SyntaxAnalyzer syntaxAnalyzer(preparedGrammar);
+	ParseResult parseResult = syntaxAnalyzer.Analyze(tokens);
 	if (!parseResult.success)
 	{
 		throw std::runtime_error(parseResult.message);
@@ -35,20 +57,20 @@ ExprPtr RunAsmExpressionDriver::ParseSourceFile(const Configuration& configurati
 	return std::move(parseResult.ast);
 }
 
-TypeCheckResult RunAsmExpressionDriver::TypeCheckAst(const Expr& ast)
+TypeCheckResult RunAsmExpressionDriver::TypeCheckAst(const ASTNode& ast)
 {
 	const SymbolTable symbols;
-	TypeCheckerVisitor checker(symbols);
-	const TypeCheckResult typeResult = checker.Check(ast);
-	if (typeResult.error.has_value())
+	SemanticAnalyzer semanticAnalyzer(symbols);
+	const TypeCheckResult typeResult = semanticAnalyzer.Analyze(ast);
+	if (const std::optional<std::string> error = typeResult.GetErrorMessage())
 	{
-		throw std::runtime_error(*typeResult.error);
+		throw std::runtime_error(*error);
 	}
 
 	return typeResult;
 }
 
-AsmCodegenResult RunAsmExpressionDriver::GenerateAssembly(const Expr& ast, const TypeCheckResult& typeResult)
+AsmCodegenResult RunAsmExpressionDriver::GenerateAssembly(const ASTNode& ast, const TypeCheckResult& typeResult)
 {
 	AsmCodegenVisitor codegen(typeResult);
 	const AsmCodegenResult codegenResult = codegen.Generate(ast);
@@ -65,15 +87,5 @@ void RunAsmExpressionDriver::WriteAssemblyOutput(
 	const AsmCodegenResult& codegenResult)
 {
 	const std::string outputPath = configuration.outputFilePath.empty() ? "out.asm" : configuration.outputFilePath;
-	std::ofstream output(outputPath);
-	if (!output)
-	{
-		throw std::runtime_error("Failed to open output file for asm code generation: " + outputPath);
-	}
-
-	output << codegenResult.text;
-	if (!output)
-	{
-		throw std::runtime_error("Failed to write asm output file: " + outputPath);
-	}
+	FileReader::WriteAll(outputPath, codegenResult.text);
 }

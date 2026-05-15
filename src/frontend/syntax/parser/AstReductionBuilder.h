@@ -1,14 +1,14 @@
 #pragma once
 
-#include "src/frontend/lexer/Token.h"
-#include "src/frontend/syntax/ast/Expr.h"
-#include "src/frontend/syntax/lalr/types/ParserDefinition.h"
+#include "src/frontend/lexical/Token.h"
+#include "src/frontend/syntax/ast/ASTNode.h"
+#include "src/frontend/syntax/lalr/types/PreparedGrammar.h"
 #include <optional>
 #include <vector>
 
 struct AstSemanticValue
 {
-	ExprPtr expr;
+	ASTNodePtr expr;
 	std::optional<Token> token;
 };
 
@@ -31,7 +31,7 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildSequence(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue PassExpr(std::vector<AstSemanticValue> values, std::size_t index);
 	[[nodiscard]] static AstSemanticValue PassToken(std::vector<AstSemanticValue> values, std::size_t index);
-	[[nodiscard]] static ExprPtr TakeExpr(std::vector<AstSemanticValue>& values, std::size_t index);
+	[[nodiscard]] static ASTNodePtr TakeExpr(std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static Token TakeToken(const std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static BinaryOperator ToBinaryOperator(TokenType type);
 	[[nodiscard]] static UnaryOperator ToUnaryOperator(TokenType type);

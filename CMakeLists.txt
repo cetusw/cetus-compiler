@@ -4,36 +4,48 @@ project(cetus_compiler)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+include(FetchContent)
+
+FetchContent_Declare(
+        nlohmann_json
+        URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+)
+FetchContent_MakeAvailable(nlohmann_json)
+
 add_library(cetus_support STATIC
         src/support/io/FileReader.cpp
 )
 
 add_library(cetus_frontend STATIC
-        src/frontend/codegen/AsmProgram.cpp
+        src/frontend/codegen/asm/AsmProgram.cpp
         src/frontend/codegen/CodegenVisitor.cpp
-        src/frontend/lexer/Lexer.cpp
+        src/frontend/lexical/LexicalAnalyzer.cpp
         src/frontend/syntax/SyntaxAnalyzer.cpp
         src/frontend/syntax/ast/AstDumper.cpp
-        src/frontend/syntax/ast/Expr.cpp
+        src/frontend/syntax/ast/ASTNode.cpp
         src/frontend/syntax/analysis/guiding-set-provider/GuidingSetProvider.cpp
         src/frontend/syntax/grammar/Grammar.cpp
         src/frontend/syntax/grammar/GrammarLoader.cpp
         src/frontend/syntax/grammar/Production.cpp
         src/frontend/syntax/grammar/Symbol.cpp
+        src/frontend/syntax/grammar/transformation/transformations/AugmentStartGrammarTransformation.cpp
+        src/frontend/syntax/lalr/ActionFormatter.cpp
         src/frontend/syntax/lalr/LALRBuilder.cpp
         src/frontend/syntax/lalr/LR1ClosureCalculator.cpp
-        src/frontend/syntax/semantic/SymbolTable.cpp
-        src/frontend/syntax/semantic/TypeRules.cpp
-        src/frontend/syntax/semantic/TypeCheckerVisitor.cpp
+        src/frontend/syntax/presentation/presenters/ConsolePresenter.cpp
+        src/frontend/semantic/symbols/SymbolTable.cpp
+        src/frontend/semantic/rules/TypeRules.cpp
+        src/frontend/semantic/SemanticAnalyzer.cpp
         src/frontend/syntax/parser/AstReductionBuilder.cpp
-        src/frontend/syntax/parser/TableDrivenParser.cpp
+        src/frontend/syntax/storage/JsonPreparedGrammarStorage.cpp
         src/frontend/syntax/parser/TokenSymbolMapper.cpp
-        src/frontend/codegen/AsmCodegenVisitor.cpp
+        src/frontend/codegen/asm/AsmCodegenVisitor.cpp
+        src/frontend/syntax/presentation/presenters/CsvPresenter.cpp
+        src/frontend/syntax/presentation/presenters/CsvPresenter.h
 )
 
 add_library(cetus_tooling STATIC
-        src/utils/syntax/TableExporter.cpp
-        src/utils/syntax/TableVisualizer.cpp
+        src/frontend/syntax/GrammarPreparator.cpp
 )
 
 add_library(cetus_backend_vm STATIC
@@ -82,7 +94,7 @@ foreach(target
     target_include_directories(${target} PUBLIC ${CMAKE_SOURCE_DIR})
 endforeach()
 
-target_link_libraries(cetus_frontend PUBLIC cetus_support)
+target_link_libraries(cetus_frontend PUBLIC cetus_support nlohmann_json::nlohmann_json)
 target_link_libraries(cetus_tooling PUBLIC cetus_frontend cetus_backend_vm)
 target_link_libraries(cetus_app_cli PUBLIC cetus_frontend cetus_tooling cetus_backend_vm)
 

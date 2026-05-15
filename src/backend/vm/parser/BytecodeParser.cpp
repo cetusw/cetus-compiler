@@ -2,21 +2,24 @@
 #include "../objects/ObjString.h"
 #include "Types.h"
 #include "src/backend/vm/objects/ObjFunction.h"
-#include <fstream>
+#include "src/support/io/FileReader.h"
 #include <iostream>
 #include <sstream>
 #include <unordered_map>
 
 std::shared_ptr<ObjFunction> BytecodeParser::Parse(const std::string& path)
 {
-	std::ifstream file(path);
-	if (!file.is_open())
+	std::vector<std::string> lines;
+	try
+	{
+		lines = FileReader::ReadLines(path);
+	}
+	catch (const std::runtime_error&)
 	{
 		return nullptr;
 	}
 
-	std::string line;
-	while (std::getline(file, line))
+	for (const std::string& line : lines)
 	{
 		ProcessLine(line);
 	}

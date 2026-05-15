@@ -1,13 +1,13 @@
 #pragma once
 
-#include "src/frontend/syntax/ast/Expr.h"
+#include "src/frontend/syntax/ast/ASTNode.h"
 #include <string>
 #include <utility>
 #include <vector>
 
 struct ParseResult
 {
-	[[nodiscard]] static ParseResult Success(const int line, ExprPtr ast = nullptr, std::string message = "Syntax analysis completed successfully.")
+	[[nodiscard]] static ParseResult Success(const int line, ASTNodePtr ast = nullptr, std::string message = "Syntax analysis completed successfully.")
 	{
 		ParseResult result;
 		result.success = true;
@@ -36,5 +36,5 @@ struct ParseResult
 	int line = 1;
 	std::string message;
 	std::vector<std::string> expectedTerminals;
-	ExprPtr ast;
+	ASTNodePtr ast;
 };

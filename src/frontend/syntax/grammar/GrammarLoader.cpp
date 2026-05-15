@@ -1,5 +1,5 @@
 #include "GrammarLoader.h"
-#include <fstream>
+#include "src/support/io/FileReader.h"
 #include <sstream>
 
 constexpr char COMMENT_CHAR = '#';
@@ -7,23 +7,15 @@ constexpr char SEMANTIC_TAG_CHAR = '@';
 
 Grammar GrammarLoader::LoadFromFile(const std::string& path)
 {
-	std::ifstream file(path);
-
-	if (!file.is_open())
-	{
-		throw std::runtime_error("Failed to open grammar file: " + path);
-	}
-
-	return ParseFile(std::move(file));
+	return ParseLines(FileReader::ReadLines(path));
 }
 
-Grammar GrammarLoader::ParseFile(std::ifstream file)
+Grammar GrammarLoader::ParseLines(const std::vector<std::string>& lines)
 {
 	Grammar grammar;
-	std::string line;
 	bool isFirstRule = true;
 
-	while (std::getline(file, line))
+	for (const std::string& line : lines)
 	{
 		if (line.empty() || line[0] == COMMENT_CHAR)
 		{

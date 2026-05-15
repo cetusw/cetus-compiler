@@ -21,6 +21,7 @@ struct Configuration
 	std::string inputFilePath;
 	std::string outputFilePath = "out.csv";
 	bool verbose = false;
+	bool regenerateTable = false;
 };
 
 class CommandLineInterface

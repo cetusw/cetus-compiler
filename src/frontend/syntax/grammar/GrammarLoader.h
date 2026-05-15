@@ -20,7 +20,7 @@ private:
 
 	static bool IsNonTerminal(const std::string& value);
 	static Symbol ParseSymbolToken(const std::string& token);
-	static Grammar ParseFile(std::ifstream file);
+	static Grammar ParseLines(const std::vector<std::string>& lines);
 	static std::string ParseLine(const std::string& line, Grammar& grammar);
 	static ParsedLine ParseProductionLine(const std::string& line);
 	static void AddProductions(Grammar& grammar, const ParsedLine& line);
