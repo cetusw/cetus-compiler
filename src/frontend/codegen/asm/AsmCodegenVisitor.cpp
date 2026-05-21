@@ -289,7 +289,7 @@ void AsmCodegenVisitor::EmitUnaryNegation(const UnaryASTNode& node)
 
 void AsmCodegenVisitor::EmitLogicalNot(const UnaryASTNode& node)
 {
-	if (!IsTruthyCompatible(node.GetOperand()))
+	if (!IsFalsey(node.GetOperand()))
 	{
 		Fail("Unary '!' expects truthy-compatible operand in asm code generation.");
 		return;
@@ -506,7 +506,7 @@ bool AsmCodegenVisitor::IsBoolTyped(const ASTNode& node)
 	return node.GetInferredType() == Type::BOOL;
 }
 
-bool AsmCodegenVisitor::IsTruthyCompatible(const ASTNode& node)
+bool AsmCodegenVisitor::IsFalsey(const ASTNode& node)
 {
 	return IsIntTyped(node) || IsBoolTyped(node);
 }

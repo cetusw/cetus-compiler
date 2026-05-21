@@ -54,7 +54,7 @@ private:
 	[[nodiscard]] bool EnsureSupportedType(const ASTNode& node);
 	[[nodiscard]] static bool IsIntTyped(const ASTNode& node);
 	[[nodiscard]] static bool IsBoolTyped(const ASTNode& node);
-	[[nodiscard]] static bool IsTruthyCompatible(const ASTNode& node);
+	[[nodiscard]] static bool IsFalsey(const ASTNode& node);
 	[[nodiscard]] static bool IsSupportedBinary(BinaryOperator op);
 	[[nodiscard]] static bool IsSimpleArithmetic(BinaryOperator op);
 	[[nodiscard]] static bool IsComparison(BinaryOperator op);
