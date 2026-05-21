@@ -20,6 +20,7 @@ private:
 	[[nodiscard]] static TypeCheckResult CheckEqualityOperator(Type leftType, Type rightType);
 	[[nodiscard]] static TypeCheckResult MakeError(std::string message);
 	[[nodiscard]] static bool IsNumeric(Type type);
+	[[nodiscard]] static bool IsFalsey(Type type);
 	[[nodiscard]] static bool AreComparable(Type left, Type right);
 	[[nodiscard]] static Type MergeNumeric(Type left, Type right);
 };

@@ -1,10 +1,16 @@
 ~Program~ -> ~StmtList~ @pass_expr
 
-~StmtList~ -> ~StmtList~ SEMICOLON ~Stmt~ @sequence
+~StmtList~ -> ~StmtList~ ~Stmt~ @sequence
 ~StmtList~ -> ~Stmt~ @pass_expr
 
-~Stmt~ -> IDENTIFIER COLON_EQUAL ~Con~ @assignment
-~Stmt~ -> ~Con~ @pass_expr
+~Stmt~ -> ~SimpleStmt~ SEMICOLON @pass_expr
+~Stmt~ -> IF ~Con~ ~Block~ ELSE ~Block~ @if_else
+
+~SimpleStmt~ -> IDENTIFIER COLON_EQUAL ~Con~ @assignment
+~SimpleStmt~ -> PRINTF LPAREN ~Con~ RPAREN @printf
+~SimpleStmt~ -> ~Con~ @pass_expr
+
+~Block~ -> LBRACE ~StmtList~ RBRACE @block
 
 
 ~Con~ -> ~Con~ OR_OR ~Con1~ @binary

@@ -180,6 +180,55 @@ void AsmCodegenVisitor::Visit(const SequenceASTNode& node)
 	}
 }
 
+void AsmCodegenVisitor::Visit(const IfElseASTNode& node)
+{
+	if (!EnsureSupportedType(node))
+	{
+		return;
+	}
+
+	const std::string elseLabel = NextLabel(".L_if_else");
+	const std::string endLabel = NextLabel(".L_if_end");
+
+	node.GetCondition().Accept(*this);
+	if (m_error.has_value())
+	{
+		return;
+	}
+	Emit("    cmp rax, 0");
+	Emit("    je " + elseLabel);
+
+	node.GetThenBranch().Accept(*this);
+	if (m_error.has_value())
+	{
+		return;
+	}
+	Emit("    jmp " + endLabel);
+
+	m_program.AddText(elseLabel + ":");
+	node.GetElseBranch().Accept(*this);
+	if (m_error.has_value())
+	{
+		return;
+	}
+	m_program.AddText(endLabel + ":");
+}
+
+void AsmCodegenVisitor::Visit(const PrintfASTNode& node)
+{
+	if (!EnsureSupportedType(node))
+	{
+		return;
+	}
+
+	node.GetArgument().Accept(*this);
+	if (m_error.has_value())
+	{
+		return;
+	}
+	EmitPrintf();
+}
+
 void AsmCodegenVisitor::Emit(std::string line)
 {
 	if (m_error.has_value())
@@ -211,10 +260,6 @@ void AsmCodegenVisitor::EmitProgramPostamble()
 
 	Emit("    ");
 	Emit("    // postamble");
-	Emit("    mov rsi, rax");
-	Emit("    lea rdi, [rip + fmt_int]");
-	Emit("    xor eax, eax");
-	Emit("    call printf");
 	Emit("    mov eax, 0");
 	Emit("    leave");
 	Emit("    ret");
@@ -244,9 +289,9 @@ void AsmCodegenVisitor::EmitUnaryNegation(const UnaryASTNode& node)
 
 void AsmCodegenVisitor::EmitLogicalNot(const UnaryASTNode& node)
 {
-	if (!IsBoolTyped(node.GetOperand()))
+	if (!IsTruthyCompatible(node.GetOperand()))
 	{
-		Fail("Unary '!' expects bool operand in asm code generation.");
+		Fail("Unary '!' expects truthy-compatible operand in asm code generation.");
 		return;
 	}
 	Emit("    cmp rax, 0");
@@ -394,6 +439,14 @@ void AsmCodegenVisitor::EmitLogicalOr(const BinaryASTNode& node)
 	m_program.AddText(endLabel + ":");
 }
 
+void AsmCodegenVisitor::EmitPrintf()
+{
+	Emit("    mov rsi, rax");
+	Emit("    lea rdi, [rip + fmt_int]");
+	Emit("    xor eax, eax");
+	Emit("    call printf");
+}
+
 void AsmCodegenVisitor::EnsureVariableDeclared(const std::string& name)
 {
 	if (m_declaredVariables.insert(name).second)
@@ -451,6 +504,11 @@ bool AsmCodegenVisitor::IsIntTyped(const ASTNode& node)
 bool AsmCodegenVisitor::IsBoolTyped(const ASTNode& node)
 {
 	return node.GetInferredType() == Type::BOOL;
+}
+
+bool AsmCodegenVisitor::IsTruthyCompatible(const ASTNode& node)
+{
+	return IsIntTyped(node) || IsBoolTyped(node);
 }
 
 bool AsmCodegenVisitor::IsSupportedBinary(const BinaryOperator op)

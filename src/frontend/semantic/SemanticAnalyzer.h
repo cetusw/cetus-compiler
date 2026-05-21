@@ -22,9 +22,12 @@ public:
 	void Visit(const IndexASTNode& node) override;
 	void Visit(const AssignmentASTNode& node) override;
 	void Visit(const SequenceASTNode& node) override;
+	void Visit(const IfElseASTNode& node) override;
+	void Visit(const PrintfASTNode& node) override;
 
 private:
 	[[nodiscard]] Type AnalyzeChild(const ASTNode& node);
+	[[nodiscard]] static bool IsFalsey(Type type);
 	void SetCurrentType(const ASTNode& node, Type type);
 	void SetTypeCheckResult(const ASTNode& node, TypeCheckResult result);
 	void AddDiagnostic(std::string message);

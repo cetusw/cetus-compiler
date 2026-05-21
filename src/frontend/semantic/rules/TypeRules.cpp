@@ -1,6 +1,5 @@
 #include "TypeRules.h"
 
-// TODO подумать над тем, как можно избавиться от switch-case
 TypeCheckResult TypeRules::CheckUnaryOperator(const UnaryOperator op, const Type operandType)
 {
 	switch (op)
@@ -13,10 +12,10 @@ TypeCheckResult TypeRules::CheckUnaryOperator(const UnaryOperator op, const Type
 		}
 		return TypeCheckResult::Success(operandType);
 	case UnaryOperator::NOT:
-		if (operandType != Type::BOOL)
+		if (!IsFalsey(operandType))
 		{
 			return MakeError(
-				std::string("Unary '!' expects bool operand, got ") + ToString(operandType));
+				std::string("Unary '!' expects truthy-compatible operand, got ") + ToString(operandType));
 		}
 		return TypeCheckResult::Success(Type::BOOL);
 	}
@@ -69,9 +68,9 @@ const char* TypeRules::ToString(const Type type)
 
 TypeCheckResult TypeRules::CheckLogicalOperator(const Type leftType, const Type rightType)
 {
-	if (leftType != Type::BOOL || rightType != Type::BOOL)
+	if (!IsFalsey(leftType) || !IsFalsey(rightType))
 	{
-		return MakeError("Logical operator expects bool operands.");
+		return MakeError("Logical operator expects truthy-compatible operands.");
 	}
 
 	return TypeCheckResult::Success(Type::BOOL);
@@ -99,9 +98,9 @@ TypeCheckResult TypeRules::CheckModuloOperator(const Type leftType, const Type r
 
 TypeCheckResult TypeRules::CheckComparisonOperator(const Type leftType, const Type rightType)
 {
-	if (!IsNumeric(leftType) || !IsNumeric(rightType))
+	if (!IsFalsey(leftType) || !IsFalsey(rightType))
 	{
-		return MakeError("Comparison operator expects numeric operands.");
+		return MakeError("Comparison operator expects truthy-compatible operands.");
 	}
 
 	return TypeCheckResult::Success(Type::BOOL);
@@ -127,6 +126,11 @@ bool TypeRules::IsNumeric(const Type type)
 	return type == Type::INT || type == Type::FLOAT;
 }
 
+bool TypeRules::IsFalsey(const Type type)
+{
+	return type == Type::BOOL || IsNumeric(type);
+}
+
 bool TypeRules::AreComparable(const Type left, const Type right)
 {
 	if (left == right)
@@ -134,7 +138,7 @@ bool TypeRules::AreComparable(const Type left, const Type right)
 		return true;
 	}
 
-	return IsNumeric(left) && IsNumeric(right);
+	return IsFalsey(left) && IsFalsey(right);
 }
 
 Type TypeRules::MergeNumeric(const Type left, const Type right)

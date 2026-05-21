@@ -26,6 +26,8 @@ public:
 	void Visit(const IndexASTNode& node) override;
 	void Visit(const AssignmentASTNode& node) override;
 	void Visit(const SequenceASTNode& node) override;
+	void Visit(const IfElseASTNode& node) override;
+	void Visit(const PrintfASTNode& node) override;
 
 private:
 	void Emit(std::string line);
@@ -44,6 +46,7 @@ private:
 	void EmitBinaryComparison(BinaryOperator op);
 	void EmitLogicalAnd(const BinaryASTNode& node);
 	void EmitLogicalOr(const BinaryASTNode& node);
+	void EmitPrintf();
 	void EnsureVariableDeclared(const std::string& name);
 	[[nodiscard]] std::string NextLabel(const std::string& prefix);
 	void Fail(std::string message);
@@ -51,6 +54,7 @@ private:
 	[[nodiscard]] bool EnsureSupportedType(const ASTNode& node);
 	[[nodiscard]] static bool IsIntTyped(const ASTNode& node);
 	[[nodiscard]] static bool IsBoolTyped(const ASTNode& node);
+	[[nodiscard]] static bool IsTruthyCompatible(const ASTNode& node);
 	[[nodiscard]] static bool IsSupportedBinary(BinaryOperator op);
 	[[nodiscard]] static bool IsSimpleArithmetic(BinaryOperator op);
 	[[nodiscard]] static bool IsComparison(BinaryOperator op);

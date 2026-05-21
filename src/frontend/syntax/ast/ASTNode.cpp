@@ -197,3 +197,45 @@ void SequenceASTNode::Accept(ASTNodeVisitor& visitor) const
 {
 	visitor.Visit(*this);
 }
+
+IfElseASTNode::IfElseASTNode(ASTNodePtr condition, ASTNodePtr thenBranch, ASTNodePtr elseBranch)
+	: m_condition(std::move(condition))
+	, m_thenBranch(std::move(thenBranch))
+	, m_elseBranch(std::move(elseBranch))
+{
+}
+
+const ASTNode& IfElseASTNode::GetCondition() const
+{
+	return *m_condition;
+}
+
+const ASTNode& IfElseASTNode::GetThenBranch() const
+{
+	return *m_thenBranch;
+}
+
+const ASTNode& IfElseASTNode::GetElseBranch() const
+{
+	return *m_elseBranch;
+}
+
+void IfElseASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}
+
+PrintfASTNode::PrintfASTNode(ASTNodePtr argument)
+	: m_argument(std::move(argument))
+{
+}
+
+const ASTNode& PrintfASTNode::GetArgument() const
+{
+	return *m_argument;
+}
+
+void PrintfASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}

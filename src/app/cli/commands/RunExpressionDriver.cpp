@@ -1,7 +1,6 @@
 #include "RunExpressionDriver.h"
 
 #include "../../../frontend/semantic/rules/TypeRules.h"
-#include "PredefinedSymbols.h"
 #include "src/backend/vm/vm.h"
 #include "src/frontend/codegen/CodegenVisitor.h"
 #include "src/frontend/lexical/LexicalAnalyzer.h"
@@ -49,7 +48,7 @@ void RunExpressionDriver::Execute(const Configuration& configuration)
 		throw std::runtime_error("AST was not produced for parsed input.");
 	}
 
-	const SymbolTable symbols = PredefinedSymbols::CreateSymbolTable();
+	const SymbolTable symbols;
 	SemanticAnalyzer checker(symbols);
 	const TypeCheckResult typeResult = checker.Analyze(*parseResult.ast);
 	if (const std::optional<std::string> error = typeResult.GetErrorMessage())
@@ -65,7 +64,6 @@ void RunExpressionDriver::Execute(const Configuration& configuration)
 	}
 
 	VM vm;
-	PredefinedSymbols::LoadRuntimeGlobals(vm);
 	if (vm.Interpret(codegenResult.function) != InterpretResult::OK)
 	{
 		throw std::runtime_error("VM execution failed.");

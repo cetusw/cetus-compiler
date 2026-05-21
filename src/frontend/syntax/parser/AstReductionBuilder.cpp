@@ -32,6 +32,12 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildAssignment(std::move(values));
 	case SemanticTag::SEQUENCE:
 		return BuildSequence(std::move(values));
+	case SemanticTag::IF_ELSE:
+		return BuildIfElse(std::move(values));
+	case SemanticTag::PRINTF:
+		return BuildPrintf(std::move(values));
+	case SemanticTag::BLOCK:
+		return PassExpr(std::move(values), 1);
 	case SemanticTag::NONE:
 		throw std::logic_error("Missing semantic tag for reduced parser rule.");
 	}
@@ -117,12 +123,30 @@ AstSemanticValue AstReductionBuilder::BuildAssignment(std::vector<AstSemanticVal
 
 AstSemanticValue AstReductionBuilder::BuildSequence(std::vector<AstSemanticValue> values)
 {
-	RequireValueCount(values, 3, "Sequence reduction");
+	RequireValueCount(values, 2, "Sequence reduction");
 
 	std::vector<ASTNodePtr> expressions;
 	expressions.push_back(TakeExpr(values, 0));
-	expressions.push_back(TakeExpr(values, 2));
+	expressions.push_back(TakeExpr(values, 1));
 	return { std::make_unique<SequenceASTNode>(std::move(expressions)), std::nullopt };
+}
+
+AstSemanticValue AstReductionBuilder::BuildIfElse(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 5, "If/else reduction");
+	return {
+		std::make_unique<IfElseASTNode>(
+			TakeExpr(values, 1),
+			TakeExpr(values, 2),
+			TakeExpr(values, 4)),
+		std::nullopt
+	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildPrintf(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 4, "Printf reduction");
+	return { std::make_unique<PrintfASTNode>(TakeExpr(values, 2)), std::nullopt };
 }
 
 AstSemanticValue AstReductionBuilder::PassExpr(std::vector<AstSemanticValue> values, const std::size_t index)

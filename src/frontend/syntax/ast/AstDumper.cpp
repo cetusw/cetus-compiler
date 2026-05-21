@@ -75,6 +75,20 @@ void AstDumper::Visit(const SequenceASTNode& expr)
 	}
 }
 
+void AstDumper::Visit(const IfElseASTNode& expr)
+{
+	DumpLine("IfElseASTNode");
+	DumpChild(expr.GetCondition());
+	DumpChild(expr.GetThenBranch());
+	DumpChild(expr.GetElseBranch());
+}
+
+void AstDumper::Visit(const PrintfASTNode& expr)
+{
+	DumpLine("PrintfASTNode");
+	DumpChild(expr.GetArgument());
+}
+
 void AstDumper::DumpChild(const ASTNode& expr)
 {
 	m_indent += 2;

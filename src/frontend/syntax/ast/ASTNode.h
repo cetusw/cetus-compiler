@@ -176,3 +176,31 @@ public:
 private:
 	std::vector<ASTNodePtr> m_expressions;
 };
+
+class IfElseASTNode final : public ASTNode
+{
+public:
+	IfElseASTNode(ASTNodePtr condition, ASTNodePtr thenBranch, ASTNodePtr elseBranch);
+
+	[[nodiscard]] const ASTNode& GetCondition() const;
+	[[nodiscard]] const ASTNode& GetThenBranch() const;
+	[[nodiscard]] const ASTNode& GetElseBranch() const;
+	void Accept(ASTNodeVisitor& visitor) const override;
+
+private:
+	ASTNodePtr m_condition;
+	ASTNodePtr m_thenBranch;
+	ASTNodePtr m_elseBranch;
+};
+
+class PrintfASTNode final : public ASTNode
+{
+public:
+	explicit PrintfASTNode(ASTNodePtr argument);
+
+	[[nodiscard]] const ASTNode& GetArgument() const;
+	void Accept(ASTNodeVisitor& visitor) const override;
+
+private:
+	ASTNodePtr m_argument;
+};

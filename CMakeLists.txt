@@ -12,8 +12,25 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(nlohmann_json)
 
+file(GLOB_RECURSE CETUS_SUPPORT_HEADERS CONFIGURE_DEPENDS
+        src/support/*.h
+)
+
+file(GLOB_RECURSE CETUS_FRONTEND_HEADERS CONFIGURE_DEPENDS
+        src/frontend/*.h
+)
+
+file(GLOB_RECURSE CETUS_BACKEND_VM_HEADERS CONFIGURE_DEPENDS
+        src/backend/vm/*.h
+)
+
+file(GLOB_RECURSE CETUS_APP_CLI_HEADERS CONFIGURE_DEPENDS
+        src/app/cli/*.h
+)
+
 add_library(cetus_support STATIC
         src/support/io/FileReader.cpp
+        ${CETUS_SUPPORT_HEADERS}
 )
 
 add_library(cetus_frontend STATIC
@@ -42,10 +59,12 @@ add_library(cetus_frontend STATIC
         src/frontend/codegen/asm/AsmCodegenVisitor.cpp
         src/frontend/syntax/presentation/presenters/CsvPresenter.cpp
         src/frontend/syntax/presentation/presenters/CsvPresenter.h
+        ${CETUS_FRONTEND_HEADERS}
 )
 
 add_library(cetus_tooling STATIC
         src/frontend/syntax/GrammarPreparator.cpp
+        src/frontend/syntax/GrammarPreparator.h
 )
 
 add_library(cetus_backend_vm STATIC
@@ -72,17 +91,18 @@ add_library(cetus_backend_vm STATIC
         src/backend/vm/instructions/SetLocalInstruction.cpp
         src/backend/vm/objects/ObjFunction.cpp
         src/backend/vm/objects/ObjNative.cpp
+        ${CETUS_BACKEND_VM_HEADERS}
 )
 
 add_library(cetus_app_cli STATIC
         src/app/cli/CommandLineInterface.cpp
         src/app/cli/commands/BytecodeExecutionDriver.cpp
         src/app/cli/commands/ParserDriver.cpp
-        src/app/cli/commands/PredefinedSymbols.cpp
         src/app/cli/commands/RunAsmExpressionDriver.cpp
         src/app/cli/commands/RunExpressionDriver.cpp
         src/app/cli/commands/TableGeneratorDriver.cpp
         src/app/cli/commands/TypeCheckDriver.cpp
+        ${CETUS_APP_CLI_HEADERS}
 )
 
 foreach(target

@@ -19,7 +19,10 @@ enum class SemanticTag
 	MEMBER_ACCESS,
 	INDEX_ACCESS,
 	ASSIGNMENT,
-	SEQUENCE
+	SEQUENCE,
+	IF_ELSE,
+	PRINTF,
+	BLOCK
 };
 
 [[nodiscard]] inline SemanticTag ParseSemanticTagName(const std::string_view value)
@@ -38,5 +41,8 @@ enum class SemanticTag
 	if (value == "index_access") return SemanticTag::INDEX_ACCESS;
 	if (value == "assignment") return SemanticTag::ASSIGNMENT;
 	if (value == "sequence") return SemanticTag::SEQUENCE;
+	if (value == "if_else") return SemanticTag::IF_ELSE;
+	if (value == "printf") return SemanticTag::PRINTF;
+	if (value == "block") return SemanticTag::BLOCK;
 	throw std::runtime_error("Unsupported semantic tag: " + std::string(value));
 }

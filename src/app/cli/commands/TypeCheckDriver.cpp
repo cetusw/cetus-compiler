@@ -1,7 +1,6 @@
 #include "TypeCheckDriver.h"
 
 #include "../../../frontend/semantic/rules/TypeRules.h"
-#include "PredefinedSymbols.h"
 #include "src/frontend/lexical/LexicalAnalyzer.h"
 #include "src/frontend/semantic/SemanticAnalyzer.h"
 #include "src/frontend/syntax/GrammarPreparator.h"
@@ -47,7 +46,7 @@ void TypeCheckDriver::Execute(const Configuration& configuration)
 		throw std::runtime_error("AST was not produced for parsed input.");
 	}
 
-	SemanticAnalyzer checker(PredefinedSymbols::CreateSymbolTable());
+	SemanticAnalyzer checker{ SymbolTable() };
 	const TypeCheckResult typeResult = checker.Analyze(*parseResult.ast);
 	if (const std::optional<std::string> error = typeResult.GetErrorMessage())
 	{

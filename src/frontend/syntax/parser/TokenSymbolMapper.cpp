@@ -15,6 +15,12 @@ std::string_view TokenTypeToGrammarTerminal(const TokenType type)
 		return "AND_AND";
 	case TokenType::SEMICOLON:
 		return "SEMICOLON";
+	case TokenType::IF:
+		return "IF";
+	case TokenType::ELSE:
+		return "ELSE";
+	case TokenType::PRINTF:
+		return "PRINTF";
 	case TokenType::COLON_EQUAL:
 		return "COLON_EQUAL";
 	case TokenType::BANG:
@@ -37,6 +43,10 @@ std::string_view TokenTypeToGrammarTerminal(const TokenType type)
 		return "LPAREN";
 	case TokenType::RPAREN:
 		return "RPAREN";
+	case TokenType::LBRACE:
+		return "LBRACE";
+	case TokenType::RBRACE:
+		return "RBRACE";
 	case TokenType::LBRACKET:
 		return "LBRACKET";
 	case TokenType::RBRACKET:

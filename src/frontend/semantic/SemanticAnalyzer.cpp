@@ -133,10 +133,54 @@ void SemanticAnalyzer::Visit(const SequenceASTNode& node)
 	SetCurrentType(node, hasChildError ? Type::ERROR : lastType);
 }
 
+void SemanticAnalyzer::Visit(const IfElseASTNode& node)
+{
+	const Type conditionType = AnalyzeChild(node.GetCondition());
+	const Type thenType = AnalyzeChild(node.GetThenBranch());
+	const Type elseType = AnalyzeChild(node.GetElseBranch());
+
+	bool hasError = false;
+	if (!IsFalsey(conditionType))
+	{
+		AddDiagnostic("If condition expects truthy-compatible expression.");
+		hasError = true;
+	}
+	if (thenType == Type::ERROR || elseType == Type::ERROR)
+	{
+		hasError = true;
+	}
+	if (!hasError && thenType != elseType)
+	{
+		AddDiagnostic("If branches must have the same type.");
+		hasError = true;
+	}
+
+	SetCurrentType(node, hasError ? Type::ERROR : thenType);
+}
+
+void SemanticAnalyzer::Visit(const PrintfASTNode& node)
+{
+	const Type argumentType = AnalyzeChild(node.GetArgument());
+	if (!IsFalsey(argumentType))
+	{
+		AddDiagnostic("printf expects int or bool argument.");
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+
+	SetCurrentType(node, argumentType);
+}
+
 Type SemanticAnalyzer::AnalyzeChild(const ASTNode& node)
 {
 	node.Accept(*this);
 	return m_currentType;
+}
+
+// TODO избавиться от дублирования кода
+bool SemanticAnalyzer::IsFalsey(const Type type)
+{
+	return type == Type::INT || type == Type::BOOL;
 }
 
 void SemanticAnalyzer::SetCurrentType(const ASTNode& node, const Type type)

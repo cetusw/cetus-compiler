@@ -21,6 +21,7 @@ const std::unordered_map<std::string_view, TokenType> LexicalAnalyzer::m_keyword
 	{ "match", TokenType::MATCH },
 	{ "return", TokenType::RETURN },
 	{ "defer", TokenType::DEFER },
+	{ "printf", TokenType::PRINTF },
 	{ "true", TokenType::TRUE },
 	{ "false", TokenType::FALSE },
 	{ "nil", TokenType::NIL },
