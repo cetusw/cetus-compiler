@@ -11,7 +11,6 @@ enum class CompilerMode
 	RUN_EXPR,
 	GENERATE_TABLE,
 	RUN_VM,
-	ASM,
 	HELP
 };
 

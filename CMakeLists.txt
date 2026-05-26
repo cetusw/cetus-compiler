@@ -34,7 +34,6 @@ add_library(cetus_support STATIC
 )
 
 add_library(cetus_frontend STATIC
-        src/frontend/codegen/asm/AsmProgram.cpp
         src/frontend/codegen/CodegenVisitor.cpp
         src/frontend/lexical/LexicalAnalyzer.cpp
         src/frontend/syntax/SyntaxAnalyzer.cpp
@@ -56,7 +55,6 @@ add_library(cetus_frontend STATIC
         src/frontend/syntax/parser/AstReductionBuilder.cpp
         src/frontend/syntax/storage/JsonPreparedGrammarStorage.cpp
         src/frontend/syntax/parser/TokenSymbolMapper.cpp
-        src/frontend/codegen/asm/AsmCodegenVisitor.cpp
         src/frontend/syntax/presentation/presenters/CsvPresenter.cpp
         src/frontend/syntax/presentation/presenters/CsvPresenter.h
         ${CETUS_FRONTEND_HEADERS}
@@ -98,7 +96,6 @@ add_library(cetus_app_cli STATIC
         src/app/cli/CommandLineInterface.cpp
         src/app/cli/commands/BytecodeExecutionDriver.cpp
         src/app/cli/commands/ParserDriver.cpp
-        src/app/cli/commands/RunAsmExpressionDriver.cpp
         src/app/cli/commands/RunExpressionDriver.cpp
         src/app/cli/commands/TableGeneratorDriver.cpp
         src/app/cli/commands/TypeCheckDriver.cpp
