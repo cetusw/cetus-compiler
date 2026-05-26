@@ -4,6 +4,7 @@
 ~StmtList~ -> ~Stmt~ @pass_expr
 
 ~Stmt~ -> ~SimpleStmt~ SEMICOLON @pass_expr
+~Stmt~ -> IF ~Con~ ~Block~ @if
 ~Stmt~ -> IF ~Con~ ~Block~ ELSE ~Block~ @if_else
 
 ~SimpleStmt~ -> IDENTIFIER COLON_EQUAL ~Con~ @assignment

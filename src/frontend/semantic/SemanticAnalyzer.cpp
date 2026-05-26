@@ -133,11 +133,12 @@ void SemanticAnalyzer::Visit(const SequenceASTNode& node)
 	SetCurrentType(node, hasChildError ? Type::ERROR : lastType);
 }
 
-void SemanticAnalyzer::Visit(const IfElseASTNode& node)
+void SemanticAnalyzer::Visit(const IfASTNode& node)
 {
 	const Type conditionType = AnalyzeChild(node.GetCondition());
 	const Type thenType = AnalyzeChild(node.GetThenBranch());
-	const Type elseType = AnalyzeChild(node.GetElseBranch());
+	const ASTNode* elseBranch = node.GetElseBranch();
+	const Type elseType = elseBranch ? AnalyzeChild(*elseBranch) : thenType;
 
 	bool hasError = false;
 	if (!IsFalsey(conditionType))
@@ -149,7 +150,7 @@ void SemanticAnalyzer::Visit(const IfElseASTNode& node)
 	{
 		hasError = true;
 	}
-	if (!hasError && thenType != elseType)
+	if (!hasError && elseBranch && thenType != elseType)
 	{
 		AddDiagnostic("If branches must have the same type.");
 		hasError = true;

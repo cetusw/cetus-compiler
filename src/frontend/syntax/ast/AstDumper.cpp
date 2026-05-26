@@ -75,12 +75,15 @@ void AstDumper::Visit(const SequenceASTNode& expr)
 	}
 }
 
-void AstDumper::Visit(const IfElseASTNode& expr)
+void AstDumper::Visit(const IfASTNode& expr)
 {
-	DumpLine("IfElseASTNode");
+	DumpLine("IfASTNode");
 	DumpChild(expr.GetCondition());
 	DumpChild(expr.GetThenBranch());
-	DumpChild(expr.GetElseBranch());
+	if (const ASTNode* elseBranch = expr.GetElseBranch())
+	{
+		DumpChild(*elseBranch);
+	}
 }
 
 void AstDumper::Visit(const PrintfASTNode& expr)

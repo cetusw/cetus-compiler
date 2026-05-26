@@ -32,6 +32,8 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildAssignment(std::move(values));
 	case SemanticTag::SEQUENCE:
 		return BuildSequence(std::move(values));
+	case SemanticTag::IF:
+		return BuildIf(std::move(values));
 	case SemanticTag::IF_ELSE:
 		return BuildIfElse(std::move(values));
 	case SemanticTag::PRINTF:
@@ -131,11 +133,22 @@ AstSemanticValue AstReductionBuilder::BuildSequence(std::vector<AstSemanticValue
 	return { std::make_unique<SequenceASTNode>(std::move(expressions)), std::nullopt };
 }
 
+AstSemanticValue AstReductionBuilder::BuildIf(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 3, "If reduction");
+	return {
+		std::make_unique<IfASTNode>(
+			TakeExpr(values, 1),
+			TakeExpr(values, 2)),
+		std::nullopt
+	};
+}
+
 AstSemanticValue AstReductionBuilder::BuildIfElse(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 5, "If/else reduction");
 	return {
-		std::make_unique<IfElseASTNode>(
+		std::make_unique<IfASTNode>(
 			TakeExpr(values, 1),
 			TakeExpr(values, 2),
 			TakeExpr(values, 4)),

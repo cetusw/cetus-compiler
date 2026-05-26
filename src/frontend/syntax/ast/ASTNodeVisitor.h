@@ -10,7 +10,7 @@ class MemberAccessASTNode;
 class IndexASTNode;
 class AssignmentASTNode;
 class SequenceASTNode;
-class IfElseASTNode;
+class IfASTNode;
 class PrintfASTNode;
 
 class ASTNodeVisitor
@@ -28,6 +28,6 @@ public:
 	virtual void Visit(const IndexASTNode& expr) = 0;
 	virtual void Visit(const AssignmentASTNode& expr) = 0;
 	virtual void Visit(const SequenceASTNode& expr) = 0;
-	virtual void Visit(const IfElseASTNode& expr) = 0;
+	virtual void Visit(const IfASTNode& expr) = 0;
 	virtual void Visit(const PrintfASTNode& expr) = 0;
 };

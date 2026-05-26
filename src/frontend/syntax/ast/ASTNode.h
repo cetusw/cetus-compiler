@@ -177,14 +177,14 @@ private:
 	std::vector<ASTNodePtr> m_expressions;
 };
 
-class IfElseASTNode final : public ASTNode
+class IfASTNode final : public ASTNode
 {
 public:
-	IfElseASTNode(ASTNodePtr condition, ASTNodePtr thenBranch, ASTNodePtr elseBranch);
+	IfASTNode(ASTNodePtr condition, ASTNodePtr thenBranch, ASTNodePtr elseBranch = nullptr);
 
 	[[nodiscard]] const ASTNode& GetCondition() const;
 	[[nodiscard]] const ASTNode& GetThenBranch() const;
-	[[nodiscard]] const ASTNode& GetElseBranch() const;
+	[[nodiscard]] const ASTNode* GetElseBranch() const;
 	void Accept(ASTNodeVisitor& visitor) const override;
 
 private:

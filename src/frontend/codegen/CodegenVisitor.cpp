@@ -157,9 +157,9 @@ void CodegenVisitor::Visit(const SequenceASTNode&)
 	Fail("Sequence code generation is not implemented for VM bytecode yet.");
 }
 
-void CodegenVisitor::Visit(const IfElseASTNode&)
+void CodegenVisitor::Visit(const IfASTNode&)
 {
-	Fail("If/else code generation is not implemented for VM bytecode yet.");
+	Fail("If code generation is not implemented for VM bytecode yet.");
 }
 
 void CodegenVisitor::Visit(const PrintfASTNode&)

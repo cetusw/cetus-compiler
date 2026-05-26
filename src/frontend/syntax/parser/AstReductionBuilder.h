@@ -29,6 +29,7 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildIndexAccess(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildAssignment(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildSequence(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildIf(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildIfElse(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildPrintf(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue PassExpr(std::vector<AstSemanticValue> values, std::size_t index);

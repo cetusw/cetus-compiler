@@ -20,6 +20,7 @@ enum class SemanticTag
 	INDEX_ACCESS,
 	ASSIGNMENT,
 	SEQUENCE,
+	IF,
 	IF_ELSE,
 	PRINTF,
 	BLOCK
@@ -41,6 +42,7 @@ enum class SemanticTag
 	if (value == "index_access") return SemanticTag::INDEX_ACCESS;
 	if (value == "assignment") return SemanticTag::ASSIGNMENT;
 	if (value == "sequence") return SemanticTag::SEQUENCE;
+	if (value == "if") return SemanticTag::IF;
 	if (value == "if_else") return SemanticTag::IF_ELSE;
 	if (value == "printf") return SemanticTag::PRINTF;
 	if (value == "block") return SemanticTag::BLOCK;

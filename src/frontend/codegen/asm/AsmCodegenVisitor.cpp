@@ -180,15 +180,16 @@ void AsmCodegenVisitor::Visit(const SequenceASTNode& node)
 	}
 }
 
-void AsmCodegenVisitor::Visit(const IfElseASTNode& node)
+void AsmCodegenVisitor::Visit(const IfASTNode& node)
 {
 	if (!EnsureSupportedType(node))
 	{
 		return;
 	}
 
-	const std::string elseLabel = NextLabel(".L_if_else");
 	const std::string endLabel = NextLabel(".L_if_end");
+	const ASTNode* elseBranch = node.GetElseBranch();
+	const std::string falseLabel = elseBranch ? NextLabel(".L_if_else") : endLabel;
 
 	node.GetCondition().Accept(*this);
 	if (m_error.has_value())
@@ -196,21 +197,25 @@ void AsmCodegenVisitor::Visit(const IfElseASTNode& node)
 		return;
 	}
 	Emit("    cmp rax, 0");
-	Emit("    je " + elseLabel);
+	Emit("    je " + falseLabel);
 
 	node.GetThenBranch().Accept(*this);
 	if (m_error.has_value())
 	{
 		return;
 	}
-	Emit("    jmp " + endLabel);
 
-	m_program.AddText(elseLabel + ":");
-	node.GetElseBranch().Accept(*this);
-	if (m_error.has_value())
+	if (elseBranch)
 	{
-		return;
+		Emit("    jmp " + endLabel);
+		m_program.AddText(falseLabel + ":");
+		elseBranch->Accept(*this);
+		if (m_error.has_value())
+		{
+			return;
+		}
 	}
+
 	m_program.AddText(endLabel + ":");
 }
 
