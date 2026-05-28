@@ -60,6 +60,7 @@ const char* TypeRules::ToString(const Type type)
 	case Type::INT: return "int";
 	case Type::FLOAT: return "float";
 	case Type::BOOL: return "bool";
+	case Type::VOID: return "void";
 	case Type::ERROR: return "error";
 	}
 

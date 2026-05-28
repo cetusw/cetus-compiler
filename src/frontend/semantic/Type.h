@@ -5,5 +5,6 @@ enum class Type
 	INT,
 	FLOAT,
 	BOOL,
+	VOID,
 	ERROR
 };

@@ -11,6 +11,7 @@
 
 ## Frontend
 
+- Разделить `SequenceASTNode` на `ProgramASTNode`, `StatementListASTNode` и `BlockASTNode`.
 - Добавить функции и вызовы.
 - Добавить декларации типов.
 - Добавить пустые блоки.

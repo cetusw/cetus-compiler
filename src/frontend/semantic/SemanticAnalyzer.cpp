@@ -107,7 +107,7 @@ void SemanticAnalyzer::Visit(const AssignmentASTNode& node)
 		m_symbolTable.Define(SemanticSymbol{ node.GetName(), valueType });
 	}
 
-	SetCurrentType(node, valueType);
+	SetCurrentType(node, Type::VOID);
 }
 
 void SemanticAnalyzer::Visit(const SequenceASTNode& node)
@@ -119,18 +119,17 @@ void SemanticAnalyzer::Visit(const SequenceASTNode& node)
 		return;
 	}
 
-	Type lastType = Type::ERROR;
 	bool hasChildError = false;
 	for (const ASTNodePtr& child : node.GetExpressions())
 	{
-		lastType = AnalyzeChild(*child);
-		if (lastType == Type::ERROR)
+		const Type childType = AnalyzeChild(*child);
+		if (childType == Type::ERROR)
 		{
 			hasChildError = true;
 		}
 	}
 
-	SetCurrentType(node, hasChildError ? Type::ERROR : lastType);
+	SetCurrentType(node, hasChildError ? Type::ERROR : Type::VOID);
 }
 
 void SemanticAnalyzer::Visit(const IfASTNode& node)
@@ -138,7 +137,7 @@ void SemanticAnalyzer::Visit(const IfASTNode& node)
 	const Type conditionType = AnalyzeChild(node.GetCondition());
 	const Type thenType = AnalyzeChild(node.GetThenBranch());
 	const ASTNode* elseBranch = node.GetElseBranch();
-	const Type elseType = elseBranch ? AnalyzeChild(*elseBranch) : thenType;
+	const Type elseType = elseBranch ? AnalyzeChild(*elseBranch) : Type::VOID;
 
 	bool hasError = false;
 	if (!IsFalsey(conditionType))
@@ -150,13 +149,8 @@ void SemanticAnalyzer::Visit(const IfASTNode& node)
 	{
 		hasError = true;
 	}
-	if (!hasError && elseBranch && thenType != elseType)
-	{
-		AddDiagnostic("If branches must have the same type.");
-		hasError = true;
-	}
 
-	SetCurrentType(node, hasError ? Type::ERROR : thenType);
+	SetCurrentType(node, hasError ? Type::ERROR : Type::VOID);
 }
 
 void SemanticAnalyzer::Visit(const PrintfASTNode& node)
@@ -169,7 +163,7 @@ void SemanticAnalyzer::Visit(const PrintfASTNode& node)
 		return;
 	}
 
-	SetCurrentType(node, argumentType);
+	SetCurrentType(node, Type::VOID);
 }
 
 Type SemanticAnalyzer::AnalyzeChild(const ASTNode& node)
