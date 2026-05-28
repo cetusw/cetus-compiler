@@ -19,6 +19,7 @@ enum class SemanticTag
 	MEMBER_ACCESS,
 	INDEX_ACCESS,
 	ASSIGNMENT,
+	EXPRESSION_STATEMENT,
 	PROGRAM,
 	STATEMENT_LIST,
 	STATEMENT_LIST_SINGLE,
@@ -43,6 +44,7 @@ enum class SemanticTag
 	if (value == "member_access") return SemanticTag::MEMBER_ACCESS;
 	if (value == "index_access") return SemanticTag::INDEX_ACCESS;
 	if (value == "assignment") return SemanticTag::ASSIGNMENT;
+	if (value == "expression_statement") return SemanticTag::EXPRESSION_STATEMENT;
 	if (value == "program") return SemanticTag::PROGRAM;
 	if (value == "statement_list") return SemanticTag::STATEMENT_LIST;
 	if (value == "statement_list_single") return SemanticTag::STATEMENT_LIST_SINGLE;

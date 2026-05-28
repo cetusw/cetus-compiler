@@ -5,6 +5,7 @@
 - [Модель AST](#модель-ast)
 - [Отсутствие Parse Tree](#отсутствие-parse-tree)
 - [AST nodes](#ast-nodes)
+- [Statement и Expression](#statement-и-expression)
 - [Semantic actions](#semantic-actions)
 - [Аннотации типов](#аннотации-типов)
 
@@ -23,6 +24,8 @@ AST является основным представлением програ�
 AST-узлы:
 
 - `ASTNode`;
+- `StatementASTNode`;
+- `ExpressionASTNode`;
 - `ProgramASTNode`;
 - `StatementListASTNode`;
 - `BlockASTNode`;
@@ -32,11 +35,20 @@ AST-узлы:
 - `UnaryASTNode`;
 - `BinaryASTNode`;
 - `AssignmentASTNode`;
+- `ExpressionStatementASTNode`;
 - `IdentifierASTNode`;
 - `MemberAccessASTNode`;
 - `IndexASTNode`;
 - `IfASTNode`;
 - `PrintfASTNode`.
+
+## Statement и Expression
+
+`StatementASTNode` является базовым классом для операторов. Операторы выполняют действие и имеют тип `void`.
+
+`ExpressionASTNode` является базовым классом для выражений. Выражения вычисляют значение и имеют предметный тип: `int`, `float`, `bool` или другой тип языка.
+
+Выражение, записанное как отдельный оператор, представляется узлом `ExpressionStatementASTNode`.
 
 ## Semantic actions
 
@@ -50,6 +62,7 @@ AST-узлы:
 | `@unary` | `UnaryASTNode` |
 | `@binary` | `BinaryASTNode` |
 | `@assignment` | `AssignmentASTNode` |
+| `@expression_statement` | `ExpressionStatementASTNode` |
 | `@program` | `ProgramASTNode` |
 | `@statement_list` | `StatementListASTNode` |
 | `@statement_list_single` | `StatementListASTNode` |

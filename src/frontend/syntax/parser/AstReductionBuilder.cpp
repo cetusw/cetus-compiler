@@ -30,6 +30,8 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildIndexAccess(std::move(values));
 	case SemanticTag::ASSIGNMENT:
 		return BuildAssignment(std::move(values));
+	case SemanticTag::EXPRESSION_STATEMENT:
+		return BuildExpressionStatement(std::move(values));
 	case SemanticTag::PROGRAM:
 		return BuildProgram(std::move(values));
 	case SemanticTag::STATEMENT_LIST:
@@ -125,6 +127,12 @@ AstSemanticValue AstReductionBuilder::BuildAssignment(std::vector<AstSemanticVal
 {
 	RequireValueCount(values, 3, "Assignment reduction");
 	return { std::make_unique<AssignmentASTNode>(TakeToken(values, 0).lexeme, TakeExpr(values, 2)), std::nullopt };
+}
+
+AstSemanticValue AstReductionBuilder::BuildExpressionStatement(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 1, "Expression statement reduction");
+	return { std::make_unique<ExpressionStatementASTNode>(TakeExpr(values, 0)), std::nullopt };
 }
 
 AstSemanticValue AstReductionBuilder::BuildProgram(std::vector<AstSemanticValue> values)

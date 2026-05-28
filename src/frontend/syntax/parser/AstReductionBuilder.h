@@ -28,6 +28,7 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildMemberAccess(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildIndexAccess(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildAssignment(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildExpressionStatement(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildProgram(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildStatementList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildSingleStatementList(std::vector<AstSemanticValue> values);

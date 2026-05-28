@@ -183,6 +183,21 @@ void AssignmentASTNode::Accept(ASTNodeVisitor& visitor) const
 	visitor.Visit(*this);
 }
 
+ExpressionStatementASTNode::ExpressionStatementASTNode(ASTNodePtr expression)
+	: m_expression(std::move(expression))
+{
+}
+
+const ASTNode& ExpressionStatementASTNode::GetExpression() const
+{
+	return *m_expression;
+}
+
+void ExpressionStatementASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}
+
 ProgramASTNode::ProgramASTNode(ASTNodePtr statements)
 	: m_statements(std::move(statements))
 {

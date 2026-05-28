@@ -26,7 +26,7 @@
 
 ~SimpleStmt~ -> IDENTIFIER COLON_EQUAL ~Con~ @assignment
 ~SimpleStmt~ -> PRINTF LPAREN ~Con~ RPAREN @printf
-~SimpleStmt~ -> ~Con~ @pass_expr
+~SimpleStmt~ -> ~Con~ @expression_statement
 
 ~Block~ -> LBRACE ~StmtList~ RBRACE @block
 

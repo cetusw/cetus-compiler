@@ -152,6 +152,11 @@ void CodegenVisitor::Visit(const AssignmentASTNode&)
 	Fail("Assignment code generation is not implemented for VM bytecode yet.");
 }
 
+void CodegenVisitor::Visit(const ExpressionStatementASTNode&)
+{
+	Fail("Expression statement code generation is not implemented for VM bytecode yet.");
+}
+
 void CodegenVisitor::Visit(const ProgramASTNode&)
 {
 	Fail("Program code generation is not implemented for VM bytecode yet.");

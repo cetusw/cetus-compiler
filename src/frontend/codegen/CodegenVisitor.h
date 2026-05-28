@@ -26,6 +26,7 @@ public:
 	void Visit(const MemberAccessASTNode& expr) override;
 	void Visit(const IndexASTNode& expr) override;
 	void Visit(const AssignmentASTNode& expr) override;
+	void Visit(const ExpressionStatementASTNode& expr) override;
 	void Visit(const ProgramASTNode& expr) override;
 	void Visit(const StatementListASTNode& expr) override;
 	void Visit(const BlockASTNode& expr) override;

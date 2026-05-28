@@ -110,6 +110,12 @@ void SemanticAnalyzer::Visit(const AssignmentASTNode& node)
 	SetCurrentType(node, Type::VOID);
 }
 
+void SemanticAnalyzer::Visit(const ExpressionStatementASTNode& node)
+{
+	const Type expressionType = AnalyzeChild(node.GetExpression());
+	SetCurrentType(node, expressionType == Type::ERROR ? Type::ERROR : Type::VOID);
+}
+
 void SemanticAnalyzer::Visit(const ProgramASTNode& node)
 {
 	const Type statementsType = AnalyzeChild(node.GetStatements());

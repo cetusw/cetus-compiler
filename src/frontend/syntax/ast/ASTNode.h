@@ -45,7 +45,15 @@ private:
 
 using ASTNodePtr = std::unique_ptr<ASTNode>;
 
-class BoolLiteralASTNode final : public ASTNode
+class StatementASTNode : public ASTNode
+{
+};
+
+class ExpressionASTNode : public ASTNode
+{
+};
+
+class BoolLiteralASTNode final : public ExpressionASTNode
 {
 public:
 	explicit BoolLiteralASTNode(bool value);
@@ -57,7 +65,7 @@ private:
 	bool m_value;
 };
 
-class IntLiteralASTNode final : public ASTNode
+class IntLiteralASTNode final : public ExpressionASTNode
 {
 public:
 	explicit IntLiteralASTNode(std::string value);
@@ -69,7 +77,7 @@ private:
 	std::string m_value;
 };
 
-class FloatLiteralASTNode final : public ASTNode
+class FloatLiteralASTNode final : public ExpressionASTNode
 {
 public:
 	explicit FloatLiteralASTNode(std::string value);
@@ -81,7 +89,7 @@ private:
 	std::string m_value;
 };
 
-class IdentifierASTNode final : public ASTNode
+class IdentifierASTNode final : public ExpressionASTNode
 {
 public:
 	explicit IdentifierASTNode(std::string name);
@@ -93,7 +101,7 @@ private:
 	std::string m_name;
 };
 
-class UnaryASTNode final : public ASTNode
+class UnaryASTNode final : public ExpressionASTNode
 {
 public:
 	UnaryASTNode(UnaryOperator op, ASTNodePtr operand);
@@ -107,7 +115,7 @@ private:
 	ASTNodePtr m_operand;
 };
 
-class BinaryASTNode final : public ASTNode
+class BinaryASTNode final : public ExpressionASTNode
 {
 public:
 	BinaryASTNode(ASTNodePtr left, BinaryOperator op, ASTNodePtr right);
@@ -123,7 +131,7 @@ private:
 	ASTNodePtr m_right;
 };
 
-class MemberAccessASTNode final : public ASTNode
+class MemberAccessASTNode final : public ExpressionASTNode
 {
 public:
 	MemberAccessASTNode(ASTNodePtr object, std::string member);
@@ -137,7 +145,7 @@ private:
 	std::string m_member;
 };
 
-class IndexASTNode final : public ASTNode
+class IndexASTNode final : public ExpressionASTNode
 {
 public:
 	IndexASTNode(ASTNodePtr object, ASTNodePtr index);
@@ -151,7 +159,7 @@ private:
 	ASTNodePtr m_index;
 };
 
-class AssignmentASTNode final : public ASTNode
+class AssignmentASTNode final : public StatementASTNode
 {
 public:
 	AssignmentASTNode(std::string name, ASTNodePtr value);
@@ -165,7 +173,19 @@ private:
 	ASTNodePtr m_value;
 };
 
-class ProgramASTNode final : public ASTNode
+class ExpressionStatementASTNode final : public StatementASTNode
+{
+public:
+	explicit ExpressionStatementASTNode(ASTNodePtr expression);
+
+	[[nodiscard]] const ASTNode& GetExpression() const;
+	void Accept(ASTNodeVisitor& visitor) const override;
+
+private:
+	ASTNodePtr m_expression;
+};
+
+class ProgramASTNode final : public StatementASTNode
 {
 public:
 	explicit ProgramASTNode(ASTNodePtr statements);
@@ -177,7 +197,7 @@ private:
 	ASTNodePtr m_statements;
 };
 
-class StatementListASTNode final : public ASTNode
+class StatementListASTNode final : public StatementASTNode
 {
 public:
 	explicit StatementListASTNode(std::vector<ASTNodePtr> statements);
@@ -189,7 +209,7 @@ private:
 	std::vector<ASTNodePtr> m_statements;
 };
 
-class BlockASTNode final : public ASTNode
+class BlockASTNode final : public StatementASTNode
 {
 public:
 	explicit BlockASTNode(ASTNodePtr statements);
@@ -201,7 +221,7 @@ private:
 	ASTNodePtr m_statements;
 };
 
-class IfASTNode final : public ASTNode
+class IfASTNode final : public StatementASTNode
 {
 public:
 	IfASTNode(ASTNodePtr condition, ASTNodePtr thenBranch, ASTNodePtr elseBranch = nullptr);
@@ -217,7 +237,7 @@ private:
 	ASTNodePtr m_elseBranch;
 };
 
-class PrintfASTNode final : public ASTNode
+class PrintfASTNode final : public StatementASTNode
 {
 public:
 	explicit PrintfASTNode(ASTNodePtr argument);

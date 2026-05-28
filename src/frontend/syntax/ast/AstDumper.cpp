@@ -66,6 +66,12 @@ void AstDumper::Visit(const AssignmentASTNode& expr)
 	DumpChild(expr.GetValue());
 }
 
+void AstDumper::Visit(const ExpressionStatementASTNode& expr)
+{
+	DumpLine("ExpressionStatementASTNode");
+	DumpChild(expr.GetExpression());
+}
+
 void AstDumper::Visit(const ProgramASTNode& expr)
 {
 	DumpLine("ProgramASTNode");

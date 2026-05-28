@@ -115,6 +115,7 @@ std::string JsonPreparedGrammarStorage::SerializeSemanticTag(const SemanticTag t
 	case SemanticTag::MEMBER_ACCESS: return "member_access";
 	case SemanticTag::INDEX_ACCESS: return "index_access";
 	case SemanticTag::ASSIGNMENT: return "assignment";
+	case SemanticTag::EXPRESSION_STATEMENT: return "expression_statement";
 	case SemanticTag::PROGRAM: return "program";
 	case SemanticTag::STATEMENT_LIST: return "statement_list";
 	case SemanticTag::STATEMENT_LIST_SINGLE: return "statement_list_single";
