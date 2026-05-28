@@ -9,7 +9,9 @@ class BinaryASTNode;
 class MemberAccessASTNode;
 class IndexASTNode;
 class AssignmentASTNode;
-class SequenceASTNode;
+class ProgramASTNode;
+class StatementListASTNode;
+class BlockASTNode;
 class IfASTNode;
 class PrintfASTNode;
 
@@ -27,7 +29,9 @@ public:
 	virtual void Visit(const MemberAccessASTNode& expr) = 0;
 	virtual void Visit(const IndexASTNode& expr) = 0;
 	virtual void Visit(const AssignmentASTNode& expr) = 0;
-	virtual void Visit(const SequenceASTNode& expr) = 0;
+	virtual void Visit(const ProgramASTNode& expr) = 0;
+	virtual void Visit(const StatementListASTNode& expr) = 0;
+	virtual void Visit(const BlockASTNode& expr) = 0;
 	virtual void Visit(const IfASTNode& expr) = 0;
 	virtual void Visit(const PrintfASTNode& expr) = 0;
 };

@@ -183,17 +183,47 @@ void AssignmentASTNode::Accept(ASTNodeVisitor& visitor) const
 	visitor.Visit(*this);
 }
 
-SequenceASTNode::SequenceASTNode(std::vector<ASTNodePtr> expressions)
-	: m_expressions(std::move(expressions))
+ProgramASTNode::ProgramASTNode(ASTNodePtr statements)
+	: m_statements(std::move(statements))
 {
 }
 
-const std::vector<ASTNodePtr>& SequenceASTNode::GetExpressions() const
+const ASTNode& ProgramASTNode::GetStatements() const
 {
-	return m_expressions;
+	return *m_statements;
 }
 
-void SequenceASTNode::Accept(ASTNodeVisitor& visitor) const
+void ProgramASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}
+
+StatementListASTNode::StatementListASTNode(std::vector<ASTNodePtr> statements)
+	: m_statements(std::move(statements))
+{
+}
+
+const std::vector<ASTNodePtr>& StatementListASTNode::GetStatements() const
+{
+	return m_statements;
+}
+
+void StatementListASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}
+
+BlockASTNode::BlockASTNode(ASTNodePtr statements)
+	: m_statements(std::move(statements))
+{
+}
+
+const ASTNode& BlockASTNode::GetStatements() const
+{
+	return *m_statements;
+}
+
+void BlockASTNode::Accept(ASTNodeVisitor& visitor) const
 {
 	visitor.Visit(*this);
 }

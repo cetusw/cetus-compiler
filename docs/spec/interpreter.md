@@ -27,4 +27,4 @@ Frontend строит AST и выполняет семантический ан�
 
 > TODO
 >
-> Требуется реализовать генерацию байткода для `AssignmentASTNode`, `SequenceASTNode`, `IfASTNode`, `PrintfASTNode`, truthiness и short-circuit логики.
+> Требуется реализовать генерацию байткода для `ProgramASTNode`, `StatementListASTNode`, `BlockASTNode`, `AssignmentASTNode`, `IfASTNode`, `PrintfASTNode`, truthiness и short-circuit логики.

@@ -110,17 +110,23 @@ void SemanticAnalyzer::Visit(const AssignmentASTNode& node)
 	SetCurrentType(node, Type::VOID);
 }
 
-void SemanticAnalyzer::Visit(const SequenceASTNode& node)
+void SemanticAnalyzer::Visit(const ProgramASTNode& node)
 {
-	if (node.GetExpressions().empty())
+	const Type statementsType = AnalyzeChild(node.GetStatements());
+	SetCurrentType(node, statementsType == Type::ERROR ? Type::ERROR : Type::VOID);
+}
+
+void SemanticAnalyzer::Visit(const StatementListASTNode& node)
+{
+	if (node.GetStatements().empty())
 	{
-		AddDiagnostic("Sequence expression cannot be empty.");
+		AddDiagnostic("Statement list cannot be empty.");
 		SetCurrentType(node, Type::ERROR);
 		return;
 	}
 
 	bool hasChildError = false;
-	for (const ASTNodePtr& child : node.GetExpressions())
+	for (const ASTNodePtr& child : node.GetStatements())
 	{
 		const Type childType = AnalyzeChild(*child);
 		if (childType == Type::ERROR)
@@ -130,6 +136,12 @@ void SemanticAnalyzer::Visit(const SequenceASTNode& node)
 	}
 
 	SetCurrentType(node, hasChildError ? Type::ERROR : Type::VOID);
+}
+
+void SemanticAnalyzer::Visit(const BlockASTNode& node)
+{
+	const Type statementsType = AnalyzeChild(node.GetStatements());
+	SetCurrentType(node, statementsType == Type::ERROR ? Type::ERROR : Type::VOID);
 }
 
 void SemanticAnalyzer::Visit(const IfASTNode& node)

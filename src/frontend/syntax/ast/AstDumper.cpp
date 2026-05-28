@@ -66,13 +66,25 @@ void AstDumper::Visit(const AssignmentASTNode& expr)
 	DumpChild(expr.GetValue());
 }
 
-void AstDumper::Visit(const SequenceASTNode& expr)
+void AstDumper::Visit(const ProgramASTNode& expr)
 {
-	DumpLine("SequenceASTNode");
-	for (const ASTNodePtr& child : expr.GetExpressions())
+	DumpLine("ProgramASTNode");
+	DumpChild(expr.GetStatements());
+}
+
+void AstDumper::Visit(const StatementListASTNode& expr)
+{
+	DumpLine("StatementListASTNode");
+	for (const ASTNodePtr& child : expr.GetStatements())
 	{
 		DumpChild(*child);
 	}
+}
+
+void AstDumper::Visit(const BlockASTNode& expr)
+{
+	DumpLine("BlockASTNode");
+	DumpChild(expr.GetStatements());
 }
 
 void AstDumper::Visit(const IfASTNode& expr)

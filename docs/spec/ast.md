@@ -5,7 +5,6 @@
 - [Модель AST](#модель-ast)
 - [Отсутствие Parse Tree](#отсутствие-parse-tree)
 - [AST nodes](#ast-nodes)
-- [Разделение последовательностей](#разделение-последовательностей)
 - [Semantic actions](#semantic-actions)
 - [Аннотации типов](#аннотации-типов)
 
@@ -21,33 +20,23 @@ AST является основным представлением програ�
 
 ## AST nodes
 
-Текущие AST-узлы:
+AST-узлы:
 
 - `ASTNode`;
+- `ProgramASTNode`;
+- `StatementListASTNode`;
+- `BlockASTNode`;
 - `IntLiteralASTNode`;
 - `FloatLiteralASTNode`;
 - `BoolLiteralASTNode`;
 - `UnaryASTNode`;
 - `BinaryASTNode`;
 - `AssignmentASTNode`;
-- `SequenceASTNode`;
 - `IdentifierASTNode`;
 - `MemberAccessASTNode`;
 - `IndexASTNode`;
 - `IfASTNode`;
 - `PrintfASTNode`.
-
-## Разделение последовательностей
-
-> TODO
->
-> `SequenceASTNode` должен быть разделён на отдельные AST-узлы, соответствующие обычной структуре языка программирования:
->
-> - `ProgramASTNode` — корень AST для всего исходного файла;
-> - `StatementListASTNode` — список операторов внутри программы или блока;
-> - `BlockASTNode` — блок `{ ... }` с собственной семантикой области видимости.
->
-> После этого `SequenceASTNode` должен быть удалён или оставлен только как внутренний временный узел, если он нужен parser implementation.
 
 ## Semantic actions
 
@@ -61,7 +50,10 @@ AST является основным представлением програ�
 | `@unary` | `UnaryASTNode` |
 | `@binary` | `BinaryASTNode` |
 | `@assignment` | `AssignmentASTNode` |
-| `@sequence` | `SequenceASTNode` |
+| `@program` | `ProgramASTNode` |
+| `@statement_list` | `StatementListASTNode` |
+| `@statement_list_single` | `StatementListASTNode` |
+| `@block` | `BlockASTNode` |
 | `@if` | `IfASTNode` без else |
 | `@if_else` | `IfASTNode` с else |
 | `@printf` | `PrintfASTNode` |

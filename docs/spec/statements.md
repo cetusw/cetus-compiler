@@ -11,11 +11,11 @@
 
 ## Список операторов
 
-Операторы объединяются в `SequenceASTNode`.
+Операторы объединяются в `StatementListASTNode`.
 
 ```text
-~StmtList~ -> ~StmtList~ ~Stmt~ @sequence
-~StmtList~ -> ~Stmt~ @pass_expr
+~StmtList~ -> ~StmtList~ ~Stmt~ @statement_list
+~StmtList~ -> ~Stmt~ @statement_list_single
 ```
 
 ## Простые операторы

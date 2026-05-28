@@ -165,16 +165,40 @@ private:
 	ASTNodePtr m_value;
 };
 
-class SequenceASTNode final : public ASTNode
+class ProgramASTNode final : public ASTNode
 {
 public:
-	explicit SequenceASTNode(std::vector<ASTNodePtr> expressions);
+	explicit ProgramASTNode(ASTNodePtr statements);
 
-	[[nodiscard]] const std::vector<ASTNodePtr>& GetExpressions() const;
+	[[nodiscard]] const ASTNode& GetStatements() const;
 	void Accept(ASTNodeVisitor& visitor) const override;
 
 private:
-	std::vector<ASTNodePtr> m_expressions;
+	ASTNodePtr m_statements;
+};
+
+class StatementListASTNode final : public ASTNode
+{
+public:
+	explicit StatementListASTNode(std::vector<ASTNodePtr> statements);
+
+	[[nodiscard]] const std::vector<ASTNodePtr>& GetStatements() const;
+	void Accept(ASTNodeVisitor& visitor) const override;
+
+private:
+	std::vector<ASTNodePtr> m_statements;
+};
+
+class BlockASTNode final : public ASTNode
+{
+public:
+	explicit BlockASTNode(ASTNodePtr statements);
+
+	[[nodiscard]] const ASTNode& GetStatements() const;
+	void Accept(ASTNodeVisitor& visitor) const override;
+
+private:
+	ASTNodePtr m_statements;
 };
 
 class IfASTNode final : public ASTNode

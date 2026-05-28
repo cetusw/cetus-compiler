@@ -30,8 +30,12 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildIndexAccess(std::move(values));
 	case SemanticTag::ASSIGNMENT:
 		return BuildAssignment(std::move(values));
-	case SemanticTag::SEQUENCE:
-		return BuildSequence(std::move(values));
+	case SemanticTag::PROGRAM:
+		return BuildProgram(std::move(values));
+	case SemanticTag::STATEMENT_LIST:
+		return BuildStatementList(std::move(values));
+	case SemanticTag::STATEMENT_LIST_SINGLE:
+		return BuildSingleStatementList(std::move(values));
 	case SemanticTag::IF:
 		return BuildIf(std::move(values));
 	case SemanticTag::IF_ELSE:
@@ -39,7 +43,7 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 	case SemanticTag::PRINTF:
 		return BuildPrintf(std::move(values));
 	case SemanticTag::BLOCK:
-		return PassExpr(std::move(values), 1);
+		return BuildBlock(std::move(values));
 	case SemanticTag::NONE:
 		throw std::logic_error("Missing semantic tag for reduced parser rule.");
 	}
@@ -123,14 +127,35 @@ AstSemanticValue AstReductionBuilder::BuildAssignment(std::vector<AstSemanticVal
 	return { std::make_unique<AssignmentASTNode>(TakeToken(values, 0).lexeme, TakeExpr(values, 2)), std::nullopt };
 }
 
-AstSemanticValue AstReductionBuilder::BuildSequence(std::vector<AstSemanticValue> values)
+AstSemanticValue AstReductionBuilder::BuildProgram(std::vector<AstSemanticValue> values)
 {
-	RequireValueCount(values, 2, "Sequence reduction");
+	RequireValueCount(values, 1, "Program reduction");
+	return { std::make_unique<ProgramASTNode>(TakeExpr(values, 0)), std::nullopt };
+}
 
-	std::vector<ASTNodePtr> expressions;
-	expressions.push_back(TakeExpr(values, 0));
-	expressions.push_back(TakeExpr(values, 1));
-	return { std::make_unique<SequenceASTNode>(std::move(expressions)), std::nullopt };
+AstSemanticValue AstReductionBuilder::BuildStatementList(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 2, "Statement list reduction");
+
+	std::vector<ASTNodePtr> statements;
+	statements.push_back(TakeExpr(values, 0));
+	statements.push_back(TakeExpr(values, 1));
+	return { std::make_unique<StatementListASTNode>(std::move(statements)), std::nullopt };
+}
+
+AstSemanticValue AstReductionBuilder::BuildSingleStatementList(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 1, "Single statement list reduction");
+
+	std::vector<ASTNodePtr> statements;
+	statements.push_back(TakeExpr(values, 0));
+	return { std::make_unique<StatementListASTNode>(std::move(statements)), std::nullopt };
+}
+
+AstSemanticValue AstReductionBuilder::BuildBlock(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 3, "Block reduction");
+	return { std::make_unique<BlockASTNode>(TakeExpr(values, 1)), std::nullopt };
 }
 
 AstSemanticValue AstReductionBuilder::BuildIf(std::vector<AstSemanticValue> values)

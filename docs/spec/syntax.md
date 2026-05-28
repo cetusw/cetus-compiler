@@ -19,16 +19,16 @@
 ## Программа
 
 ```text
-~Program~ -> ~StmtList~ @pass_expr
+~Program~ -> ~StmtList~ @program
 ```
 
-Программа является списком операторов.
+Программа является корневым AST-узлом и содержит список операторов.
 
 ## Операторы
 
 ```text
-~StmtList~ -> ~StmtList~ ~Stmt~ @sequence
-~StmtList~ -> ~Stmt~ @pass_expr
+~StmtList~ -> ~StmtList~ ~Stmt~ @statement_list
+~StmtList~ -> ~Stmt~ @statement_list_single
 
 ~Stmt~ -> ~SimpleStmt~ SEMICOLON @pass_expr
 ~Stmt~ -> IF ~Con~ ~Block~ @if
