@@ -75,6 +75,7 @@ AST-узлы:
 | `@statement_list` | `StatementListASTNode` |
 | `@statement_list_single` | `StatementListASTNode` |
 | `@block` | `BlockASTNode` |
+| `@block_empty` | `BlockASTNode` |
 | `@if` | `IfASTNode` без else |
 | `@if_else` | `IfASTNode` с else |
 | `@printf` | `PrintfASTNode` |

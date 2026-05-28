@@ -220,13 +220,6 @@ void SemanticAnalyzer::Visit(const ProgramASTNode& node)
 
 void SemanticAnalyzer::Visit(const StatementListASTNode& node)
 {
-	if (node.GetStatements().empty())
-	{
-		AddDiagnostic("Statement list cannot be empty.");
-		SetCurrentType(node, Type::ERROR);
-		return;
-	}
-
 	bool hasChildError = false;
 	for (const ASTNodePtr& child : node.GetStatements())
 	{

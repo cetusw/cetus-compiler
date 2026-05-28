@@ -48,6 +48,7 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildStatementList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildSingleStatementList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildBlock(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildEmptyBlock(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildIf(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildIfElse(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildPrintf(std::vector<AstSemanticValue> values);

@@ -38,6 +38,7 @@
 ~SimpleStmt~ -> ~Con~ @expression_statement
 
 ~Block~ -> LBRACE ~StmtList~ RBRACE @block
+~Block~ -> LBRACE RBRACE @block_empty
 
 ~IdentifierList~ -> ~IdentifierList~ COMMA IDENTIFIER @identifier_list
 ~IdentifierList~ -> IDENTIFIER @identifier_list_single

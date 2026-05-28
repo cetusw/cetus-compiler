@@ -66,6 +66,8 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildPrintf(std::move(values));
 	case SemanticTag::BLOCK:
 		return BuildBlock(std::move(values));
+	case SemanticTag::BLOCK_EMPTY:
+		return BuildEmptyBlock(values);
 	case SemanticTag::NONE:
 		throw std::logic_error("Missing semantic tag for reduced parser rule.");
 	}
@@ -303,6 +305,16 @@ AstSemanticValue AstReductionBuilder::BuildBlock(std::vector<AstSemanticValue> v
 {
 	RequireValueCount(values, 3, "Block reduction");
 	return { std::make_unique<BlockASTNode>(TakeNode(values, 1)), std::nullopt };
+}
+
+AstSemanticValue AstReductionBuilder::BuildEmptyBlock(const std::vector<AstSemanticValue>& values)
+{
+	RequireValueCount(values, 2, "Empty block reduction");
+	return {
+		std::make_unique<BlockASTNode>(
+			std::make_unique<StatementListASTNode>(std::vector<ASTNodePtr>{})),
+		std::nullopt
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildIf(std::vector<AstSemanticValue> values)
