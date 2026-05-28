@@ -4,19 +4,22 @@
 
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 class SymbolTable
 {
 public:
 	using Bindings = std::unordered_map<std::string, SemanticSymbol>;
 
-	SymbolTable() = default;
+	SymbolTable();
 	explicit SymbolTable(Bindings bindings);
 
 	void Define(SemanticSymbol symbol);
+	void EnterScope();
+	void ExitScope();
 	[[nodiscard]] const SemanticSymbol* Resolve(const std::string& name) const;
 	[[nodiscard]] const Bindings& GetBindings() const;
 
 private:
-	Bindings m_bindings;
+	std::vector<Bindings> m_scopes;
 };

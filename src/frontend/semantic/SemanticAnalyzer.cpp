@@ -146,7 +146,9 @@ void SemanticAnalyzer::Visit(const StatementListASTNode& node)
 
 void SemanticAnalyzer::Visit(const BlockASTNode& node)
 {
+	m_symbolTable.EnterScope();
 	const Type statementsType = AnalyzeChild(node.GetStatements());
+	m_symbolTable.ExitScope();
 	SetCurrentType(node, statementsType == Type::ERROR ? Type::ERROR : Type::VOID);
 }
 
@@ -158,7 +160,11 @@ void SemanticAnalyzer::Visit(const IfASTNode& node)
 	const Type elseType = elseBranch ? AnalyzeChild(*elseBranch) : Type::VOID;
 
 	bool hasError = false;
-	if (!IsFalsey(conditionType))
+	if (conditionType == Type::ERROR)
+	{
+		hasError = true;
+	}
+	else if (!IsFalsey(conditionType))
 	{
 		AddDiagnostic("If condition expects truthy-compatible expression.");
 		hasError = true;
@@ -174,6 +180,11 @@ void SemanticAnalyzer::Visit(const IfASTNode& node)
 void SemanticAnalyzer::Visit(const PrintfASTNode& node)
 {
 	const Type argumentType = AnalyzeChild(node.GetArgument());
+	if (argumentType == Type::ERROR)
+	{
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
 	if (!IsFalsey(argumentType))
 	{
 		AddDiagnostic("printf expects int or bool argument.");

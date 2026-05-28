@@ -1,27 +1,57 @@
 #include "SymbolTable.h"
 
-SymbolTable::SymbolTable(Bindings bindings)
-	: m_bindings(std::move(bindings))
+#include <stdexcept>
+
+SymbolTable::SymbolTable()
 {
+	m_scopes.emplace_back();
+}
+
+SymbolTable::SymbolTable(Bindings bindings)
+{
+	m_scopes.push_back(std::move(bindings));
+}
+
+void SymbolTable::EnterScope()
+{
+	m_scopes.emplace_back();
+}
+
+void SymbolTable::ExitScope()
+{
+	if (m_scopes.size() <= 1)
+	{
+		throw std::logic_error("Cannot exit global symbol scope.");
+	}
+
+	m_scopes.pop_back();
 }
 
 void SymbolTable::Define(SemanticSymbol symbol)
 {
-	m_bindings[symbol.name] = std::move(symbol);
+	if (m_scopes.empty())
+	{
+		m_scopes.emplace_back();
+	}
+
+	m_scopes.back()[symbol.name] = std::move(symbol);
 }
 
 const SemanticSymbol* SymbolTable::Resolve(const std::string& name) const
 {
-	const auto it = m_bindings.find(name);
-	if (it == m_bindings.end())
+	for (auto scope = m_scopes.rbegin(); scope != m_scopes.rend(); ++scope)
 	{
-		return nullptr;
+		const auto it = scope->find(name);
+		if (it != scope->end())
+		{
+			return &it->second;
+		}
 	}
 
-	return &it->second;
+	return nullptr;
 }
 
 const SymbolTable::Bindings& SymbolTable::GetBindings() const
 {
-	return m_bindings;
+	return m_scopes.front();
 }
