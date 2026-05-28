@@ -127,6 +127,7 @@ std::string JsonPreparedGrammarStorage::SerializeSemanticTag(const SemanticTag t
 	case SemanticTag::VAR_TYPED_INITIALIZED_DECLARATION: return "var_typed_initialized_declaration";
 	case SemanticTag::EXPRESSION_STATEMENT: return "expression_statement";
 	case SemanticTag::PROGRAM: return "program";
+	case SemanticTag::PROGRAM_EMPTY: return "program_empty";
 	case SemanticTag::STATEMENT_LIST: return "statement_list";
 	case SemanticTag::STATEMENT_LIST_SINGLE: return "statement_list_single";
 	case SemanticTag::IF: return "if";

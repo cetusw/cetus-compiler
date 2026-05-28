@@ -45,6 +45,7 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildVarTypedInitializedDeclaration(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildExpressionStatement(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildProgram(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildEmptyProgram(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildStatementList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildSingleStatementList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildBlock(std::vector<AstSemanticValue> values);

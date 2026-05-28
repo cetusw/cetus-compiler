@@ -21,6 +21,7 @@
 
 ```text
 ~Program~ -> ~StmtList~ @program
+~Program~ -> e @program_empty
 
 ~StmtList~ -> ~StmtList~ ~Stmt~ @statement_list
 ~StmtList~ -> ~Stmt~ @statement_list_single

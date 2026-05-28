@@ -54,6 +54,8 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildExpressionStatement(std::move(values));
 	case SemanticTag::PROGRAM:
 		return BuildProgram(std::move(values));
+	case SemanticTag::PROGRAM_EMPTY:
+		return BuildEmptyProgram(values);
 	case SemanticTag::STATEMENT_LIST:
 		return BuildStatementList(std::move(values));
 	case SemanticTag::STATEMENT_LIST_SINGLE:
@@ -273,6 +275,16 @@ AstSemanticValue AstReductionBuilder::BuildProgram(std::vector<AstSemanticValue>
 {
 	RequireValueCount(values, 1, "Program reduction");
 	return { std::make_unique<ProgramASTNode>(TakeNode(values, 0)), std::nullopt };
+}
+
+AstSemanticValue AstReductionBuilder::BuildEmptyProgram(const std::vector<AstSemanticValue>& values)
+{
+	RequireValueCount(values, 0, "Empty program reduction");
+	return {
+		std::make_unique<ProgramASTNode>(
+			std::make_unique<StatementListASTNode>(std::vector<ASTNodePtr>{})),
+		std::nullopt
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildStatementList(std::vector<AstSemanticValue> values)

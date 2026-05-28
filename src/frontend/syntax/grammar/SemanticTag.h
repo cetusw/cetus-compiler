@@ -31,6 +31,7 @@ enum class SemanticTag
 	VAR_TYPED_INITIALIZED_DECLARATION,
 	EXPRESSION_STATEMENT,
 	PROGRAM,
+	PROGRAM_EMPTY,
 	STATEMENT_LIST,
 	STATEMENT_LIST_SINGLE,
 	IF,
@@ -67,6 +68,7 @@ enum class SemanticTag
 	if (value == "var_typed_initialized_declaration") return SemanticTag::VAR_TYPED_INITIALIZED_DECLARATION;
 	if (value == "expression_statement") return SemanticTag::EXPRESSION_STATEMENT;
 	if (value == "program") return SemanticTag::PROGRAM;
+	if (value == "program_empty") return SemanticTag::PROGRAM_EMPTY;
 	if (value == "statement_list") return SemanticTag::STATEMENT_LIST;
 	if (value == "statement_list_single") return SemanticTag::STATEMENT_LIST_SINGLE;
 	if (value == "if") return SemanticTag::IF;

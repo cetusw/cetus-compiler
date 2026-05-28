@@ -72,6 +72,7 @@ AST-узлы:
 | `@var_typed_initialized_declaration` | `VariableDeclarationASTNode` |
 | `@expression_statement` | `ExpressionStatementASTNode` |
 | `@program` | `ProgramASTNode` |
+| `@program_empty` | `ProgramASTNode` |
 | `@statement_list` | `StatementListASTNode` |
 | `@statement_list_single` | `StatementListASTNode` |
 | `@block` | `BlockASTNode` |
