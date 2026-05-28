@@ -1,0 +1,90 @@
+# Grammar
+
+## Содержание
+
+- [Нотация](#нотация)
+- [Grammar](#grammar)
+- [Semantic actions](#semantic-actions)
+- [Ассоциативность и приоритет](#ассоциативность-и-приоритет)
+- [Подготовленная таблица](#подготовленная-таблица)
+
+## Нотация
+
+Нетерминалы записываются в `~...~`. Терминалы соответствуют токенам лексера. Semantic action записывается после `@`.
+
+## Grammar
+
+```text
+~Program~ -> ~StmtList~ @pass_expr
+
+~StmtList~ -> ~StmtList~ ~Stmt~ @sequence
+~StmtList~ -> ~Stmt~ @pass_expr
+
+~Stmt~ -> ~SimpleStmt~ SEMICOLON @pass_expr
+~Stmt~ -> IF ~Con~ ~Block~ @if
+~Stmt~ -> IF ~Con~ ~Block~ ELSE ~Block~ @if_else
+
+~SimpleStmt~ -> IDENTIFIER COLON_EQUAL ~Con~ @assignment
+~SimpleStmt~ -> PRINTF LPAREN ~Con~ RPAREN @printf
+~SimpleStmt~ -> ~Con~ @pass_expr
+
+~Block~ -> LBRACE ~StmtList~ RBRACE @block
+
+~Con~ -> ~Con~ OR_OR ~Con1~ @binary
+~Con~ -> ~Con1~ @pass_expr
+
+~Con1~ -> ~Con1~ AND_AND ~Con2~ @binary
+~Con1~ -> ~Con2~ @pass_expr
+
+~Con2~ -> BANG ~Con2~ @unary
+~Con2~ -> TRUE @bool_literal
+~Con2~ -> FALSE @bool_literal
+~Con2~ -> ~RCon~ @pass_expr
+
+~RCon~ -> ~Exp~ ~ROp~ ~Exp~ @binary
+~RCon~ -> ~Exp~ @pass_expr
+
+~Exp~ -> ~Exp~ PLUS ~Exp1~ @binary
+~Exp~ -> ~Exp~ MINUS ~Exp1~ @binary
+~Exp~ -> ~Exp1~ @pass_expr
+
+~Exp1~ -> ~Exp1~ ~MulOp~ ~Exp2~ @binary
+~Exp1~ -> ~Exp2~ @pass_expr
+
+~Exp2~ -> LPAREN ~Con~ RPAREN @group
+~Exp2~ -> MINUS ~Exp2~ @unary
+~Exp2~ -> ~LargId~ @pass_expr
+~Exp2~ -> INT_LIT @int_literal
+~Exp2~ -> FLOAT_LIT @float_literal
+
+~LargId~ -> IDENTIFIER @identifier
+~LargId~ -> ~LargId~ DOT IDENTIFIER @member_access
+~LargId~ -> ~LargId~ LBRACKET ~Exp~ RBRACKET @index_access
+
+~MulOp~ -> STAR @pass_token
+~MulOp~ -> SLASH @pass_token
+~MulOp~ -> PERCENT @pass_token
+
+~ROp~ -> LESS @pass_token
+~ROp~ -> LESS_EQUAL @pass_token
+~ROp~ -> BANG_EQUAL @pass_token
+~ROp~ -> EQUAL_EQUAL @pass_token
+~ROp~ -> GREATER @pass_token
+~ROp~ -> GREATER_EQUAL @pass_token
+```
+
+## Semantic actions
+
+Semantic actions выполняются во время parsing и строят AST напрямую.
+
+## Ассоциативность и приоритет
+
+Приоритет определяется структурой grammar. Лево-рекурсивные уровни задают левую ассоциативность бинарных операторов.
+
+## Подготовленная таблица
+
+Подготовленная grammar хранится в `docs/prepared_grammar.json`.
+
+```bash
+./cmake-build-debug/cetus --parse-ast --regen-table test.txt
+```
