@@ -66,6 +66,10 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildIfElse(std::move(values));
 	case SemanticTag::PRINTF:
 		return BuildPrintf(std::move(values));
+	case SemanticTag::RETURN_VOID:
+		return BuildReturnVoid(values);
+	case SemanticTag::RETURN_VALUE:
+		return BuildReturnValue(std::move(values));
 	case SemanticTag::BLOCK:
 		return BuildBlock(std::move(values));
 	case SemanticTag::BLOCK_EMPTY:
@@ -356,6 +360,18 @@ AstSemanticValue AstReductionBuilder::BuildPrintf(std::vector<AstSemanticValue> 
 {
 	RequireValueCount(values, 4, "Printf reduction");
 	return { std::make_unique<PrintfASTNode>(TakeNode(values, 2)), std::nullopt };
+}
+
+AstSemanticValue AstReductionBuilder::BuildReturnVoid(const std::vector<AstSemanticValue>& values)
+{
+	RequireValueCount(values, 2, "Return void reduction");
+	return { std::make_unique<ReturnASTNode>(), std::nullopt };
+}
+
+AstSemanticValue AstReductionBuilder::BuildReturnValue(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 3, "Return value reduction");
+	return { std::make_unique<ReturnASTNode>(TakeNode(values, 1)), std::nullopt };
 }
 
 AstSemanticValue AstReductionBuilder::PassNode(std::vector<AstSemanticValue> values, const std::size_t index)

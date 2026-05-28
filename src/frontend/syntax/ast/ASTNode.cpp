@@ -355,3 +355,18 @@ void PrintfASTNode::Accept(ASTNodeVisitor& visitor) const
 {
 	visitor.Visit(*this);
 }
+
+ReturnASTNode::ReturnASTNode(ASTNodePtr value)
+	: m_value(std::move(value))
+{
+}
+
+const ASTNode* ReturnASTNode::GetValue() const
+{
+	return m_value.get();
+}
+
+void ReturnASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}

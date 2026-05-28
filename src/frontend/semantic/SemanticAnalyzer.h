@@ -32,6 +32,7 @@ public:
 	void Visit(const BlockASTNode& node) override;
 	void Visit(const IfASTNode& node) override;
 	void Visit(const PrintfASTNode& node) override;
+	void Visit(const ReturnASTNode& node) override;
 
 private:
 	[[nodiscard]] Type AnalyzeChild(const ASTNode& node);

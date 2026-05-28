@@ -21,6 +21,8 @@ std::string_view TokenTypeToGrammarTerminal(const TokenType type)
 		return "ELSE";
 	case TokenType::PRINTF:
 		return "PRINTF";
+	case TokenType::RETURN:
+		return "RETURN";
 	case TokenType::VAR:
 		return "VAR";
 	case TokenType::COMMA:

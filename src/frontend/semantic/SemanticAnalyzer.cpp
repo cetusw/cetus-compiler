@@ -284,6 +284,22 @@ void SemanticAnalyzer::Visit(const PrintfASTNode& node)
 	SetCurrentType(node, Type::VOID);
 }
 
+void SemanticAnalyzer::Visit(const ReturnASTNode& node)
+{
+	if (const ASTNode* value = node.GetValue())
+	{
+		const Type valueType = AnalyzeChild(*value);
+		if (valueType == Type::ERROR)
+		{
+			SetCurrentType(node, Type::ERROR);
+			return;
+		}
+	}
+
+	AddDiagnostic("Return statement is not allowed outside function.");
+	SetCurrentType(node, Type::ERROR);
+}
+
 Type SemanticAnalyzer::AnalyzeChild(const ASTNode& node)
 {
 	node.Accept(*this);

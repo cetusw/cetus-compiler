@@ -136,6 +136,15 @@ void AstDumper::Visit(const PrintfASTNode& expr)
 	DumpChild(expr.GetArgument());
 }
 
+void AstDumper::Visit(const ReturnASTNode& expr)
+{
+	DumpLine("ReturnASTNode");
+	if (const ASTNode* value = expr.GetValue())
+	{
+		DumpChild(*value);
+	}
+}
+
 void AstDumper::DumpChild(const ASTNode& expr)
 {
 	m_indent += 2;

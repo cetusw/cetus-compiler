@@ -18,6 +18,7 @@ class StatementListASTNode;
 class BlockASTNode;
 class IfASTNode;
 class PrintfASTNode;
+class ReturnASTNode;
 
 class ASTNodeVisitor
 {
@@ -42,4 +43,5 @@ public:
 	virtual void Visit(const BlockASTNode& expr) = 0;
 	virtual void Visit(const IfASTNode& expr) = 0;
 	virtual void Visit(const PrintfASTNode& expr) = 0;
+	virtual void Visit(const ReturnASTNode& expr) = 0;
 };

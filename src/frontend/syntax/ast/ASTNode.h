@@ -294,3 +294,15 @@ public:
 private:
 	ASTNodePtr m_argument;
 };
+
+class ReturnASTNode final : public StatementASTNode
+{
+public:
+	explicit ReturnASTNode(ASTNodePtr value = nullptr);
+
+	[[nodiscard]] const ASTNode* GetValue() const;
+	void Accept(ASTNodeVisitor& visitor) const override;
+
+private:
+	ASTNodePtr m_value;
+};

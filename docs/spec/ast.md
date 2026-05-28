@@ -43,7 +43,8 @@ AST-узлы:
 - `MemberAccessASTNode`;
 - `IndexASTNode`;
 - `IfASTNode`;
-- `PrintfASTNode`.
+- `PrintfASTNode`;
+- `ReturnASTNode`.
 
 ## Statement и Expression
 
@@ -80,6 +81,8 @@ AST-узлы:
 | `@if` | `IfASTNode` без else |
 | `@if_else` | `IfASTNode` с else |
 | `@printf` | `PrintfASTNode` |
+| `@return_void` | `ReturnASTNode` без значения |
+| `@return_value` | `ReturnASTNode` со значением |
 
 ## Аннотации типов
 

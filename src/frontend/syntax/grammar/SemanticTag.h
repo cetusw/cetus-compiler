@@ -37,6 +37,8 @@ enum class SemanticTag
 	IF,
 	IF_ELSE,
 	PRINTF,
+	RETURN_VOID,
+	RETURN_VALUE,
 	BLOCK,
 	BLOCK_EMPTY
 };
@@ -74,6 +76,8 @@ enum class SemanticTag
 	if (value == "if") return SemanticTag::IF;
 	if (value == "if_else") return SemanticTag::IF_ELSE;
 	if (value == "printf") return SemanticTag::PRINTF;
+	if (value == "return_void") return SemanticTag::RETURN_VOID;
+	if (value == "return_value") return SemanticTag::RETURN_VALUE;
 	if (value == "block") return SemanticTag::BLOCK;
 	if (value == "block_empty") return SemanticTag::BLOCK_EMPTY;
 	throw std::runtime_error("Unsupported semantic tag: " + std::string(value));
