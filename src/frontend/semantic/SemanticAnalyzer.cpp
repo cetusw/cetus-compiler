@@ -36,6 +36,11 @@ void SemanticAnalyzer::Visit(const FloatLiteralASTNode& node)
 	SetCurrentType(node, Type::FLOAT);
 }
 
+void SemanticAnalyzer::Visit(const StringLiteralASTNode& node)
+{
+	SetCurrentType(node, Type::STRING);
+}
+
 void SemanticAnalyzer::Visit(const IdentifierASTNode& node)
 {
 	const SemanticSymbol* symbol = m_symbolTable.Resolve(node.GetName());
@@ -88,32 +93,123 @@ void SemanticAnalyzer::Visit(const IndexASTNode& node)
 
 void SemanticAnalyzer::Visit(const AssignmentASTNode& node)
 {
-	const Type valueType = AnalyzeChild(node.GetValue());
-	if (valueType == Type::ERROR)
-	{
-		SetCurrentType(node, Type::ERROR);
-		return;
-	}
+	const std::size_t diagnosticCount = m_diagnostics.size();
+	const std::vector<Type> valueTypes = AnalyzeValues(node.GetValues());
+	ValidateAssignment(node.GetNames(), valueTypes);
+	SetCurrentType(node, HasError(valueTypes) || m_diagnostics.size() != diagnosticCount ? Type::ERROR : Type::VOID);
+}
 
-	const SemanticSymbol* existing = m_symbolTable.Resolve(node.GetName());
-	if (existing && existing->type != valueType)
-	{
-		AddDiagnostic("Cannot assign value of different type to identifier: " + node.GetName());
-		SetCurrentType(node, Type::ERROR);
-		return;
-	}
-	if (!existing)
-	{
-		m_symbolTable.Define(SemanticSymbol{ node.GetName(), valueType });
-	}
+void SemanticAnalyzer::Visit(const ShortVariableDeclarationASTNode& node)
+{
+	const std::size_t diagnosticCount = m_diagnostics.size();
+	const std::vector<Type> valueTypes = AnalyzeValues(node.GetValues());
+	DefineShortVariables(node.GetNames(), valueTypes);
+	SetCurrentType(node, HasError(valueTypes) || m_diagnostics.size() != diagnosticCount ? Type::ERROR : Type::VOID);
+}
 
-	SetCurrentType(node, Type::VOID);
+void SemanticAnalyzer::Visit(const VariableDeclarationASTNode& node)
+{
+	const std::size_t diagnosticCount = m_diagnostics.size();
+	const std::vector<Type> valueTypes = AnalyzeValues(node.GetValues());
+	DefineVariables(node.GetNames(), node.GetDeclaredType(), valueTypes);
+	SetCurrentType(node, HasError(valueTypes) || m_diagnostics.size() != diagnosticCount ? Type::ERROR : Type::VOID);
 }
 
 void SemanticAnalyzer::Visit(const ExpressionStatementASTNode& node)
 {
 	const Type expressionType = AnalyzeChild(node.GetExpression());
 	SetCurrentType(node, expressionType == Type::ERROR ? Type::ERROR : Type::VOID);
+}
+
+void SemanticAnalyzer::ValidateAssignment(const std::vector<std::string>& names, const std::vector<Type>& valueTypes)
+{
+	if (names.size() != valueTypes.size())
+	{
+		AddDiagnostic("Assignment expects the same number of targets and values.");
+		return;
+	}
+
+	for (std::size_t index = 0; index < names.size(); ++index)
+	{
+		if (valueTypes[index] == Type::ERROR)
+		{
+			continue;
+		}
+
+		const SemanticSymbol* existing = m_symbolTable.Resolve(names[index]);
+		if (!existing)
+		{
+			AddDiagnostic("Cannot assign to undefined identifier: " + names[index]);
+			continue;
+		}
+		if (existing->type != valueTypes[index])
+		{
+			AddDiagnostic("Cannot assign value of different type to identifier: " + names[index]);
+		}
+	}
+}
+
+void SemanticAnalyzer::DefineShortVariables(const std::vector<std::string>& names, const std::vector<Type>& valueTypes)
+{
+	if (names.size() != valueTypes.size())
+	{
+		AddDiagnostic("Short variable declaration expects the same number of names and values.");
+		return;
+	}
+
+	for (std::size_t index = 0; index < names.size(); ++index)
+	{
+		if (m_symbolTable.ResolveInCurrentScope(names[index]))
+		{
+			AddDiagnostic("Variable is already declared in current scope: " + names[index]);
+			continue;
+		}
+		if (valueTypes[index] == Type::ERROR)
+		{
+			continue;
+		}
+
+		m_symbolTable.Define(SemanticSymbol{ names[index], valueTypes[index] });
+	}
+}
+
+void SemanticAnalyzer::DefineVariables(
+	const std::vector<std::string>& names,
+	const std::optional<Type> declaredType,
+	const std::vector<Type>& valueTypes)
+{
+	if (!valueTypes.empty() && names.size() != valueTypes.size())
+	{
+		AddDiagnostic("Variable declaration expects the same number of names and values.");
+		return;
+	}
+	if (!declaredType.has_value() && valueTypes.empty())
+	{
+		AddDiagnostic("Variable declaration without type requires initializer.");
+		return;
+	}
+
+	for (std::size_t index = 0; index < names.size(); ++index)
+	{
+		if (m_symbolTable.ResolveInCurrentScope(names[index]))
+		{
+			AddDiagnostic("Variable is already declared in current scope: " + names[index]);
+			continue;
+		}
+
+		Type symbolType = declaredType.value_or(valueTypes[index]);
+		if (!valueTypes.empty() && valueTypes[index] != Type::ERROR && symbolType != valueTypes[index])
+		{
+			AddDiagnostic("Variable initializer type does not match declared type for: " + names[index]);
+			continue;
+		}
+		if (symbolType == Type::ERROR)
+		{
+			continue;
+		}
+
+		m_symbolTable.Define(SemanticSymbol{ names[index], symbolType });
+	}
 }
 
 void SemanticAnalyzer::Visit(const ProgramASTNode& node)
@@ -201,10 +297,33 @@ Type SemanticAnalyzer::AnalyzeChild(const ASTNode& node)
 	return m_currentType;
 }
 
+std::vector<Type> SemanticAnalyzer::AnalyzeValues(const std::vector<ASTNodePtr>& values)
+{
+	std::vector<Type> result;
+	result.reserve(values.size());
+	for (const ASTNodePtr& value : values)
+	{
+		result.push_back(AnalyzeChild(*value));
+	}
+	return result;
+}
+
 // TODO избавиться от дублирования кода
 bool SemanticAnalyzer::IsFalsey(const Type type)
 {
 	return type == Type::INT || type == Type::BOOL;
+}
+
+bool SemanticAnalyzer::HasError(const std::vector<Type>& types)
+{
+	for (const Type type : types)
+	{
+		if (type == Type::ERROR)
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 void SemanticAnalyzer::SetCurrentType(const ASTNode& node, const Type type)

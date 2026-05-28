@@ -63,6 +63,11 @@ void CodegenVisitor::Visit(const FloatLiteralASTNode& expr)
 	EmitConstant(Value(std::stod(expr.GetValue())));
 }
 
+void CodegenVisitor::Visit(const StringLiteralASTNode&)
+{
+	Fail("String literal code generation is not implemented for VM bytecode yet.");
+}
+
 void CodegenVisitor::Visit(const IdentifierASTNode& expr)
 {
 	if (!EnsureTyped(expr))
@@ -150,6 +155,16 @@ void CodegenVisitor::Visit(const IndexASTNode&)
 void CodegenVisitor::Visit(const AssignmentASTNode&)
 {
 	Fail("Assignment code generation is not implemented for VM bytecode yet.");
+}
+
+void CodegenVisitor::Visit(const ShortVariableDeclarationASTNode&)
+{
+	Fail("Short variable declaration code generation is not implemented for VM bytecode yet.");
+}
+
+void CodegenVisitor::Visit(const VariableDeclarationASTNode&)
+{
+	Fail("Variable declaration code generation is not implemented for VM bytecode yet.");
 }
 
 void CodegenVisitor::Visit(const ExpressionStatementASTNode&)

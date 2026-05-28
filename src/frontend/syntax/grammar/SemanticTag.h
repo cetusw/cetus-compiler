@@ -15,10 +15,20 @@ enum class SemanticTag
 	BOOL_LITERAL,
 	INT_LITERAL,
 	FLOAT_LITERAL,
+	STRING_LITERAL,
 	IDENTIFIER,
+	IDENTIFIER_LIST,
+	IDENTIFIER_LIST_SINGLE,
+	EXPRESSION_LIST,
+	EXPRESSION_LIST_SINGLE,
+	TYPE_NAME,
 	MEMBER_ACCESS,
 	INDEX_ACCESS,
 	ASSIGNMENT,
+	SHORT_VAR_DECLARATION,
+	VAR_INFERRED_DECLARATION,
+	VAR_TYPED_DECLARATION,
+	VAR_TYPED_INITIALIZED_DECLARATION,
 	EXPRESSION_STATEMENT,
 	PROGRAM,
 	STATEMENT_LIST,
@@ -40,10 +50,20 @@ enum class SemanticTag
 	if (value == "bool_literal") return SemanticTag::BOOL_LITERAL;
 	if (value == "int_literal") return SemanticTag::INT_LITERAL;
 	if (value == "float_literal") return SemanticTag::FLOAT_LITERAL;
+	if (value == "string_literal") return SemanticTag::STRING_LITERAL;
 	if (value == "identifier") return SemanticTag::IDENTIFIER;
+	if (value == "identifier_list") return SemanticTag::IDENTIFIER_LIST;
+	if (value == "identifier_list_single") return SemanticTag::IDENTIFIER_LIST_SINGLE;
+	if (value == "expression_list") return SemanticTag::EXPRESSION_LIST;
+	if (value == "expression_list_single") return SemanticTag::EXPRESSION_LIST_SINGLE;
+	if (value == "type_name") return SemanticTag::TYPE_NAME;
 	if (value == "member_access") return SemanticTag::MEMBER_ACCESS;
 	if (value == "index_access") return SemanticTag::INDEX_ACCESS;
 	if (value == "assignment") return SemanticTag::ASSIGNMENT;
+	if (value == "short_var_declaration") return SemanticTag::SHORT_VAR_DECLARATION;
+	if (value == "var_inferred_declaration") return SemanticTag::VAR_INFERRED_DECLARATION;
+	if (value == "var_typed_declaration") return SemanticTag::VAR_TYPED_DECLARATION;
+	if (value == "var_typed_initialized_declaration") return SemanticTag::VAR_TYPED_INITIALIZED_DECLARATION;
 	if (value == "expression_statement") return SemanticTag::EXPRESSION_STATEMENT;
 	if (value == "program") return SemanticTag::PROGRAM;
 	if (value == "statement_list") return SemanticTag::STATEMENT_LIST;

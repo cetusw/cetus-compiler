@@ -3,7 +3,9 @@
 #include "rules/TypeCheckResult.h"
 #include "src/frontend/syntax/ast/ASTNode.h"
 #include "symbols/SymbolTable.h"
+#include <optional>
 #include <string>
+#include <vector>
 
 class SemanticAnalyzer final : public ASTNodeVisitor
 {
@@ -15,12 +17,15 @@ public:
 	void Visit(const BoolLiteralASTNode& node) override;
 	void Visit(const IntLiteralASTNode& node) override;
 	void Visit(const FloatLiteralASTNode& node) override;
+	void Visit(const StringLiteralASTNode& node) override;
 	void Visit(const IdentifierASTNode& node) override;
 	void Visit(const UnaryASTNode& node) override;
 	void Visit(const BinaryASTNode& node) override;
 	void Visit(const MemberAccessASTNode& node) override;
 	void Visit(const IndexASTNode& node) override;
 	void Visit(const AssignmentASTNode& node) override;
+	void Visit(const ShortVariableDeclarationASTNode& node) override;
+	void Visit(const VariableDeclarationASTNode& node) override;
 	void Visit(const ExpressionStatementASTNode& node) override;
 	void Visit(const ProgramASTNode& node) override;
 	void Visit(const StatementListASTNode& node) override;
@@ -30,7 +35,15 @@ public:
 
 private:
 	[[nodiscard]] Type AnalyzeChild(const ASTNode& node);
+	[[nodiscard]] std::vector<Type> AnalyzeValues(const std::vector<ASTNodePtr>& values);
 	[[nodiscard]] static bool IsFalsey(Type type);
+	[[nodiscard]] static bool HasError(const std::vector<Type>& types);
+	void ValidateAssignment(const std::vector<std::string>& names, const std::vector<Type>& valueTypes);
+	void DefineShortVariables(const std::vector<std::string>& names, const std::vector<Type>& valueTypes);
+	void DefineVariables(
+		const std::vector<std::string>& names,
+		std::optional<Type> declaredType,
+		const std::vector<Type>& valueTypes);
 	void SetCurrentType(const ASTNode& node, Type type);
 	void SetTypeCheckResult(const ASTNode& node, TypeCheckResult result);
 	void AddDiagnostic(std::string message);

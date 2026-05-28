@@ -7,11 +7,11 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 	switch (rule.semanticTag)
 	{
 	case SemanticTag::PASS_EXPR:
-		return PassExpr(std::move(values), 0);
+		return PassNode(std::move(values), 0);
 	case SemanticTag::PASS_TOKEN:
 		return PassToken(std::move(values), 0);
 	case SemanticTag::GROUP:
-		return PassExpr(std::move(values), 1);
+		return PassNode(std::move(values), 1);
 	case SemanticTag::UNARY:
 		return BuildUnary(std::move(values));
 	case SemanticTag::BINARY:
@@ -22,14 +22,34 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildIntLiteral(values);
 	case SemanticTag::FLOAT_LITERAL:
 		return BuildFloatLiteral(values);
+	case SemanticTag::STRING_LITERAL:
+		return BuildStringLiteral(values);
 	case SemanticTag::IDENTIFIER:
 		return BuildIdentifier(values);
+	case SemanticTag::IDENTIFIER_LIST:
+		return BuildIdentifierList(std::move(values));
+	case SemanticTag::IDENTIFIER_LIST_SINGLE:
+		return BuildSingleIdentifierList(values);
+	case SemanticTag::EXPRESSION_LIST:
+		return BuildExpressionList(std::move(values));
+	case SemanticTag::EXPRESSION_LIST_SINGLE:
+		return BuildSingleExpressionList(std::move(values));
+	case SemanticTag::TYPE_NAME:
+		return BuildTypeName(values);
 	case SemanticTag::MEMBER_ACCESS:
 		return BuildMemberAccess(std::move(values));
 	case SemanticTag::INDEX_ACCESS:
 		return BuildIndexAccess(std::move(values));
 	case SemanticTag::ASSIGNMENT:
 		return BuildAssignment(std::move(values));
+	case SemanticTag::SHORT_VAR_DECLARATION:
+		return BuildShortVariableDeclaration(std::move(values));
+	case SemanticTag::VAR_INFERRED_DECLARATION:
+		return BuildVarInferredDeclaration(std::move(values));
+	case SemanticTag::VAR_TYPED_DECLARATION:
+		return BuildVarTypedDeclaration(std::move(values));
+	case SemanticTag::VAR_TYPED_INITIALIZED_DECLARATION:
+		return BuildVarTypedInitializedDeclaration(std::move(values));
 	case SemanticTag::EXPRESSION_STATEMENT:
 		return BuildExpressionStatement(std::move(values));
 	case SemanticTag::PROGRAM:
@@ -68,9 +88,9 @@ AstSemanticValue AstReductionBuilder::BuildBinary(std::vector<AstSemanticValue> 
 	RequireValueCount(values, 3, "Binary reduction");
 	return {
 		std::make_unique<BinaryASTNode>(
-			TakeExpr(values, 0),
+			TakeNode(values, 0),
 			ToBinaryOperator(TakeToken(values, 1).type),
-			TakeExpr(values, 2)),
+			TakeNode(values, 2)),
 		std::nullopt
 	};
 }
@@ -81,7 +101,7 @@ AstSemanticValue AstReductionBuilder::BuildUnary(std::vector<AstSemanticValue> v
 	return {
 		std::make_unique<UnaryASTNode>(
 			ToUnaryOperator(TakeToken(values, 0).type),
-			TakeExpr(values, 1)),
+			TakeNode(values, 1)),
 		std::nullopt
 	};
 }
@@ -105,47 +125,159 @@ AstSemanticValue AstReductionBuilder::BuildFloatLiteral(const std::vector<AstSem
 	return { std::make_unique<FloatLiteralASTNode>(TakeToken(values, 0).lexeme), std::nullopt };
 }
 
+AstSemanticValue AstReductionBuilder::BuildStringLiteral(const std::vector<AstSemanticValue>& values)
+{
+	RequireValueCount(values, 1, "String literal reduction");
+	return { std::make_unique<StringLiteralASTNode>(TakeToken(values, 0).lexeme), std::nullopt };
+}
+
 AstSemanticValue AstReductionBuilder::BuildIdentifier(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 1, "Identifier reduction");
 	return { std::make_unique<IdentifierASTNode>(TakeToken(values, 0).lexeme), std::nullopt };
 }
 
+AstSemanticValue AstReductionBuilder::BuildIdentifierList(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 3, "Identifier list reduction");
+	std::vector<std::string> identifiers = TakeIdentifierList(values, 0);
+	identifiers.push_back(TakeToken(values, 2).lexeme);
+	return { nullptr, std::nullopt, std::move(identifiers) };
+}
+
+AstSemanticValue AstReductionBuilder::BuildSingleIdentifierList(const std::vector<AstSemanticValue>& values)
+{
+	RequireValueCount(values, 1, "Single identifier list reduction");
+	return { nullptr, std::nullopt, { TakeToken(values, 0).lexeme } };
+}
+
+AstSemanticValue AstReductionBuilder::BuildExpressionList(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 3, "Expression list reduction");
+	std::vector<ASTNodePtr> expressions = TakeExpressionList(values, 0);
+	expressions.push_back(TakeNode(values, 2));
+	return { nullptr, std::nullopt, {}, std::move(expressions) };
+}
+
+AstSemanticValue AstReductionBuilder::BuildSingleExpressionList(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 1, "Single expression list reduction");
+	std::vector<ASTNodePtr> expressions;
+	expressions.push_back(TakeNode(values, 0));
+	return { nullptr, std::nullopt, {}, std::move(expressions) };
+}
+
+AstSemanticValue AstReductionBuilder::BuildTypeName(const std::vector<AstSemanticValue>& values)
+{
+	RequireValueCount(values, 1, "Type name reduction");
+	const std::string& typeName = TakeToken(values, 0).lexeme;
+	if (typeName == "int")
+	{
+		return { nullptr, std::nullopt, {}, {}, Type::INT };
+	}
+	if (typeName == "float")
+	{
+		return { nullptr, std::nullopt, {}, {}, Type::FLOAT };
+	}
+	if (typeName == "bool")
+	{
+		return { nullptr, std::nullopt, {}, {}, Type::BOOL };
+	}
+	if (typeName == "string")
+	{
+		return { nullptr, std::nullopt, {}, {}, Type::STRING };
+	}
+
+	throw std::runtime_error("Unsupported type name: " + typeName);
+}
+
 AstSemanticValue AstReductionBuilder::BuildMemberAccess(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "Member access reduction");
-	return { std::make_unique<MemberAccessASTNode>(TakeExpr(values, 0), TakeToken(values, 2).lexeme), std::nullopt };
+	return { std::make_unique<MemberAccessASTNode>(TakeNode(values, 0), TakeToken(values, 2).lexeme), std::nullopt };
 }
 
 AstSemanticValue AstReductionBuilder::BuildIndexAccess(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 4, "Index access reduction");
-	return { std::make_unique<IndexASTNode>(TakeExpr(values, 0), TakeExpr(values, 2)), std::nullopt };
+	return { std::make_unique<IndexASTNode>(TakeNode(values, 0), TakeNode(values, 2)), std::nullopt };
 }
 
 AstSemanticValue AstReductionBuilder::BuildAssignment(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "Assignment reduction");
-	return { std::make_unique<AssignmentASTNode>(TakeToken(values, 0).lexeme, TakeExpr(values, 2)), std::nullopt };
+	return {
+		std::make_unique<AssignmentASTNode>(
+			TakeIdentifierList(values, 0),
+			TakeExpressionList(values, 2)),
+		std::nullopt
+	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildShortVariableDeclaration(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 3, "Short variable declaration reduction");
+	return {
+		std::make_unique<ShortVariableDeclarationASTNode>(
+			TakeIdentifierList(values, 0),
+			TakeExpressionList(values, 2)),
+		std::nullopt
+	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildVarInferredDeclaration(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 4, "Inferred variable declaration reduction");
+	return {
+		std::make_unique<VariableDeclarationASTNode>(
+			TakeIdentifierList(values, 1),
+			std::nullopt,
+			TakeExpressionList(values, 3)),
+		std::nullopt
+	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildVarTypedDeclaration(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 3, "Typed variable declaration reduction");
+	return {
+		std::make_unique<VariableDeclarationASTNode>(
+			TakeIdentifierList(values, 1),
+			TakeType(values, 2),
+			std::vector<ASTNodePtr>{}),
+		std::nullopt
+	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildVarTypedInitializedDeclaration(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 5, "Typed initialized variable declaration reduction");
+	return {
+		std::make_unique<VariableDeclarationASTNode>(
+			TakeIdentifierList(values, 1),
+			TakeType(values, 2),
+			TakeExpressionList(values, 4)),
+		std::nullopt
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildExpressionStatement(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 1, "Expression statement reduction");
-	return { std::make_unique<ExpressionStatementASTNode>(TakeExpr(values, 0)), std::nullopt };
+	return { std::make_unique<ExpressionStatementASTNode>(TakeNode(values, 0)), std::nullopt };
 }
 
 AstSemanticValue AstReductionBuilder::BuildProgram(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 1, "Program reduction");
-	return { std::make_unique<ProgramASTNode>(TakeExpr(values, 0)), std::nullopt };
+	return { std::make_unique<ProgramASTNode>(TakeNode(values, 0)), std::nullopt };
 }
 
 AstSemanticValue AstReductionBuilder::BuildStatementList(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 2, "Statement list reduction");
 
-	const ASTNodePtr listNode = TakeExpr(values, 0);
+	const ASTNodePtr listNode = TakeNode(values, 0);
 	// TODO избавиться от dynamic_cast
 	auto* statementList = dynamic_cast<StatementListASTNode*>(listNode.get());
 	if (!statementList)
@@ -154,7 +286,7 @@ AstSemanticValue AstReductionBuilder::BuildStatementList(std::vector<AstSemantic
 	}
 
 	std::vector<ASTNodePtr> statements = statementList->TakeStatements();
-	statements.push_back(TakeExpr(values, 1));
+	statements.push_back(TakeNode(values, 1));
 	return { std::make_unique<StatementListASTNode>(std::move(statements)), std::nullopt };
 }
 
@@ -163,14 +295,14 @@ AstSemanticValue AstReductionBuilder::BuildSingleStatementList(std::vector<AstSe
 	RequireValueCount(values, 1, "Single statement list reduction");
 
 	std::vector<ASTNodePtr> statements;
-	statements.push_back(TakeExpr(values, 0));
+	statements.push_back(TakeNode(values, 0));
 	return { std::make_unique<StatementListASTNode>(std::move(statements)), std::nullopt };
 }
 
 AstSemanticValue AstReductionBuilder::BuildBlock(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "Block reduction");
-	return { std::make_unique<BlockASTNode>(TakeExpr(values, 1)), std::nullopt };
+	return { std::make_unique<BlockASTNode>(TakeNode(values, 1)), std::nullopt };
 }
 
 AstSemanticValue AstReductionBuilder::BuildIf(std::vector<AstSemanticValue> values)
@@ -178,8 +310,8 @@ AstSemanticValue AstReductionBuilder::BuildIf(std::vector<AstSemanticValue> valu
 	RequireValueCount(values, 3, "If reduction");
 	return {
 		std::make_unique<IfASTNode>(
-			TakeExpr(values, 1),
-			TakeExpr(values, 2)),
+			TakeNode(values, 1),
+			TakeNode(values, 2)),
 		std::nullopt
 	};
 }
@@ -189,9 +321,9 @@ AstSemanticValue AstReductionBuilder::BuildIfElse(std::vector<AstSemanticValue> 
 	RequireValueCount(values, 5, "If/else reduction");
 	return {
 		std::make_unique<IfASTNode>(
-			TakeExpr(values, 1),
-			TakeExpr(values, 2),
-			TakeExpr(values, 4)),
+			TakeNode(values, 1),
+			TakeNode(values, 2),
+			TakeNode(values, 4)),
 		std::nullopt
 	};
 }
@@ -199,20 +331,20 @@ AstSemanticValue AstReductionBuilder::BuildIfElse(std::vector<AstSemanticValue> 
 AstSemanticValue AstReductionBuilder::BuildPrintf(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 4, "Printf reduction");
-	return { std::make_unique<PrintfASTNode>(TakeExpr(values, 2)), std::nullopt };
+	return { std::make_unique<PrintfASTNode>(TakeNode(values, 2)), std::nullopt };
 }
 
-AstSemanticValue AstReductionBuilder::PassExpr(std::vector<AstSemanticValue> values, const std::size_t index)
+AstSemanticValue AstReductionBuilder::PassNode(std::vector<AstSemanticValue> values, const std::size_t index)
 {
 	if (index >= values.size())
 	{
-		throw std::logic_error("PassExpr index is out of range.");
+		throw std::logic_error("PassNode index is out of range.");
 	}
-	if (!values[index].expr)
+	if (!values[index].node)
 	{
-		throw std::logic_error("PassExpr expects expression semantic value.");
+		throw std::logic_error("PassNode expects node semantic value.");
 	}
-	return { std::move(values[index].expr), std::nullopt };
+	return { std::move(values[index].node), std::nullopt };
 }
 
 AstSemanticValue AstReductionBuilder::PassToken(std::vector<AstSemanticValue> values, const std::size_t index)
@@ -224,14 +356,48 @@ AstSemanticValue AstReductionBuilder::PassToken(std::vector<AstSemanticValue> va
 	return { nullptr, values[index].token };
 }
 
-ASTNodePtr AstReductionBuilder::TakeExpr(std::vector<AstSemanticValue>& values, const std::size_t index)
+ASTNodePtr AstReductionBuilder::TakeNode(std::vector<AstSemanticValue>& values, const std::size_t index)
 {
-	if (!values[index].expr)
+	if (!values[index].node)
 	{
-		throw std::runtime_error("Expected expression semantic value.");
+		throw std::runtime_error("Expected node semantic value.");
 	}
 
-	return std::move(values[index].expr);
+	return std::move(values[index].node);
+}
+
+std::vector<ASTNodePtr> AstReductionBuilder::TakeExpressionList(
+	std::vector<AstSemanticValue>& values,
+	const std::size_t index)
+{
+	if (values[index].expressions.empty())
+	{
+		throw std::runtime_error("Expected expression list semantic value.");
+	}
+
+	return std::move(values[index].expressions);
+}
+
+std::vector<std::string> AstReductionBuilder::TakeIdentifierList(
+	std::vector<AstSemanticValue>& values,
+	const std::size_t index)
+{
+	if (values[index].identifiers.empty())
+	{
+		throw std::runtime_error("Expected identifier list semantic value.");
+	}
+
+	return std::move(values[index].identifiers);
+}
+
+Type AstReductionBuilder::TakeType(const std::vector<AstSemanticValue>& values, const std::size_t index)
+{
+	if (!values[index].type.has_value())
+	{
+		throw std::runtime_error("Expected type semantic value.");
+	}
+
+	return *values[index].type;
 }
 
 Token AstReductionBuilder::TakeToken(const std::vector<AstSemanticValue>& values, const std::size_t index)

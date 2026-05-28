@@ -21,6 +21,12 @@ std::string_view TokenTypeToGrammarTerminal(const TokenType type)
 		return "ELSE";
 	case TokenType::PRINTF:
 		return "PRINTF";
+	case TokenType::VAR:
+		return "VAR";
+	case TokenType::COMMA:
+		return "COMMA";
+	case TokenType::EQUAL:
+		return "EQUAL";
 	case TokenType::COLON_EQUAL:
 		return "COLON_EQUAL";
 	case TokenType::BANG:
@@ -71,6 +77,8 @@ std::string_view TokenTypeToGrammarTerminal(const TokenType type)
 		return "INT_LIT";
 	case TokenType::FLOAT_LIT:
 		return "FLOAT_LIT";
+	case TokenType::STRING:
+		return "STRING";
 	case TokenType::EOF_TOKEN:
 		return "⊥";
 	default:

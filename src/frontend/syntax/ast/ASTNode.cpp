@@ -57,6 +57,21 @@ void FloatLiteralASTNode::Accept(ASTNodeVisitor& visitor) const
 	visitor.Visit(*this);
 }
 
+StringLiteralASTNode::StringLiteralASTNode(std::string value)
+	: m_value(std::move(value))
+{
+}
+
+const std::string& StringLiteralASTNode::GetValue() const
+{
+	return m_value;
+}
+
+void StringLiteralASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}
+
 IdentifierASTNode::IdentifierASTNode(std::string name)
 	: m_name(std::move(name))
 {
@@ -162,23 +177,74 @@ void IndexASTNode::Accept(ASTNodeVisitor& visitor) const
 	visitor.Visit(*this);
 }
 
-AssignmentASTNode::AssignmentASTNode(std::string name, ASTNodePtr value)
-	: m_name(std::move(name))
-	, m_value(std::move(value))
+AssignmentASTNode::AssignmentASTNode(std::vector<std::string> names, std::vector<ASTNodePtr> values)
+	: m_names(std::move(names))
+	, m_values(std::move(values))
 {
 }
 
-const std::string& AssignmentASTNode::GetName() const
+const std::vector<std::string>& AssignmentASTNode::GetNames() const
 {
-	return m_name;
+	return m_names;
 }
 
-const ASTNode& AssignmentASTNode::GetValue() const
+const std::vector<ASTNodePtr>& AssignmentASTNode::GetValues() const
 {
-	return *m_value;
+	return m_values;
 }
 
 void AssignmentASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}
+
+ShortVariableDeclarationASTNode::ShortVariableDeclarationASTNode(std::vector<std::string> names, std::vector<ASTNodePtr> values)
+	: m_names(std::move(names))
+	, m_values(std::move(values))
+{
+}
+
+const std::vector<std::string>& ShortVariableDeclarationASTNode::GetNames() const
+{
+	return m_names;
+}
+
+const std::vector<ASTNodePtr>& ShortVariableDeclarationASTNode::GetValues() const
+{
+	return m_values;
+}
+
+void ShortVariableDeclarationASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}
+
+VariableDeclarationASTNode::VariableDeclarationASTNode(
+	std::vector<std::string> names,
+	std::optional<Type> declaredType,
+	std::vector<ASTNodePtr> values)
+	: m_names(std::move(names))
+	, m_declaredType(declaredType)
+	, m_values(std::move(values))
+{
+}
+
+const std::vector<std::string>& VariableDeclarationASTNode::GetNames() const
+{
+	return m_names;
+}
+
+std::optional<Type> VariableDeclarationASTNode::GetDeclaredType() const
+{
+	return m_declaredType;
+}
+
+const std::vector<ASTNodePtr>& VariableDeclarationASTNode::GetValues() const
+{
+	return m_values;
+}
+
+void VariableDeclarationASTNode::Accept(ASTNodeVisitor& visitor) const
 {
 	visitor.Visit(*this);
 }

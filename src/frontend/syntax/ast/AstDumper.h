@@ -10,12 +10,15 @@ public:
 	void Visit(const BoolLiteralASTNode& expr) override;
 	void Visit(const IntLiteralASTNode& expr) override;
 	void Visit(const FloatLiteralASTNode& expr) override;
+	void Visit(const StringLiteralASTNode& expr) override;
 	void Visit(const IdentifierASTNode& expr) override;
 	void Visit(const UnaryASTNode& expr) override;
 	void Visit(const BinaryASTNode& expr) override;
 	void Visit(const MemberAccessASTNode& expr) override;
 	void Visit(const IndexASTNode& expr) override;
 	void Visit(const AssignmentASTNode& expr) override;
+	void Visit(const ShortVariableDeclarationASTNode& expr) override;
+	void Visit(const VariableDeclarationASTNode& expr) override;
 	void Visit(const ExpressionStatementASTNode& expr) override;
 	void Visit(const ProgramASTNode& expr) override;
 	void Visit(const StatementListASTNode& expr) override;
@@ -28,6 +31,7 @@ private:
 
 	void DumpChild(const ASTNode& expr);
 	void DumpLine(const std::string& text) const;
+	static std::string JoinNames(const std::vector<std::string>& names);
 	static const char* ToString(UnaryOperator op);
 	static const char* ToString(BinaryOperator op);
 

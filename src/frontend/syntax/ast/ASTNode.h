@@ -89,6 +89,18 @@ private:
 	std::string m_value;
 };
 
+class StringLiteralASTNode final : public ExpressionASTNode
+{
+public:
+	explicit StringLiteralASTNode(std::string value);
+
+	[[nodiscard]] const std::string& GetValue() const;
+	void Accept(ASTNodeVisitor& visitor) const override;
+
+private:
+	std::string m_value;
+};
+
 class IdentifierASTNode final : public ExpressionASTNode
 {
 public:
@@ -162,15 +174,48 @@ private:
 class AssignmentASTNode final : public StatementASTNode
 {
 public:
-	AssignmentASTNode(std::string name, ASTNodePtr value);
+	AssignmentASTNode(std::vector<std::string> names, std::vector<ASTNodePtr> values);
 
-	[[nodiscard]] const std::string& GetName() const;
-	[[nodiscard]] const ASTNode& GetValue() const;
+	[[nodiscard]] const std::vector<std::string>& GetNames() const;
+	[[nodiscard]] const std::vector<ASTNodePtr>& GetValues() const;
 	void Accept(ASTNodeVisitor& visitor) const override;
 
 private:
-	std::string m_name;
-	ASTNodePtr m_value;
+	std::vector<std::string> m_names;
+	std::vector<ASTNodePtr> m_values;
+};
+
+class ShortVariableDeclarationASTNode final : public StatementASTNode
+{
+public:
+	ShortVariableDeclarationASTNode(std::vector<std::string> names, std::vector<ASTNodePtr> values);
+
+	[[nodiscard]] const std::vector<std::string>& GetNames() const;
+	[[nodiscard]] const std::vector<ASTNodePtr>& GetValues() const;
+	void Accept(ASTNodeVisitor& visitor) const override;
+
+private:
+	std::vector<std::string> m_names;
+	std::vector<ASTNodePtr> m_values;
+};
+
+class VariableDeclarationASTNode final : public StatementASTNode
+{
+public:
+	VariableDeclarationASTNode(
+		std::vector<std::string> names,
+		std::optional<Type> declaredType,
+		std::vector<ASTNodePtr> values);
+
+	[[nodiscard]] const std::vector<std::string>& GetNames() const;
+	[[nodiscard]] std::optional<Type> GetDeclaredType() const;
+	[[nodiscard]] const std::vector<ASTNodePtr>& GetValues() const;
+	void Accept(ASTNodeVisitor& visitor) const override;
+
+private:
+	std::vector<std::string> m_names;
+	std::optional<Type> m_declaredType;
+	std::vector<ASTNodePtr> m_values;
 };
 
 class ExpressionStatementASTNode final : public StatementASTNode

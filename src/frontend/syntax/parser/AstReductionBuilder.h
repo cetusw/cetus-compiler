@@ -6,12 +6,17 @@
 #include <optional>
 #include <vector>
 
+// TODO переделать на variant
 struct AstSemanticValue
 {
-	ASTNodePtr expr;
-	std::optional<Token> token;
+	ASTNodePtr node = nullptr;
+	std::optional<Token> token = std::nullopt;
+	std::vector<std::string> identifiers = {};
+	std::vector<ASTNodePtr> expressions = {};
+	std::optional<Type> type = std::nullopt;
 };
 
+// TODO отрефакторить. слишком много методов
 class AstReductionBuilder
 {
 public:
@@ -24,10 +29,20 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildBoolLiteral(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildIntLiteral(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildFloatLiteral(const std::vector<AstSemanticValue>& values);
+	[[nodiscard]] static AstSemanticValue BuildStringLiteral(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildIdentifier(const std::vector<AstSemanticValue>& values);
+	[[nodiscard]] static AstSemanticValue BuildIdentifierList(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildSingleIdentifierList(const std::vector<AstSemanticValue>& values);
+	[[nodiscard]] static AstSemanticValue BuildExpressionList(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildSingleExpressionList(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildTypeName(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildMemberAccess(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildIndexAccess(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildAssignment(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildShortVariableDeclaration(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildVarInferredDeclaration(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildVarTypedDeclaration(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildVarTypedInitializedDeclaration(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildExpressionStatement(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildProgram(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildStatementList(std::vector<AstSemanticValue> values);
@@ -36,9 +51,12 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildIf(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildIfElse(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildPrintf(std::vector<AstSemanticValue> values);
-	[[nodiscard]] static AstSemanticValue PassExpr(std::vector<AstSemanticValue> values, std::size_t index);
+	[[nodiscard]] static AstSemanticValue PassNode(std::vector<AstSemanticValue> values, std::size_t index);
 	[[nodiscard]] static AstSemanticValue PassToken(std::vector<AstSemanticValue> values, std::size_t index);
-	[[nodiscard]] static ASTNodePtr TakeExpr(std::vector<AstSemanticValue>& values, std::size_t index);
+	[[nodiscard]] static ASTNodePtr TakeNode(std::vector<AstSemanticValue>& values, std::size_t index);
+	[[nodiscard]] static std::vector<ASTNodePtr> TakeExpressionList(std::vector<AstSemanticValue>& values, std::size_t index);
+	[[nodiscard]] static std::vector<std::string> TakeIdentifierList(std::vector<AstSemanticValue>& values, std::size_t index);
+	[[nodiscard]] static Type TakeType(const std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static Token TakeToken(const std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static BinaryOperator ToBinaryOperator(TokenType type);
 	[[nodiscard]] static UnaryOperator ToUnaryOperator(TokenType type);

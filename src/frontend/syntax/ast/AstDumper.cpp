@@ -29,6 +29,11 @@ void AstDumper::Visit(const FloatLiteralASTNode& expr)
 	DumpLine("FloatLiteralASTNode(" + expr.GetValue() + ")");
 }
 
+void AstDumper::Visit(const StringLiteralASTNode& expr)
+{
+	DumpLine("StringLiteralASTNode(\"" + expr.GetValue() + "\")");
+}
+
 void AstDumper::Visit(const IdentifierASTNode& expr)
 {
 	DumpLine("IdentifierASTNode(" + expr.GetName() + ")");
@@ -62,8 +67,29 @@ void AstDumper::Visit(const IndexASTNode& expr)
 
 void AstDumper::Visit(const AssignmentASTNode& expr)
 {
-	DumpLine("AssignmentASTNode(" + expr.GetName() + ")");
-	DumpChild(expr.GetValue());
+	DumpLine("AssignmentASTNode(" + JoinNames(expr.GetNames()) + ")");
+	for (const ASTNodePtr& value : expr.GetValues())
+	{
+		DumpChild(*value);
+	}
+}
+
+void AstDumper::Visit(const ShortVariableDeclarationASTNode& expr)
+{
+	DumpLine("ShortVariableDeclarationASTNode(" + JoinNames(expr.GetNames()) + ")");
+	for (const ASTNodePtr& value : expr.GetValues())
+	{
+		DumpChild(*value);
+	}
+}
+
+void AstDumper::Visit(const VariableDeclarationASTNode& expr)
+{
+	DumpLine("VariableDeclarationASTNode(" + JoinNames(expr.GetNames()) + ")");
+	for (const ASTNodePtr& value : expr.GetValues())
+	{
+		DumpChild(*value);
+	}
 }
 
 void AstDumper::Visit(const ExpressionStatementASTNode& expr)
@@ -120,6 +146,20 @@ void AstDumper::DumpChild(const ASTNode& expr)
 void AstDumper::DumpLine(const std::string& text) const
 {
 	m_output << std::string(m_indent, ' ') << text << '\n';
+}
+
+std::string AstDumper::JoinNames(const std::vector<std::string>& names)
+{
+	std::string result;
+	for (std::size_t index = 0; index < names.size(); ++index)
+	{
+		if (index > 0)
+		{
+			result += ", ";
+		}
+		result += names[index];
+	}
+	return result;
 }
 
 const char* AstDumper::ToString(const UnaryOperator op)

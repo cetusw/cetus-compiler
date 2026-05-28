@@ -12,6 +12,11 @@
 
 Нетерминалы записываются в `~...~`. Терминалы соответствуют токенам лексера. Semantic action записывается после `@`.
 
+
+> TODO
+> 
+> Разделить файл грамматики на логические блоки, соединять при генерации таблицы.
+
 ## Grammar
 
 ```text
@@ -24,11 +29,23 @@
 ~Stmt~ -> IF ~Con~ ~Block~ @if
 ~Stmt~ -> IF ~Con~ ~Block~ ELSE ~Block~ @if_else
 
-~SimpleStmt~ -> IDENTIFIER COLON_EQUAL ~Con~ @assignment
+~SimpleStmt~ -> ~IdentifierList~ COLON_EQUAL ~ExpressionList~ @short_var_declaration
+~SimpleStmt~ -> VAR ~IdentifierList~ EQUAL ~ExpressionList~ @var_inferred_declaration
+~SimpleStmt~ -> VAR ~IdentifierList~ ~TypeName~ @var_typed_declaration
+~SimpleStmt~ -> VAR ~IdentifierList~ ~TypeName~ EQUAL ~ExpressionList~ @var_typed_initialized_declaration
+~SimpleStmt~ -> ~IdentifierList~ EQUAL ~ExpressionList~ @assignment
 ~SimpleStmt~ -> PRINTF LPAREN ~Con~ RPAREN @printf
 ~SimpleStmt~ -> ~Con~ @expression_statement
 
 ~Block~ -> LBRACE ~StmtList~ RBRACE @block
+
+~IdentifierList~ -> ~IdentifierList~ COMMA IDENTIFIER @identifier_list
+~IdentifierList~ -> IDENTIFIER @identifier_list_single
+
+~ExpressionList~ -> ~ExpressionList~ COMMA ~Con~ @expression_list
+~ExpressionList~ -> ~Con~ @expression_list_single
+
+~TypeName~ -> IDENTIFIER @type_name
 
 ~Con~ -> ~Con~ OR_OR ~Con1~ @binary
 ~Con~ -> ~Con1~ @pass_expr
@@ -56,6 +73,7 @@
 ~Exp2~ -> ~LargId~ @pass_expr
 ~Exp2~ -> INT_LIT @int_literal
 ~Exp2~ -> FLOAT_LIT @float_literal
+~Exp2~ -> STRING @string_literal
 
 ~LargId~ -> IDENTIFIER @identifier
 ~LargId~ -> ~LargId~ DOT IDENTIFIER @member_access

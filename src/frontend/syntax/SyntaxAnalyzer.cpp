@@ -126,11 +126,11 @@ void SyntaxAnalyzer::ApplyReducedSemanticValue(
 
 ParseResult SyntaxAnalyzer::BuildSuccessResult(SyntaxContext& ctx, const Token& token)
 {
-	if (ctx.semanticStack.empty() || !ctx.semanticStack.back().expr)
+	if (ctx.semanticStack.empty() || !ctx.semanticStack.back().node)
 	{
 		return ParseResult::Error(token.line, "Internal parser error: AST was not produced for accepted input.");
 	}
-	return ParseResult::Success(token.line, std::move(ctx.semanticStack.back().expr));
+	return ParseResult::Success(token.line, std::move(ctx.semanticStack.back().node));
 }
 
 AstSemanticValue SyntaxAnalyzer::BuildShiftValue(const Token& token)

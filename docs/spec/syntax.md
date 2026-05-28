@@ -38,7 +38,11 @@
 Простой оператор завершается `;`. `if` является составным оператором и не требует `;` после блока.
 
 ```text
-~SimpleStmt~ -> IDENTIFIER COLON_EQUAL ~Con~ @assignment
+~SimpleStmt~ -> ~IdentifierList~ COLON_EQUAL ~ExpressionList~ @short_var_declaration
+~SimpleStmt~ -> VAR ~IdentifierList~ EQUAL ~ExpressionList~ @var_inferred_declaration
+~SimpleStmt~ -> VAR ~IdentifierList~ ~TypeName~ @var_typed_declaration
+~SimpleStmt~ -> VAR ~IdentifierList~ ~TypeName~ EQUAL ~ExpressionList~ @var_typed_initialized_declaration
+~SimpleStmt~ -> ~IdentifierList~ EQUAL ~ExpressionList~ @assignment
 ~SimpleStmt~ -> PRINTF LPAREN ~Con~ RPAREN @printf
 ~SimpleStmt~ -> ~Con~ @expression_statement
 ```
@@ -86,6 +90,7 @@
 ~Exp2~ -> ~LargId~ @pass_expr
 ~Exp2~ -> INT_LIT @int_literal
 ~Exp2~ -> FLOAT_LIT @float_literal
+~Exp2~ -> STRING @string_literal
 ```
 
 ## Приоритет операторов

@@ -32,9 +32,12 @@ AST-узлы:
 - `IntLiteralASTNode`;
 - `FloatLiteralASTNode`;
 - `BoolLiteralASTNode`;
+- `StringLiteralASTNode`;
 - `UnaryASTNode`;
 - `BinaryASTNode`;
 - `AssignmentASTNode`;
+- `ShortVariableDeclarationASTNode`;
+- `VariableDeclarationASTNode`;
 - `ExpressionStatementASTNode`;
 - `IdentifierASTNode`;
 - `MemberAccessASTNode`;
@@ -59,9 +62,14 @@ AST-узлы:
 | `@int_literal` | `IntLiteralASTNode` |
 | `@float_literal` | `FloatLiteralASTNode` |
 | `@bool_literal` | `BoolLiteralASTNode` |
+| `@string_literal` | `StringLiteralASTNode` |
 | `@unary` | `UnaryASTNode` |
 | `@binary` | `BinaryASTNode` |
 | `@assignment` | `AssignmentASTNode` |
+| `@short_var_declaration` | `ShortVariableDeclarationASTNode` |
+| `@var_inferred_declaration` | `VariableDeclarationASTNode` |
+| `@var_typed_declaration` | `VariableDeclarationASTNode` |
+| `@var_typed_initialized_declaration` | `VariableDeclarationASTNode` |
 | `@expression_statement` | `ExpressionStatementASTNode` |
 | `@program` | `ProgramASTNode` |
 | `@statement_list` | `StatementListASTNode` |

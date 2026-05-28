@@ -51,6 +51,22 @@ const SemanticSymbol* SymbolTable::Resolve(const std::string& name) const
 	return nullptr;
 }
 
+const SemanticSymbol* SymbolTable::ResolveInCurrentScope(const std::string& name) const
+{
+	if (m_scopes.empty())
+	{
+		return nullptr;
+	}
+
+	const auto it = m_scopes.back().find(name);
+	if (it == m_scopes.back().end())
+	{
+		return nullptr;
+	}
+
+	return &it->second;
+}
+
 const SymbolTable::Bindings& SymbolTable::GetBindings() const
 {
 	return m_scopes.front();
