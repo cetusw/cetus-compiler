@@ -203,6 +203,7 @@ public:
 	explicit StatementListASTNode(std::vector<ASTNodePtr> statements);
 
 	[[nodiscard]] const std::vector<ASTNodePtr>& GetStatements() const;
+	[[nodiscard]] std::vector<ASTNodePtr> TakeStatements();
 	void Accept(ASTNodeVisitor& visitor) const override;
 
 private:

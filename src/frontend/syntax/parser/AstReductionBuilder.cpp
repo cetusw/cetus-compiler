@@ -145,8 +145,15 @@ AstSemanticValue AstReductionBuilder::BuildStatementList(std::vector<AstSemantic
 {
 	RequireValueCount(values, 2, "Statement list reduction");
 
-	std::vector<ASTNodePtr> statements;
-	statements.push_back(TakeExpr(values, 0));
+	const ASTNodePtr listNode = TakeExpr(values, 0);
+	// TODO избавиться от dynamic_cast
+	auto* statementList = dynamic_cast<StatementListASTNode*>(listNode.get());
+	if (!statementList)
+	{
+		throw std::logic_error("Statement list reduction expects StatementListASTNode as left operand.");
+	}
+
+	std::vector<ASTNodePtr> statements = statementList->TakeStatements();
 	statements.push_back(TakeExpr(values, 1));
 	return { std::make_unique<StatementListASTNode>(std::move(statements)), std::nullopt };
 }

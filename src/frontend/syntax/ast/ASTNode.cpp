@@ -223,6 +223,11 @@ const std::vector<ASTNodePtr>& StatementListASTNode::GetStatements() const
 	return m_statements;
 }
 
+std::vector<ASTNodePtr> StatementListASTNode::TakeStatements()
+{
+	return std::move(m_statements);
+}
+
 void StatementListASTNode::Accept(ASTNodeVisitor& visitor) const
 {
 	visitor.Visit(*this);
