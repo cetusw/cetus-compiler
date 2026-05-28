@@ -51,6 +51,13 @@ void SemanticAnalyzer::Visit(const IdentifierASTNode& node)
 		return;
 	}
 
+	if (symbol->kind == SemanticSymbolKind::FUNCTION)
+	{
+		AddDiagnostic("Function identifier cannot be used as value: " + node.GetName());
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+
 	SetCurrentType(node, symbol->type);
 }
 
@@ -286,6 +293,24 @@ void SemanticAnalyzer::Visit(const PrintfASTNode& node)
 
 void SemanticAnalyzer::Visit(const ReturnASTNode& node)
 {
+	if (!m_currentFunctionReturnType.has_value())
+	{
+		if (const ASTNode* value = node.GetValue())
+		{
+			const Type valueType = AnalyzeChild(*value);
+			if (valueType == Type::ERROR)
+			{
+				SetCurrentType(node, Type::ERROR);
+				return;
+			}
+		}
+
+		AddDiagnostic("Return statement is not allowed outside function.");
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+
+	const Type expectedReturnType = *m_currentFunctionReturnType;
 	if (const ASTNode* value = node.GetValue())
 	{
 		const Type valueType = AnalyzeChild(*value);
@@ -294,10 +319,50 @@ void SemanticAnalyzer::Visit(const ReturnASTNode& node)
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
+		if (expectedReturnType == Type::VOID)
+		{
+			AddDiagnostic("Void function cannot return a value.");
+			SetCurrentType(node, Type::ERROR);
+			return;
+		}
+		if (valueType != expectedReturnType)
+		{
+			AddDiagnostic("Return value type does not match function return type.");
+			SetCurrentType(node, Type::ERROR);
+			return;
+		}
+
+		SetCurrentType(node, Type::VOID);
+		return;
 	}
 
-	AddDiagnostic("Return statement is not allowed outside function.");
-	SetCurrentType(node, Type::ERROR);
+	if (expectedReturnType != Type::VOID)
+	{
+		AddDiagnostic("Non-void function must return a value.");
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+
+	SetCurrentType(node, Type::VOID);
+}
+
+void SemanticAnalyzer::Visit(const FunctionDeclarationASTNode& node)
+{
+	if (m_symbolTable.ResolveInCurrentScope(node.GetName()))
+	{
+		AddDiagnostic("Function is already declared in current scope: " + node.GetName());
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+
+	m_symbolTable.Define(SemanticSymbol{ node.GetName(), node.GetReturnType(), SemanticSymbolKind::FUNCTION });
+
+	const std::optional<Type> previousReturnType = m_currentFunctionReturnType;
+	m_currentFunctionReturnType = node.GetReturnType();
+	const Type bodyType = AnalyzeChild(node.GetBody());
+	m_currentFunctionReturnType = previousReturnType;
+
+	SetCurrentType(node, bodyType == Type::ERROR ? Type::ERROR : Type::VOID);
 }
 
 Type SemanticAnalyzer::AnalyzeChild(const ASTNode& node)

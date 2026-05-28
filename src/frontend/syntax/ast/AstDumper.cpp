@@ -145,6 +145,12 @@ void AstDumper::Visit(const ReturnASTNode& expr)
 	}
 }
 
+void AstDumper::Visit(const FunctionDeclarationASTNode& expr)
+{
+	DumpLine("FunctionDeclarationASTNode(" + expr.GetName() + ")");
+	DumpChild(expr.GetBody());
+}
+
 void AstDumper::DumpChild(const ASTNode& expr)
 {
 	m_indent += 2;

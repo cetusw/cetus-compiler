@@ -370,3 +370,30 @@ void ReturnASTNode::Accept(ASTNodeVisitor& visitor) const
 {
 	visitor.Visit(*this);
 }
+
+FunctionDeclarationASTNode::FunctionDeclarationASTNode(std::string name, std::optional<Type> returnType, ASTNodePtr body)
+	: m_name(std::move(name))
+	, m_returnType(returnType)
+	, m_body(std::move(body))
+{
+}
+
+const std::string& FunctionDeclarationASTNode::GetName() const
+{
+	return m_name;
+}
+
+Type FunctionDeclarationASTNode::GetReturnType() const
+{
+	return m_returnType.value_or(Type::VOID);
+}
+
+const ASTNode& FunctionDeclarationASTNode::GetBody() const
+{
+	return *m_body;
+}
+
+void FunctionDeclarationASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}

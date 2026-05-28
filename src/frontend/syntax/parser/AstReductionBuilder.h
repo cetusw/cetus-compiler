@@ -55,6 +55,8 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildPrintf(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildReturnVoid(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildReturnValue(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildVoidFunctionNoParams(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildReturnFunctionNoParams(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue PassNode(std::vector<AstSemanticValue> values, std::size_t index);
 	[[nodiscard]] static AstSemanticValue PassToken(std::vector<AstSemanticValue> values, std::size_t index);
 	[[nodiscard]] static ASTNodePtr TakeNode(std::vector<AstSemanticValue>& values, std::size_t index);

@@ -44,7 +44,8 @@ AST-узлы:
 - `IndexASTNode`;
 - `IfASTNode`;
 - `PrintfASTNode`;
-- `ReturnASTNode`.
+- `ReturnASTNode`;
+- `FunctionDeclarationASTNode`.
 
 ## Statement и Expression
 
@@ -83,6 +84,8 @@ AST-узлы:
 | `@printf` | `PrintfASTNode` |
 | `@return_void` | `ReturnASTNode` без значения |
 | `@return_value` | `ReturnASTNode` со значением |
+| `@function_void_no_params` | `FunctionDeclarationASTNode` без параметров и без возвращаемого значения |
+| `@function_return_no_params` | `FunctionDeclarationASTNode` без параметров с возвращаемым значением |
 
 ## Аннотации типов
 

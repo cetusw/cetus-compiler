@@ -70,6 +70,10 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildReturnVoid(values);
 	case SemanticTag::RETURN_VALUE:
 		return BuildReturnValue(std::move(values));
+	case SemanticTag::FUNCTION_VOID_NO_PARAMS:
+		return BuildVoidFunctionNoParams(std::move(values));
+	case SemanticTag::FUNCTION_RETURN_NO_PARAMS:
+		return BuildReturnFunctionNoParams(std::move(values));
 	case SemanticTag::BLOCK:
 		return BuildBlock(std::move(values));
 	case SemanticTag::BLOCK_EMPTY:
@@ -372,6 +376,30 @@ AstSemanticValue AstReductionBuilder::BuildReturnValue(std::vector<AstSemanticVa
 {
 	RequireValueCount(values, 3, "Return value reduction");
 	return { std::make_unique<ReturnASTNode>(TakeNode(values, 1)), std::nullopt };
+}
+
+AstSemanticValue AstReductionBuilder::BuildVoidFunctionNoParams(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 5, "Void function declaration reduction");
+	return {
+		std::make_unique<FunctionDeclarationASTNode>(
+			TakeToken(values, 1).lexeme,
+			std::nullopt,
+			TakeNode(values, 4)),
+		std::nullopt
+	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildReturnFunctionNoParams(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 6, "Returning function declaration reduction");
+	return {
+		std::make_unique<FunctionDeclarationASTNode>(
+			TakeToken(values, 1).lexeme,
+			TakeType(values, 4),
+			TakeNode(values, 5)),
+		std::nullopt
+	};
 }
 
 AstSemanticValue AstReductionBuilder::PassNode(std::vector<AstSemanticValue> values, const std::size_t index)

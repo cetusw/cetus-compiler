@@ -36,6 +36,7 @@ public:
 	void Visit(const IfASTNode& expr) override;
 	void Visit(const PrintfASTNode& expr) override;
 	void Visit(const ReturnASTNode& expr) override;
+	void Visit(const FunctionDeclarationASTNode& expr) override;
 
 private:
 	static constexpr int DEFAULT_LINE = 1;

@@ -33,6 +33,7 @@ public:
 	void Visit(const IfASTNode& node) override;
 	void Visit(const PrintfASTNode& node) override;
 	void Visit(const ReturnASTNode& node) override;
+	void Visit(const FunctionDeclarationASTNode& node) override;
 
 private:
 	[[nodiscard]] Type AnalyzeChild(const ASTNode& node);
@@ -51,6 +52,7 @@ private:
 	void AddDiagnostics(std::vector<SemanticDiagnostic> diagnostics);
 
 	SymbolTable m_symbolTable;
+	std::optional<Type> m_currentFunctionReturnType;
 	Type m_currentType = Type::ERROR;
 	std::vector<SemanticDiagnostic> m_diagnostics;
 };

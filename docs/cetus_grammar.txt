@@ -9,6 +9,8 @@
 ~Stmt~ -> RETURN ~Con~ SEMICOLON @return_value
 ~Stmt~ -> IF ~Con~ ~Block~ @if
 ~Stmt~ -> IF ~Con~ ~Block~ ELSE ~Block~ @if_else
+~Stmt~ -> FUNC IDENTIFIER LPAREN RPAREN ~Block~ @function_void_no_params
+~Stmt~ -> FUNC IDENTIFIER LPAREN RPAREN ~TypeName~ ~Block~ @function_return_no_params
 
 ~SimpleStmt~ -> ~IdentifierList~ COLON_EQUAL ~ExpressionList~ @short_var_declaration
 ~SimpleStmt~ -> VAR ~IdentifierList~ EQUAL ~ExpressionList~ @var_inferred_declaration

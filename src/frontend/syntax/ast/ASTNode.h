@@ -306,3 +306,19 @@ public:
 private:
 	ASTNodePtr m_value;
 };
+
+class FunctionDeclarationASTNode final : public StatementASTNode
+{
+public:
+	FunctionDeclarationASTNode(std::string name, std::optional<Type> returnType, ASTNodePtr body);
+
+	[[nodiscard]] const std::string& GetName() const;
+	[[nodiscard]] Type GetReturnType() const;
+	[[nodiscard]] const ASTNode& GetBody() const;
+	void Accept(ASTNodeVisitor& visitor) const override;
+
+private:
+	std::string m_name;
+	std::optional<Type> m_returnType;
+	ASTNodePtr m_body;
+};

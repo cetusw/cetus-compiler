@@ -36,6 +36,8 @@
 ~Stmt~ -> RETURN ~Con~ SEMICOLON @return_value
 ~Stmt~ -> IF ~Con~ ~Block~ @if
 ~Stmt~ -> IF ~Con~ ~Block~ ELSE ~Block~ @if_else
+~Stmt~ -> FUNC IDENTIFIER LPAREN RPAREN ~Block~ @function_void_no_params
+~Stmt~ -> FUNC IDENTIFIER LPAREN RPAREN ~TypeName~ ~Block~ @function_return_no_params
 ```
 
 Простой оператор завершается `;`. `if` является составным оператором и не требует `;` после блока.

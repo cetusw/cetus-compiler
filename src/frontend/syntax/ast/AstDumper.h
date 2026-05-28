@@ -26,6 +26,7 @@ public:
 	void Visit(const IfASTNode& expr) override;
 	void Visit(const PrintfASTNode& expr) override;
 	void Visit(const ReturnASTNode& expr) override;
+	void Visit(const FunctionDeclarationASTNode& expr) override;
 
 private:
 	explicit AstDumper(std::ostream& output);

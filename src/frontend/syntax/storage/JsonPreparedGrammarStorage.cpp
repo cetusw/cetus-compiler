@@ -135,6 +135,8 @@ std::string JsonPreparedGrammarStorage::SerializeSemanticTag(const SemanticTag t
 	case SemanticTag::PRINTF: return "printf";
 	case SemanticTag::RETURN_VOID: return "return_void";
 	case SemanticTag::RETURN_VALUE: return "return_value";
+	case SemanticTag::FUNCTION_VOID_NO_PARAMS: return "function_void_no_params";
+	case SemanticTag::FUNCTION_RETURN_NO_PARAMS: return "function_return_no_params";
 	case SemanticTag::BLOCK: return "block";
 	case SemanticTag::BLOCK_EMPTY: return "block_empty";
 	}

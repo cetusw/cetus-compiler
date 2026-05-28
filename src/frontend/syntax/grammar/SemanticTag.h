@@ -39,6 +39,8 @@ enum class SemanticTag
 	PRINTF,
 	RETURN_VOID,
 	RETURN_VALUE,
+	FUNCTION_VOID_NO_PARAMS,
+	FUNCTION_RETURN_NO_PARAMS,
 	BLOCK,
 	BLOCK_EMPTY
 };
@@ -78,6 +80,8 @@ enum class SemanticTag
 	if (value == "printf") return SemanticTag::PRINTF;
 	if (value == "return_void") return SemanticTag::RETURN_VOID;
 	if (value == "return_value") return SemanticTag::RETURN_VALUE;
+	if (value == "function_void_no_params") return SemanticTag::FUNCTION_VOID_NO_PARAMS;
+	if (value == "function_return_no_params") return SemanticTag::FUNCTION_RETURN_NO_PARAMS;
 	if (value == "block") return SemanticTag::BLOCK;
 	if (value == "block_empty") return SemanticTag::BLOCK_EMPTY;
 	throw std::runtime_error("Unsupported semantic tag: " + std::string(value));
