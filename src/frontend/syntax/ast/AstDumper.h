@@ -25,7 +25,6 @@ public:
 	void Visit(const StatementListASTNode& expr) override;
 	void Visit(const BlockASTNode& expr) override;
 	void Visit(const IfASTNode& expr) override;
-	void Visit(const PrintfASTNode& expr) override;
 	void Visit(const ReturnASTNode& expr) override;
 	void Visit(const FunctionDeclarationASTNode& expr) override;
 

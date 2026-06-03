@@ -67,7 +67,6 @@ value123
 package import func struct var const
 if else for range break continue switch case default match return defer
 true false nil
-printf
 ```
 
 Слова `int`, `float`, `string`, `bool` зарезервированы для системы типов.

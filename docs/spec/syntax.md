@@ -79,7 +79,6 @@ func main() {
 ~SimpleStmt~ -> VAR ~IdentifierList~ ~TypeName~ @var_typed_declaration
 ~SimpleStmt~ -> VAR ~IdentifierList~ ~TypeName~ EQUAL ~ExpressionList~ @var_typed_initialized_declaration
 ~SimpleStmt~ -> ~IdentifierList~ EQUAL ~ExpressionList~ @assignment
-~SimpleStmt~ -> PRINTF LPAREN ~Con~ RPAREN @printf
 ~SimpleStmt~ -> ~Con~ @expression_statement
 ```
 

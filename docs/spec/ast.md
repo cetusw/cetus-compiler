@@ -44,7 +44,6 @@ AST-узлы:
 - `IndexASTNode`;
 - `CallExpressionASTNode`;
 - `IfASTNode`;
-- `PrintfASTNode`;
 - `ReturnASTNode`;
 - `FunctionDeclarationASTNode`.
 
@@ -82,7 +81,6 @@ AST-узлы:
 | `@block_empty` | `BlockASTNode` |
 | `@if` | `IfASTNode` без else |
 | `@if_else` | `IfASTNode` с else |
-| `@printf` | `PrintfASTNode` |
 | `@return_void` | `ReturnASTNode` без значения |
 | `@return_value` | `ReturnASTNode` со значением |
 | `@call_no_args` | `CallExpressionASTNode` без аргументов |

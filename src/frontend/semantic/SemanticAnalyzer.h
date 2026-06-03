@@ -34,7 +34,6 @@ public:
 	void Visit(const StatementListASTNode& node) override;
 	void Visit(const BlockASTNode& node) override;
 	void Visit(const IfASTNode& node) override;
-	void Visit(const PrintfASTNode& node) override;
 	void Visit(const ReturnASTNode& node) override;
 	void Visit(const FunctionDeclarationASTNode& node) override;
 
@@ -53,11 +52,13 @@ private:
 	void PredeclareTopLevelFunctions(const StatementListASTNode& node);
 	void PredeclareFunction(const FunctionDeclarationASTNode& node);
 	void ValidateEntryPoint();
+	void DefineBuiltinFunctions();
 	[[nodiscard]] bool DefineFunctionSymbol(const FunctionDeclarationASTNode& node);
 	[[nodiscard]] static std::vector<Type> BuildParameterTypes(const FunctionDeclarationASTNode& node);
 	[[nodiscard]] static bool AlwaysReturns(const ASTNode& node);
 	[[nodiscard]] static bool StatementListAlwaysReturns(const StatementListASTNode& node);
 	[[nodiscard]] static bool IfAlwaysReturns(const IfASTNode& node);
+	[[nodiscard]] static bool IsValueType(Type type);
 	void SetCurrentType(const ASTNode& node, Type type);
 	void SetTypeCheckResult(const ASTNode& node, TypeCheckResult result);
 	void AddDiagnostic(std::string message);

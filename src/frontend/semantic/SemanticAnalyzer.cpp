@@ -13,6 +13,7 @@ TypeCheckResult SemanticAnalyzer::Analyze(const ASTNode& node)
 	m_currentType = Type::ERROR;
 	m_diagnostics.clear();
 	m_predeclaredFunctions.clear();
+	DefineBuiltinFunctions();
 	node.Accept(*this);
 	if (!m_diagnostics.empty())
 	{
@@ -99,6 +100,7 @@ void SemanticAnalyzer::Visit(const IndexASTNode& node)
 	SetCurrentType(node, Type::ERROR);
 }
 
+// TODO отрефакторить
 void SemanticAnalyzer::Visit(const CallExpressionASTNode& node)
 {
 	const SemanticSymbol* symbol = m_symbolTable.Resolve(node.GetCalleeName());
@@ -117,6 +119,25 @@ void SemanticAnalyzer::Visit(const CallExpressionASTNode& node)
 
 	const std::vector<Type> argumentTypes = AnalyzeValues(node.GetArguments());
 	bool hasError = HasError(argumentTypes);
+	if (node.GetCalleeName() == "printf")
+	{
+		if (argumentTypes.size() != 1)
+		{
+			AddDiagnostic("printf expects exactly one argument.");
+			SetCurrentType(node, Type::ERROR);
+			return;
+		}
+		if (!hasError && !IsFalsey(argumentTypes.front()))
+		{
+			AddDiagnostic("printf expects int, float or bool argument.");
+			SetCurrentType(node, Type::ERROR);
+			return;
+		}
+
+		SetCurrentType(node, hasError ? Type::ERROR : Type::VOID);
+		return;
+	}
+
 	if (symbol->parameterTypes.size() != argumentTypes.size())
 	{
 		AddDiagnostic("Function call argument count does not match function parameters: " + node.GetCalleeName());
@@ -184,6 +205,11 @@ void SemanticAnalyzer::ValidateAssignment(const std::vector<std::string>& names,
 		{
 			continue;
 		}
+		if (!IsValueType(valueTypes[index]))
+		{
+			AddDiagnostic("Cannot assign void value to identifier: " + names[index]);
+			continue;
+		}
 
 		const SemanticSymbol* existing = m_symbolTable.Resolve(names[index]);
 		if (!existing)
@@ -222,6 +248,11 @@ void SemanticAnalyzer::DefineShortVariables(const std::vector<std::string>& name
 		{
 			continue;
 		}
+		if (!IsValueType(valueTypes[index]))
+		{
+			AddDiagnostic("Cannot declare variable with void initializer: " + names[index]);
+			continue;
+		}
 
 		m_symbolTable.Define(SemanticSymbol{ names[index], valueTypes[index], SemanticSymbolKind::VARIABLE, {} });
 	}
@@ -251,7 +282,12 @@ void SemanticAnalyzer::DefineVariables(
 			continue;
 		}
 
-		Type symbolType = declaredType.value_or(valueTypes[index]);
+		if (!valueTypes.empty() && valueTypes[index] != Type::ERROR && !IsValueType(valueTypes[index]))
+		{
+			AddDiagnostic("Cannot declare variable with void initializer: " + names[index]);
+			continue;
+		}
+		const Type symbolType = declaredType.has_value() ? *declaredType : valueTypes[index];
 		if (!valueTypes.empty() && valueTypes[index] != Type::ERROR && symbolType != valueTypes[index])
 		{
 			AddDiagnostic("Variable initializer type does not match declared type for: " + names[index]);
@@ -332,24 +368,6 @@ void SemanticAnalyzer::Visit(const IfASTNode& node)
 	}
 
 	SetCurrentType(node, hasError ? Type::ERROR : Type::VOID);
-}
-
-void SemanticAnalyzer::Visit(const PrintfASTNode& node)
-{
-	const Type argumentType = AnalyzeChild(node.GetArgument());
-	if (argumentType == Type::ERROR)
-	{
-		SetCurrentType(node, Type::ERROR);
-		return;
-	}
-	if (!IsFalsey(argumentType))
-	{
-		AddDiagnostic("printf expects int or bool argument.");
-		SetCurrentType(node, Type::ERROR);
-		return;
-	}
-
-	SetCurrentType(node, Type::VOID);
 }
 
 void SemanticAnalyzer::Visit(const ReturnASTNode& node)
@@ -500,6 +518,16 @@ void SemanticAnalyzer::ValidateEntryPoint()
 	}
 }
 
+void SemanticAnalyzer::DefineBuiltinFunctions()
+{
+	if (m_symbolTable.ResolveInCurrentScope("printf"))
+	{
+		return;
+	}
+
+	m_symbolTable.Define(SemanticSymbol{ "printf", Type::VOID, SemanticSymbolKind::FUNCTION, { Type::ERROR } });
+}
+
 bool SemanticAnalyzer::DefineFunctionSymbol(const FunctionDeclarationASTNode& node)
 {
 	if (m_symbolTable.ResolveInCurrentScope(node.GetName()))
@@ -567,6 +595,11 @@ bool SemanticAnalyzer::IfAlwaysReturns(const IfASTNode& node)
 {
 	const ASTNode* elseBranch = node.GetElseBranch();
 	return elseBranch && AlwaysReturns(node.GetThenBranch()) && AlwaysReturns(*elseBranch);
+}
+
+bool SemanticAnalyzer::IsValueType(const Type type)
+{
+	return type != Type::VOID && type != Type::ERROR;
 }
 
 Type SemanticAnalyzer::AnalyzeChild(const ASTNode& node)

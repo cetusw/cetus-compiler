@@ -197,11 +197,6 @@ void CodegenVisitor::Visit(const IfASTNode&)
 	Fail("If code generation is not implemented for VM bytecode yet.");
 }
 
-void CodegenVisitor::Visit(const PrintfASTNode&)
-{
-	Fail("printf code generation is not implemented for VM bytecode yet.");
-}
-
 void CodegenVisitor::Visit(const ReturnASTNode&)
 {
 	Fail("Return code generation is not implemented for VM bytecode yet.");

@@ -139,12 +139,6 @@ void AstDumper::Visit(const IfASTNode& expr)
 	}
 }
 
-void AstDumper::Visit(const PrintfASTNode& expr)
-{
-	DumpLine("PrintfASTNode");
-	DumpChild(expr.GetArgument());
-}
-
 void AstDumper::Visit(const ReturnASTNode& expr)
 {
 	DumpLine("ReturnASTNode");

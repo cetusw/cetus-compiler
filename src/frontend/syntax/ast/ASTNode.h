@@ -303,18 +303,6 @@ private:
 	ASTNodePtr m_elseBranch;
 };
 
-class PrintfASTNode final : public StatementASTNode
-{
-public:
-	explicit PrintfASTNode(ASTNodePtr argument);
-
-	[[nodiscard]] const ASTNode& GetArgument() const;
-	void Accept(ASTNodeVisitor& visitor) const override;
-
-private:
-	ASTNodePtr m_argument;
-};
-
 class ReturnASTNode final : public StatementASTNode
 {
 public:

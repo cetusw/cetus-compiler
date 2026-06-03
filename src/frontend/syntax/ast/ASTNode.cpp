@@ -362,21 +362,6 @@ void IfASTNode::Accept(ASTNodeVisitor& visitor) const
 	visitor.Visit(*this);
 }
 
-PrintfASTNode::PrintfASTNode(ASTNodePtr argument)
-	: m_argument(std::move(argument))
-{
-}
-
-const ASTNode& PrintfASTNode::GetArgument() const
-{
-	return *m_argument;
-}
-
-void PrintfASTNode::Accept(ASTNodeVisitor& visitor) const
-{
-	visitor.Visit(*this);
-}
-
 ReturnASTNode::ReturnASTNode(ASTNodePtr value)
 	: m_value(std::move(value))
 {

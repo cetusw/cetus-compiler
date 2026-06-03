@@ -67,7 +67,6 @@ enum class TokenType
     MATCH,              // match
     RETURN,             // return
     DEFER,              // defer
-    PRINTF,             // printf
     TRUE,               // true
     FALSE,              // false
     NIL,                // nil

@@ -41,7 +41,6 @@ enum class SemanticTag
 	STATEMENT_LIST_SINGLE,
 	IF,
 	IF_ELSE,
-	PRINTF,
 	RETURN_VOID,
 	RETURN_VALUE,
 	FUNCTION_VOID_NO_PARAMS,
@@ -89,7 +88,6 @@ enum class SemanticTag
 	if (value == "statement_list_single") return SemanticTag::STATEMENT_LIST_SINGLE;
 	if (value == "if") return SemanticTag::IF;
 	if (value == "if_else") return SemanticTag::IF_ELSE;
-	if (value == "printf") return SemanticTag::PRINTF;
 	if (value == "return_void") return SemanticTag::RETURN_VOID;
 	if (value == "return_value") return SemanticTag::RETURN_VALUE;
 	if (value == "function_void_no_params") return SemanticTag::FUNCTION_VOID_NO_PARAMS;
