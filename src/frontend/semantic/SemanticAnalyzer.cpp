@@ -66,7 +66,7 @@ void SemanticAnalyzer::Visit(const IdentifierASTNode& node)
 void SemanticAnalyzer::Visit(const UnaryASTNode& node)
 {
 	const Type operandType = AnalyzeChild(node.GetOperand());
-	if (operandType == Type::ERROR)
+	if (!ValidateValueExpression(operandType, "unary operand"))
 	{
 		SetCurrentType(node, Type::ERROR);
 		return;
@@ -79,7 +79,16 @@ void SemanticAnalyzer::Visit(const BinaryASTNode& node)
 {
 	const Type leftType = AnalyzeChild(node.GetLeft());
 	const Type rightType = AnalyzeChild(node.GetRight());
-	if (leftType == Type::ERROR || rightType == Type::ERROR)
+	bool hasValueError = false;
+	if (!ValidateValueExpression(leftType, "binary operand"))
+	{
+		hasValueError = true;
+	}
+	if (!ValidateValueExpression(rightType, "binary operand"))
+	{
+		hasValueError = true;
+	}
+	if (hasValueError)
 	{
 		SetCurrentType(node, Type::ERROR);
 		return;
@@ -131,21 +140,25 @@ void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, c
 {
 	if (node.GetCalleeName() == "printf")
 	{
-		const bool hasError = HasError(argumentTypes);
 		if (argumentTypes.size() != 1)
 		{
 			AddDiagnostic("printf expects exactly one argument.");
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
-		if (!hasError && !IsFalsey(argumentTypes.front()))
+		if (!ValidateValueExpression(argumentTypes.front(), "function argument"))
+		{
+			SetCurrentType(node, Type::ERROR);
+			return;
+		}
+		if (!IsFalsey(argumentTypes.front()))
 		{
 			AddDiagnostic("printf expects int, float or bool argument.");
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
 
-		SetCurrentType(node, hasError ? Type::ERROR : Type::VOID);
+		SetCurrentType(node, Type::VOID);
 		return;
 	}
 
@@ -153,12 +166,27 @@ void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, c
 	SetCurrentType(node, Type::ERROR);
 }
 
+bool SemanticAnalyzer::ValidateValueExpression(const Type type, const char* context)
+{
+	if (type == Type::ERROR)
+	{
+		return false;
+	}
+	if (type == Type::VOID)
+	{
+		AddDiagnostic(std::string("Void expression cannot be used as ") + context + ".");
+		return false;
+	}
+
+	return true;
+}
+
 void SemanticAnalyzer::TypeCheckFunctionCall(
 	const CallExpressionASTNode& node,
 	const SemanticSymbol& symbol,
 	const std::vector<Type>& argumentTypes)
 {
-	bool hasError = HasError(argumentTypes);
+	bool hasError = false;
 	if (symbol.parameterTypes.size() != argumentTypes.size())
 	{
 		AddDiagnostic("Function call argument count does not match function parameters: " + node.GetCalleeName());
@@ -168,8 +196,9 @@ void SemanticAnalyzer::TypeCheckFunctionCall(
 
 	for (std::size_t index = 0; index < argumentTypes.size(); ++index)
 	{
-		if (argumentTypes[index] == Type::ERROR)
+		if (!ValidateValueExpression(argumentTypes[index], "function argument"))
 		{
+			hasError = true;
 			continue;
 		}
 		if (argumentTypes[index] != symbol.parameterTypes[index])
@@ -222,13 +251,8 @@ void SemanticAnalyzer::ValidateAssignment(const std::vector<std::string>& names,
 
 	for (std::size_t index = 0; index < names.size(); ++index)
 	{
-		if (valueTypes[index] == Type::ERROR)
+		if (!ValidateValueExpression(valueTypes[index], "assignment value"))
 		{
-			continue;
-		}
-		if (!IsValueType(valueTypes[index]))
-		{
-			AddDiagnostic("Cannot assign void value to identifier: " + names[index]);
 			continue;
 		}
 
@@ -265,13 +289,8 @@ void SemanticAnalyzer::DefineShortVariables(const std::vector<std::string>& name
 			AddDiagnostic("Variable is already declared in current scope: " + names[index]);
 			continue;
 		}
-		if (valueTypes[index] == Type::ERROR)
+		if (!ValidateValueExpression(valueTypes[index], "variable initializer"))
 		{
-			continue;
-		}
-		if (!IsValueType(valueTypes[index]))
-		{
-			AddDiagnostic("Cannot declare variable with void initializer: " + names[index]);
 			continue;
 		}
 
@@ -303,13 +322,12 @@ void SemanticAnalyzer::DefineVariables(
 			continue;
 		}
 
-		if (!valueTypes.empty() && valueTypes[index] != Type::ERROR && !IsValueType(valueTypes[index]))
+		if (!valueTypes.empty() && !ValidateValueExpression(valueTypes[index], "variable initializer"))
 		{
-			AddDiagnostic("Cannot declare variable with void initializer: " + names[index]);
 			continue;
 		}
 		const Type symbolType = declaredType.has_value() ? *declaredType : valueTypes[index];
-		if (!valueTypes.empty() && valueTypes[index] != Type::ERROR && symbolType != valueTypes[index])
+		if (!valueTypes.empty() && symbolType != valueTypes[index])
 		{
 			AddDiagnostic("Variable initializer type does not match declared type for: " + names[index]);
 			continue;
@@ -374,7 +392,7 @@ void SemanticAnalyzer::Visit(const IfASTNode& node)
 	const Type elseType = elseBranch ? AnalyzeChild(*elseBranch) : Type::VOID;
 
 	bool hasError = false;
-	if (conditionType == Type::ERROR)
+	if (!ValidateValueExpression(conditionType, "condition"))
 	{
 		hasError = true;
 	}
@@ -398,7 +416,7 @@ void SemanticAnalyzer::Visit(const ReturnASTNode& node)
 		if (const ASTNode* value = node.GetValue())
 		{
 			const Type valueType = AnalyzeChild(*value);
-			if (valueType == Type::ERROR)
+			if (!ValidateValueExpression(valueType, "return value"))
 			{
 				SetCurrentType(node, Type::ERROR);
 				return;
@@ -414,7 +432,7 @@ void SemanticAnalyzer::Visit(const ReturnASTNode& node)
 	if (const ASTNode* value = node.GetValue())
 	{
 		const Type valueType = AnalyzeChild(*value);
-		if (valueType == Type::ERROR)
+		if (!ValidateValueExpression(valueType, "return value"))
 		{
 			SetCurrentType(node, Type::ERROR);
 			return;
@@ -616,11 +634,6 @@ bool SemanticAnalyzer::IfAlwaysReturns(const IfASTNode& node)
 {
 	const ASTNode* elseBranch = node.GetElseBranch();
 	return elseBranch && AlwaysReturns(node.GetThenBranch()) && AlwaysReturns(*elseBranch);
-}
-
-bool SemanticAnalyzer::IsValueType(const Type type)
-{
-	return type != Type::VOID && type != Type::ERROR;
 }
 
 bool SemanticAnalyzer::IsCallableKind(const SemanticSymbolKind kind)
