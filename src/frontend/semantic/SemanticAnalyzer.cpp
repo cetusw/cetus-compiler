@@ -276,12 +276,23 @@ void SemanticAnalyzer::Visit(const ProgramASTNode& node)
 void SemanticAnalyzer::Visit(const StatementListASTNode& node)
 {
 	bool hasChildError = false;
+	bool hasReturned = false;
 	for (const ASTNodePtr& child : node.GetStatements())
 	{
+		if (hasReturned)
+		{
+			AddDiagnostic("Unreachable statement.");
+			hasChildError = true;
+		}
+
 		const Type childType = AnalyzeChild(*child);
 		if (childType == Type::ERROR)
 		{
 			hasChildError = true;
+		}
+		if (AlwaysReturns(*child))
+		{
+			hasReturned = true;
 		}
 	}
 
