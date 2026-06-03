@@ -181,6 +181,18 @@ bool SemanticAnalyzer::ValidateValueExpression(const Type type, const char* cont
 	return true;
 }
 
+bool SemanticAnalyzer::ValidateUserDefinedName(const std::string& name, const char* declarationKind)
+{
+	const SemanticSymbol* existing = m_symbolTable.Resolve(name);
+	if (existing && IsCallableKind(existing->kind))
+	{
+		AddDiagnostic(std::string(declarationKind) + " cannot use reserved callable identifier: " + name);
+		return false;
+	}
+
+	return true;
+}
+
 void SemanticAnalyzer::TypeCheckFunctionCall(
 	const CallExpressionASTNode& node,
 	const SemanticSymbol& symbol,
@@ -289,6 +301,10 @@ void SemanticAnalyzer::DefineShortVariables(const std::vector<std::string>& name
 			AddDiagnostic("Variable is already declared in current scope: " + names[index]);
 			continue;
 		}
+		if (!ValidateUserDefinedName(names[index], "Variable"))
+		{
+			continue;
+		}
 		if (!ValidateValueExpression(valueTypes[index], "variable initializer"))
 		{
 			continue;
@@ -319,6 +335,10 @@ void SemanticAnalyzer::DefineVariables(
 		if (m_symbolTable.ResolveInCurrentScope(names[index]))
 		{
 			AddDiagnostic("Variable is already declared in current scope: " + names[index]);
+			continue;
+		}
+		if (!ValidateUserDefinedName(names[index], "Variable"))
+		{
 			continue;
 		}
 
@@ -484,6 +504,11 @@ void SemanticAnalyzer::Visit(const FunctionDeclarationASTNode& node)
 			hasParameterError = true;
 			continue;
 		}
+		if (!ValidateUserDefinedName(parameter.name, "Function parameter"))
+		{
+			hasParameterError = true;
+			continue;
+		}
 
 		m_symbolTable.Define(SemanticSymbol{ parameter.name, parameter.type, SemanticSymbolKind::VARIABLE, {} });
 	}
@@ -569,9 +594,18 @@ void SemanticAnalyzer::DefineBuiltinFunctions()
 
 bool SemanticAnalyzer::DefineFunctionSymbol(const FunctionDeclarationASTNode& node)
 {
-	if (m_symbolTable.ResolveInCurrentScope(node.GetName()))
+	const SemanticSymbol* existing = m_symbolTable.ResolveInCurrentScope(node.GetName());
+	if (existing && existing->kind == SemanticSymbolKind::BUILTIN_FUNCTION)
+	{
+		return ValidateUserDefinedName(node.GetName(), "Function");
+	}
+	if (existing)
 	{
 		AddDiagnostic("Function is already declared in current scope: " + node.GetName());
+		return false;
+	}
+	if (!ValidateUserDefinedName(node.GetName(), "Function"))
+	{
 		return false;
 	}
 

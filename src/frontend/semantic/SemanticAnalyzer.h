@@ -56,6 +56,7 @@ private:
 	void TypeCheckBuiltinCall(const CallExpressionASTNode& node, const std::vector<Type>& argumentTypes);
 	void TypeCheckFunctionCall(const CallExpressionASTNode& node, const SemanticSymbol& symbol, const std::vector<Type>& argumentTypes);
 	[[nodiscard]] bool ValidateValueExpression(Type type, const char* context);
+	[[nodiscard]] bool ValidateUserDefinedName(const std::string& name, const char* declarationKind);
 	[[nodiscard]] bool DefineFunctionSymbol(const FunctionDeclarationASTNode& node);
 	[[nodiscard]] static std::vector<Type> BuildParameterTypes(const FunctionDeclarationASTNode& node);
 	[[nodiscard]] static bool AlwaysReturns(const ASTNode& node);
