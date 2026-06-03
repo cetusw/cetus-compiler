@@ -12,6 +12,7 @@ TypeCheckResult SemanticAnalyzer::Analyze(const ASTNode& node)
 {
 	m_currentType = Type::ERROR;
 	m_diagnostics.clear();
+	m_predeclaredFunctions.clear();
 	node.Accept(*this);
 	if (!m_diagnostics.empty())
 	{
@@ -267,6 +268,7 @@ void SemanticAnalyzer::DefineVariables(
 
 void SemanticAnalyzer::Visit(const ProgramASTNode& node)
 {
+	PredeclareTopLevelFunctions(node.GetStatements());
 	const Type statementsType = AnalyzeChild(node.GetStatements());
 	SetCurrentType(node, statementsType == Type::ERROR ? Type::ERROR : Type::VOID);
 }
@@ -394,20 +396,11 @@ void SemanticAnalyzer::Visit(const ReturnASTNode& node)
 
 void SemanticAnalyzer::Visit(const FunctionDeclarationASTNode& node)
 {
-	if (m_symbolTable.ResolveInCurrentScope(node.GetName()))
+	if (!m_predeclaredFunctions.contains(&node) && !DefineFunctionSymbol(node))
 	{
-		AddDiagnostic("Function is already declared in current scope: " + node.GetName());
 		SetCurrentType(node, Type::ERROR);
 		return;
 	}
-
-	std::vector<Type> parameterTypes;
-	parameterTypes.reserve(node.GetParameters().size());
-	for (const FunctionParameter& parameter : node.GetParameters())
-	{
-		parameterTypes.push_back(parameter.type);
-	}
-	m_symbolTable.Define(SemanticSymbol{ node.GetName(), node.GetReturnType(), SemanticSymbolKind::FUNCTION, std::move(parameterTypes) });
 
 	const std::optional<Type> previousReturnType = m_currentFunctionReturnType;
 	m_currentFunctionReturnType = node.GetReturnType();
@@ -429,6 +422,65 @@ void SemanticAnalyzer::Visit(const FunctionDeclarationASTNode& node)
 	m_currentFunctionReturnType = previousReturnType;
 
 	SetCurrentType(node, hasParameterError || bodyType == Type::ERROR ? Type::ERROR : Type::VOID);
+}
+
+void SemanticAnalyzer::PredeclareTopLevelFunctions(const ASTNode& node)
+{
+	const auto* statementList = dynamic_cast<const StatementListASTNode*>(&node);
+	if (!statementList)
+	{
+		return;
+	}
+
+	PredeclareTopLevelFunctions(*statementList);
+}
+
+void SemanticAnalyzer::PredeclareTopLevelFunctions(const StatementListASTNode& node)
+{
+	for (const ASTNodePtr& child : node.GetStatements())
+	{
+		const auto* function = dynamic_cast<const FunctionDeclarationASTNode*>(child.get());
+		if (!function)
+		{
+			continue;
+		}
+
+		PredeclareFunction(*function);
+	}
+}
+
+void SemanticAnalyzer::PredeclareFunction(const FunctionDeclarationASTNode& node)
+{
+	m_predeclaredFunctions.insert(&node);
+	const bool wasDefined = DefineFunctionSymbol(node);
+	(void)wasDefined;
+}
+
+bool SemanticAnalyzer::DefineFunctionSymbol(const FunctionDeclarationASTNode& node)
+{
+	if (m_symbolTable.ResolveInCurrentScope(node.GetName()))
+	{
+		AddDiagnostic("Function is already declared in current scope: " + node.GetName());
+		return false;
+	}
+
+	m_symbolTable.Define(SemanticSymbol{
+		node.GetName(),
+		node.GetReturnType(),
+		SemanticSymbolKind::FUNCTION,
+		BuildParameterTypes(node) });
+	return true;
+}
+
+std::vector<Type> SemanticAnalyzer::BuildParameterTypes(const FunctionDeclarationASTNode& node)
+{
+	std::vector<Type> parameterTypes;
+	parameterTypes.reserve(node.GetParameters().size());
+	for (const FunctionParameter& parameter : node.GetParameters())
+	{
+		parameterTypes.push_back(parameter.type);
+	}
+	return parameterTypes;
 }
 
 Type SemanticAnalyzer::AnalyzeChild(const ASTNode& node)

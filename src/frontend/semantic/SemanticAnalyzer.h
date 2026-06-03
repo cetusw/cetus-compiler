@@ -5,8 +5,10 @@
 #include "symbols/SymbolTable.h"
 #include <optional>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
+// TODO разделить на несколько классов
 class SemanticAnalyzer final : public ASTNodeVisitor
 {
 public:
@@ -47,6 +49,11 @@ private:
 		const std::vector<std::string>& names,
 		std::optional<Type> declaredType,
 		const std::vector<Type>& valueTypes);
+	void PredeclareTopLevelFunctions(const ASTNode& node);
+	void PredeclareTopLevelFunctions(const StatementListASTNode& node);
+	void PredeclareFunction(const FunctionDeclarationASTNode& node);
+	[[nodiscard]] bool DefineFunctionSymbol(const FunctionDeclarationASTNode& node);
+	[[nodiscard]] static std::vector<Type> BuildParameterTypes(const FunctionDeclarationASTNode& node);
 	void SetCurrentType(const ASTNode& node, Type type);
 	void SetTypeCheckResult(const ASTNode& node, TypeCheckResult result);
 	void AddDiagnostic(std::string message);
@@ -56,4 +63,5 @@ private:
 	std::optional<Type> m_currentFunctionReturnType;
 	Type m_currentType = Type::ERROR;
 	std::vector<SemanticDiagnostic> m_diagnostics;
+	std::unordered_set<const FunctionDeclarationASTNode*> m_predeclaredFunctions;
 };
