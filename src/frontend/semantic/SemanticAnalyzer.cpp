@@ -270,7 +270,6 @@ void SemanticAnalyzer::Visit(const ProgramASTNode& node)
 {
 	PredeclareTopLevelFunctions(node.GetStatements());
 	const std::size_t diagnosticCount = m_diagnostics.size();
-	ValidateTopLevelStatements(node.GetStatements());
 	ValidateEntryPoint();
 	const Type statementsType = AnalyzeChild(node.GetStatements());
 	SetCurrentType(node, statementsType == Type::ERROR || m_diagnostics.size() != diagnosticCount ? Type::ERROR : Type::VOID);
@@ -460,6 +459,7 @@ void SemanticAnalyzer::PredeclareTopLevelFunctions(const StatementListASTNode& n
 {
 	for (const ASTNodePtr& child : node.GetStatements())
 	{
+		// TODO переделать без dynamic_cast
 		const auto* function = dynamic_cast<const FunctionDeclarationASTNode*>(child.get());
 		if (!function)
 		{
@@ -475,31 +475,6 @@ void SemanticAnalyzer::PredeclareFunction(const FunctionDeclarationASTNode& node
 	m_predeclaredFunctions.insert(&node);
 	const bool wasDefined = DefineFunctionSymbol(node);
 	(void)wasDefined;
-}
-
-// TODO переделать без dynamic_cast
-void SemanticAnalyzer::ValidateTopLevelStatements(const ASTNode& node)
-{
-	const auto* statementList = dynamic_cast<const StatementListASTNode*>(&node);
-	if (!statementList)
-	{
-		return;
-	}
-
-	ValidateTopLevelStatements(*statementList);
-}
-
-void SemanticAnalyzer::ValidateTopLevelStatements(const StatementListASTNode& node)
-{
-	for (const ASTNodePtr& child : node.GetStatements())
-	{
-		if (dynamic_cast<const FunctionDeclarationASTNode*>(child.get()))
-		{
-			continue;
-		}
-
-		AddDiagnostic("Top-level executable statements are not allowed.");
-	}
 }
 
 void SemanticAnalyzer::ValidateEntryPoint()

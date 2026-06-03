@@ -1,5 +1,15 @@
-~Program~ -> ~StmtList~ @program
+~Program~ -> ~TopLevelDeclList~ @program
 ~Program~ -> e @program_empty
+
+~TopLevelDeclList~ -> ~TopLevelDeclList~ ~TopLevelDecl~ @statement_list
+~TopLevelDeclList~ -> ~TopLevelDecl~ @statement_list_single
+
+~TopLevelDecl~ -> ~FunctionDecl~ @pass_expr
+
+~FunctionDecl~ -> FUNC IDENTIFIER LPAREN RPAREN ~Block~ @function_void_no_params
+~FunctionDecl~ -> FUNC IDENTIFIER LPAREN RPAREN ~TypeName~ ~Block~ @function_return_no_params
+~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~Block~ @function_void
+~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~TypeName~ ~Block~ @function_return
 
 ~StmtList~ -> ~StmtList~ ~Stmt~ @statement_list
 ~StmtList~ -> ~Stmt~ @statement_list_single
@@ -9,10 +19,6 @@
 ~Stmt~ -> RETURN ~Con~ SEMICOLON @return_value
 ~Stmt~ -> IF ~Con~ ~Block~ @if
 ~Stmt~ -> IF ~Con~ ~Block~ ELSE ~Block~ @if_else
-~Stmt~ -> FUNC IDENTIFIER LPAREN RPAREN ~Block~ @function_void_no_params
-~Stmt~ -> FUNC IDENTIFIER LPAREN RPAREN ~TypeName~ ~Block~ @function_return_no_params
-~Stmt~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~Block~ @function_void
-~Stmt~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~TypeName~ ~Block~ @function_return
 
 ~SimpleStmt~ -> ~IdentifierList~ COLON_EQUAL ~ExpressionList~ @short_var_declaration
 ~SimpleStmt~ -> VAR ~IdentifierList~ EQUAL ~ExpressionList~ @var_inferred_declaration

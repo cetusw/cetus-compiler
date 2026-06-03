@@ -19,13 +19,22 @@
 ## Программа
 
 ```text
-~Program~ -> ~StmtList~ @program
+~Program~ -> ~TopLevelDeclList~ @program
 ~Program~ -> e @program_empty
 ```
 
-Программа является корневым AST-узлом и содержит список операторов. Пустая программа синтаксически разрешена.
+Программа является корневым AST-узлом и содержит список объявлений верхнего уровня. Пустая программа синтаксически разрешена.
 
-На верхнем уровне разрешены только объявления. Исполняемые операторы верхнего уровня являются семантической ошибкой.
+На верхнем уровне разрешены только объявления.
+
+```text
+~TopLevelDeclList~ -> ~TopLevelDeclList~ ~TopLevelDecl~ @statement_list
+~TopLevelDeclList~ -> ~TopLevelDecl~ @statement_list_single
+
+~TopLevelDecl~ -> ~FunctionDecl~ @pass_expr
+```
+
+Исполняемые операторы верхнего уровня являются синтаксической ошибкой.
 
 ```cetus
 func main() {
@@ -51,13 +60,18 @@ func main() {
 ~Stmt~ -> RETURN ~Con~ SEMICOLON @return_value
 ~Stmt~ -> IF ~Con~ ~Block~ @if
 ~Stmt~ -> IF ~Con~ ~Block~ ELSE ~Block~ @if_else
-~Stmt~ -> FUNC IDENTIFIER LPAREN RPAREN ~Block~ @function_void_no_params
-~Stmt~ -> FUNC IDENTIFIER LPAREN RPAREN ~TypeName~ ~Block~ @function_return_no_params
-~Stmt~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~Block~ @function_void
-~Stmt~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~TypeName~ ~Block~ @function_return
 ```
 
 Простой оператор завершается `;`. `if` является составным оператором и не требует `;` после блока.
+
+Объявления функций являются объявлениями верхнего уровня:
+
+```text
+~FunctionDecl~ -> FUNC IDENTIFIER LPAREN RPAREN ~Block~ @function_void_no_params
+~FunctionDecl~ -> FUNC IDENTIFIER LPAREN RPAREN ~TypeName~ ~Block~ @function_return_no_params
+~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~Block~ @function_void
+~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~TypeName~ ~Block~ @function_return
+```
 
 ```text
 ~SimpleStmt~ -> ~IdentifierList~ COLON_EQUAL ~ExpressionList~ @short_var_declaration

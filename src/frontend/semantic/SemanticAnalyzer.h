@@ -52,8 +52,6 @@ private:
 	void PredeclareTopLevelFunctions(const ASTNode& node);
 	void PredeclareTopLevelFunctions(const StatementListASTNode& node);
 	void PredeclareFunction(const FunctionDeclarationASTNode& node);
-	void ValidateTopLevelStatements(const ASTNode& node);
-	void ValidateTopLevelStatements(const StatementListASTNode& node);
 	void ValidateEntryPoint();
 	[[nodiscard]] bool DefineFunctionSymbol(const FunctionDeclarationASTNode& node);
 	[[nodiscard]] static std::vector<Type> BuildParameterTypes(const FunctionDeclarationASTNode& node);
