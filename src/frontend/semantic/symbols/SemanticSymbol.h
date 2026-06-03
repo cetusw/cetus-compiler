@@ -8,7 +8,8 @@
 enum class SemanticSymbolKind
 {
 	VARIABLE,
-	FUNCTION
+	FUNCTION,
+	BUILTIN_FUNCTION
 };
 
 struct SemanticSymbol

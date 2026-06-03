@@ -53,7 +53,7 @@ void SemanticAnalyzer::Visit(const IdentifierASTNode& node)
 		return;
 	}
 
-	if (symbol->kind == SemanticSymbolKind::FUNCTION)
+	if (symbol->kind == SemanticSymbolKind::FUNCTION || symbol->kind == SemanticSymbolKind::BUILTIN_FUNCTION)
 	{
 		AddDiagnostic("Function identifier cannot be used as value: " + node.GetName());
 		SetCurrentType(node, Type::ERROR);
@@ -110,7 +110,7 @@ void SemanticAnalyzer::Visit(const CallExpressionASTNode& node)
 		SetCurrentType(node, Type::ERROR);
 		return;
 	}
-	if (symbol->kind != SemanticSymbolKind::FUNCTION)
+	if (!IsCallableKind(symbol->kind))
 	{
 		AddDiagnostic("Identifier is not a function: " + node.GetCalleeName());
 		SetCurrentType(node, Type::ERROR);
@@ -118,9 +118,20 @@ void SemanticAnalyzer::Visit(const CallExpressionASTNode& node)
 	}
 
 	const std::vector<Type> argumentTypes = AnalyzeValues(node.GetArguments());
-	bool hasError = HasError(argumentTypes);
+	if (symbol->kind == SemanticSymbolKind::BUILTIN_FUNCTION)
+	{
+		TypeCheckBuiltinCall(node, argumentTypes);
+		return;
+	}
+
+	TypeCheckFunctionCall(node, *symbol, argumentTypes);
+}
+
+void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, const std::vector<Type>& argumentTypes)
+{
 	if (node.GetCalleeName() == "printf")
 	{
+		const bool hasError = HasError(argumentTypes);
 		if (argumentTypes.size() != 1)
 		{
 			AddDiagnostic("printf expects exactly one argument.");
@@ -138,7 +149,17 @@ void SemanticAnalyzer::Visit(const CallExpressionASTNode& node)
 		return;
 	}
 
-	if (symbol->parameterTypes.size() != argumentTypes.size())
+	AddDiagnostic("Unsupported builtin function: " + node.GetCalleeName());
+	SetCurrentType(node, Type::ERROR);
+}
+
+void SemanticAnalyzer::TypeCheckFunctionCall(
+	const CallExpressionASTNode& node,
+	const SemanticSymbol& symbol,
+	const std::vector<Type>& argumentTypes)
+{
+	bool hasError = HasError(argumentTypes);
+	if (symbol.parameterTypes.size() != argumentTypes.size())
 	{
 		AddDiagnostic("Function call argument count does not match function parameters: " + node.GetCalleeName());
 		SetCurrentType(node, Type::ERROR);
@@ -151,14 +172,14 @@ void SemanticAnalyzer::Visit(const CallExpressionASTNode& node)
 		{
 			continue;
 		}
-		if (argumentTypes[index] != symbol->parameterTypes[index])
+		if (argumentTypes[index] != symbol.parameterTypes[index])
 		{
 			AddDiagnostic("Function call argument type does not match parameter type: " + node.GetCalleeName());
 			hasError = true;
 		}
 	}
 
-	SetCurrentType(node, hasError ? Type::ERROR : symbol->type);
+	SetCurrentType(node, hasError ? Type::ERROR : symbol.type);
 }
 
 void SemanticAnalyzer::Visit(const AssignmentASTNode& node)
@@ -525,7 +546,7 @@ void SemanticAnalyzer::DefineBuiltinFunctions()
 		return;
 	}
 
-	m_symbolTable.Define(SemanticSymbol{ "printf", Type::VOID, SemanticSymbolKind::FUNCTION, { Type::ERROR } });
+	m_symbolTable.Define(SemanticSymbol{ "printf", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { Type::ERROR } });
 }
 
 bool SemanticAnalyzer::DefineFunctionSymbol(const FunctionDeclarationASTNode& node)
@@ -600,6 +621,11 @@ bool SemanticAnalyzer::IfAlwaysReturns(const IfASTNode& node)
 bool SemanticAnalyzer::IsValueType(const Type type)
 {
 	return type != Type::VOID && type != Type::ERROR;
+}
+
+bool SemanticAnalyzer::IsCallableKind(const SemanticSymbolKind kind)
+{
+	return kind == SemanticSymbolKind::FUNCTION || kind == SemanticSymbolKind::BUILTIN_FUNCTION;
 }
 
 Type SemanticAnalyzer::AnalyzeChild(const ASTNode& node)

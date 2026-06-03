@@ -53,12 +53,15 @@ private:
 	void PredeclareFunction(const FunctionDeclarationASTNode& node);
 	void ValidateEntryPoint();
 	void DefineBuiltinFunctions();
+	void TypeCheckBuiltinCall(const CallExpressionASTNode& node, const std::vector<Type>& argumentTypes);
+	void TypeCheckFunctionCall(const CallExpressionASTNode& node, const SemanticSymbol& symbol, const std::vector<Type>& argumentTypes);
 	[[nodiscard]] bool DefineFunctionSymbol(const FunctionDeclarationASTNode& node);
 	[[nodiscard]] static std::vector<Type> BuildParameterTypes(const FunctionDeclarationASTNode& node);
 	[[nodiscard]] static bool AlwaysReturns(const ASTNode& node);
 	[[nodiscard]] static bool StatementListAlwaysReturns(const StatementListASTNode& node);
 	[[nodiscard]] static bool IfAlwaysReturns(const IfASTNode& node);
 	[[nodiscard]] static bool IsValueType(Type type);
+	[[nodiscard]] static bool IsCallableKind(SemanticSymbolKind kind);
 	void SetCurrentType(const ASTNode& node, Type type);
 	void SetTypeCheckResult(const ASTNode& node, TypeCheckResult result);
 	void AddDiagnostic(std::string message);
