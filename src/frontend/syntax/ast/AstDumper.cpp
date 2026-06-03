@@ -147,7 +147,7 @@ void AstDumper::Visit(const ReturnASTNode& expr)
 
 void AstDumper::Visit(const FunctionDeclarationASTNode& expr)
 {
-	DumpLine("FunctionDeclarationASTNode(" + expr.GetName() + ")");
+	DumpLine("FunctionDeclarationASTNode(" + expr.GetName() + "(" + JoinParameters(expr.GetParameters()) + "))");
 	DumpChild(expr.GetBody());
 }
 
@@ -175,6 +175,35 @@ std::string AstDumper::JoinNames(const std::vector<std::string>& names)
 		result += names[index];
 	}
 	return result;
+}
+
+std::string AstDumper::JoinParameters(const std::vector<FunctionParameter>& parameters)
+{
+	std::string result;
+	for (std::size_t index = 0; index < parameters.size(); ++index)
+	{
+		if (index > 0)
+		{
+			result += ", ";
+		}
+		result += parameters[index].name + " " + ToString(parameters[index].type);
+	}
+	return result;
+}
+
+const char* AstDumper::ToString(const Type type)
+{
+	switch (type)
+	{
+	case Type::INT: return "int";
+	case Type::FLOAT: return "float";
+	case Type::BOOL: return "bool";
+	case Type::STRING: return "string";
+	case Type::VOID: return "void";
+	case Type::ERROR: return "error";
+	}
+
+	throw std::runtime_error("Unsupported type.");
 }
 
 const char* AstDumper::ToString(const UnaryOperator op)

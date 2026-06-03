@@ -149,6 +149,11 @@ void SemanticAnalyzer::ValidateAssignment(const std::vector<std::string>& names,
 			AddDiagnostic("Cannot assign to undefined identifier: " + names[index]);
 			continue;
 		}
+		if (existing->kind != SemanticSymbolKind::VARIABLE)
+		{
+			AddDiagnostic("Cannot assign to non-variable identifier: " + names[index]);
+			continue;
+		}
 		if (existing->type != valueTypes[index])
 		{
 			AddDiagnostic("Cannot assign value of different type to identifier: " + names[index]);
@@ -359,10 +364,24 @@ void SemanticAnalyzer::Visit(const FunctionDeclarationASTNode& node)
 
 	const std::optional<Type> previousReturnType = m_currentFunctionReturnType;
 	m_currentFunctionReturnType = node.GetReturnType();
+	m_symbolTable.EnterScope();
+	bool hasParameterError = false;
+	for (const FunctionParameter& parameter : node.GetParameters())
+	{
+		if (m_symbolTable.ResolveInCurrentScope(parameter.name))
+		{
+			AddDiagnostic("Function parameter is already declared: " + parameter.name);
+			hasParameterError = true;
+			continue;
+		}
+
+		m_symbolTable.Define(SemanticSymbol{ parameter.name, parameter.type });
+	}
 	const Type bodyType = AnalyzeChild(node.GetBody());
+	m_symbolTable.ExitScope();
 	m_currentFunctionReturnType = previousReturnType;
 
-	SetCurrentType(node, bodyType == Type::ERROR ? Type::ERROR : Type::VOID);
+	SetCurrentType(node, hasParameterError || bodyType == Type::ERROR ? Type::ERROR : Type::VOID);
 }
 
 Type SemanticAnalyzer::AnalyzeChild(const ASTNode& node)

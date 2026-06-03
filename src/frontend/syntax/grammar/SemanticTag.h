@@ -22,6 +22,9 @@ enum class SemanticTag
 	EXPRESSION_LIST,
 	EXPRESSION_LIST_SINGLE,
 	TYPE_NAME,
+	PARAM,
+	PARAM_LIST,
+	PARAM_LIST_SINGLE,
 	MEMBER_ACCESS,
 	INDEX_ACCESS,
 	ASSIGNMENT,
@@ -41,6 +44,8 @@ enum class SemanticTag
 	RETURN_VALUE,
 	FUNCTION_VOID_NO_PARAMS,
 	FUNCTION_RETURN_NO_PARAMS,
+	FUNCTION_VOID,
+	FUNCTION_RETURN,
 	BLOCK,
 	BLOCK_EMPTY
 };
@@ -63,6 +68,9 @@ enum class SemanticTag
 	if (value == "expression_list") return SemanticTag::EXPRESSION_LIST;
 	if (value == "expression_list_single") return SemanticTag::EXPRESSION_LIST_SINGLE;
 	if (value == "type_name") return SemanticTag::TYPE_NAME;
+	if (value == "param") return SemanticTag::PARAM;
+	if (value == "param_list") return SemanticTag::PARAM_LIST;
+	if (value == "param_list_single") return SemanticTag::PARAM_LIST_SINGLE;
 	if (value == "member_access") return SemanticTag::MEMBER_ACCESS;
 	if (value == "index_access") return SemanticTag::INDEX_ACCESS;
 	if (value == "assignment") return SemanticTag::ASSIGNMENT;
@@ -82,6 +90,8 @@ enum class SemanticTag
 	if (value == "return_value") return SemanticTag::RETURN_VALUE;
 	if (value == "function_void_no_params") return SemanticTag::FUNCTION_VOID_NO_PARAMS;
 	if (value == "function_return_no_params") return SemanticTag::FUNCTION_RETURN_NO_PARAMS;
+	if (value == "function_void") return SemanticTag::FUNCTION_VOID;
+	if (value == "function_return") return SemanticTag::FUNCTION_RETURN;
 	if (value == "block") return SemanticTag::BLOCK;
 	if (value == "block_empty") return SemanticTag::BLOCK_EMPTY;
 	throw std::runtime_error("Unsupported semantic tag: " + std::string(value));

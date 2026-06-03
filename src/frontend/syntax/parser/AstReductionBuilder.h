@@ -13,6 +13,7 @@ struct AstSemanticValue
 	std::optional<Token> token = std::nullopt;
 	std::vector<std::string> identifiers = {};
 	std::vector<ASTNodePtr> expressions = {};
+	std::vector<FunctionParameter> parameters = {};
 	std::optional<Type> type = std::nullopt;
 };
 
@@ -36,6 +37,9 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildExpressionList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildSingleExpressionList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildTypeName(const std::vector<AstSemanticValue>& values);
+	[[nodiscard]] static AstSemanticValue BuildParameter(const std::vector<AstSemanticValue>& values);
+	[[nodiscard]] static AstSemanticValue BuildParameterList(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildSingleParameterList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildMemberAccess(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildIndexAccess(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildAssignment(std::vector<AstSemanticValue> values);
@@ -57,11 +61,14 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildReturnValue(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildVoidFunctionNoParams(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildReturnFunctionNoParams(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildVoidFunction(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildReturnFunction(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue PassNode(std::vector<AstSemanticValue> values, std::size_t index);
 	[[nodiscard]] static AstSemanticValue PassToken(std::vector<AstSemanticValue> values, std::size_t index);
 	[[nodiscard]] static ASTNodePtr TakeNode(std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static std::vector<ASTNodePtr> TakeExpressionList(std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static std::vector<std::string> TakeIdentifierList(std::vector<AstSemanticValue>& values, std::size_t index);
+	[[nodiscard]] static std::vector<FunctionParameter> TakeParameterList(std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static Type TakeType(const std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static Token TakeToken(const std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static BinaryOperator ToBinaryOperator(TokenType type);

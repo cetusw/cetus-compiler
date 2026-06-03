@@ -38,6 +38,8 @@
 ~Stmt~ -> IF ~Con~ ~Block~ ELSE ~Block~ @if_else
 ~Stmt~ -> FUNC IDENTIFIER LPAREN RPAREN ~Block~ @function_void_no_params
 ~Stmt~ -> FUNC IDENTIFIER LPAREN RPAREN ~TypeName~ ~Block~ @function_return_no_params
+~Stmt~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~Block~ @function_void
+~Stmt~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~TypeName~ ~Block~ @function_return
 ```
 
 Простой оператор завершается `;`. `if` является составным оператором и не требует `;` после блока.
@@ -50,6 +52,15 @@
 ~SimpleStmt~ -> ~IdentifierList~ EQUAL ~ExpressionList~ @assignment
 ~SimpleStmt~ -> PRINTF LPAREN ~Con~ RPAREN @printf
 ~SimpleStmt~ -> ~Con~ @expression_statement
+```
+
+Параметры функции:
+
+```text
+~ParamList~ -> ~ParamList~ COMMA ~Param~ @param_list
+~ParamList~ -> ~Param~ @param_list_single
+
+~Param~ -> IDENTIFIER ~TypeName~ @param
 ```
 
 ## Блоки

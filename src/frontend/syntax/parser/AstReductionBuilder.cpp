@@ -36,6 +36,12 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildSingleExpressionList(std::move(values));
 	case SemanticTag::TYPE_NAME:
 		return BuildTypeName(values);
+	case SemanticTag::PARAM:
+		return BuildParameter(values);
+	case SemanticTag::PARAM_LIST:
+		return BuildParameterList(std::move(values));
+	case SemanticTag::PARAM_LIST_SINGLE:
+		return BuildSingleParameterList(std::move(values));
 	case SemanticTag::MEMBER_ACCESS:
 		return BuildMemberAccess(std::move(values));
 	case SemanticTag::INDEX_ACCESS:
@@ -74,6 +80,10 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildVoidFunctionNoParams(std::move(values));
 	case SemanticTag::FUNCTION_RETURN_NO_PARAMS:
 		return BuildReturnFunctionNoParams(std::move(values));
+	case SemanticTag::FUNCTION_VOID:
+		return BuildVoidFunction(std::move(values));
+	case SemanticTag::FUNCTION_RETURN:
+		return BuildReturnFunction(std::move(values));
 	case SemanticTag::BLOCK:
 		return BuildBlock(std::move(values));
 	case SemanticTag::BLOCK_EMPTY:
@@ -185,22 +195,43 @@ AstSemanticValue AstReductionBuilder::BuildTypeName(const std::vector<AstSemanti
 	const std::string& typeName = TakeToken(values, 0).lexeme;
 	if (typeName == "int")
 	{
-		return { nullptr, std::nullopt, {}, {}, Type::INT };
+		return { nullptr, std::nullopt, {}, {}, {}, Type::INT };
 	}
 	if (typeName == "float")
 	{
-		return { nullptr, std::nullopt, {}, {}, Type::FLOAT };
+		return { nullptr, std::nullopt, {}, {}, {}, Type::FLOAT };
 	}
 	if (typeName == "bool")
 	{
-		return { nullptr, std::nullopt, {}, {}, Type::BOOL };
+		return { nullptr, std::nullopt, {}, {}, {}, Type::BOOL };
 	}
 	if (typeName == "string")
 	{
-		return { nullptr, std::nullopt, {}, {}, Type::STRING };
+		return { nullptr, std::nullopt, {}, {}, {}, Type::STRING };
 	}
 
 	throw std::runtime_error("Unsupported type name: " + typeName);
+}
+
+AstSemanticValue AstReductionBuilder::BuildParameter(const std::vector<AstSemanticValue>& values)
+{
+	RequireValueCount(values, 2, "Parameter reduction");
+	return { nullptr, std::nullopt, {}, {}, { FunctionParameter{ TakeToken(values, 0).lexeme, TakeType(values, 1) } } };
+}
+
+AstSemanticValue AstReductionBuilder::BuildParameterList(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 3, "Parameter list reduction");
+	std::vector<FunctionParameter> parameters = TakeParameterList(values, 0);
+	std::vector<FunctionParameter> nextParameter = TakeParameterList(values, 2);
+	parameters.push_back(std::move(nextParameter.front()));
+	return { nullptr, std::nullopt, {}, {}, std::move(parameters) };
+}
+
+AstSemanticValue AstReductionBuilder::BuildSingleParameterList(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 1, "Single parameter list reduction");
+	return { nullptr, std::nullopt, {}, {}, TakeParameterList(values, 0) };
 }
 
 AstSemanticValue AstReductionBuilder::BuildMemberAccess(std::vector<AstSemanticValue> values)
@@ -384,6 +415,7 @@ AstSemanticValue AstReductionBuilder::BuildVoidFunctionNoParams(std::vector<AstS
 	return {
 		std::make_unique<FunctionDeclarationASTNode>(
 			TakeToken(values, 1).lexeme,
+			std::vector<FunctionParameter>{},
 			std::nullopt,
 			TakeNode(values, 4)),
 		std::nullopt
@@ -396,8 +428,35 @@ AstSemanticValue AstReductionBuilder::BuildReturnFunctionNoParams(std::vector<As
 	return {
 		std::make_unique<FunctionDeclarationASTNode>(
 			TakeToken(values, 1).lexeme,
+			std::vector<FunctionParameter>{},
 			TakeType(values, 4),
 			TakeNode(values, 5)),
+		std::nullopt
+	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildVoidFunction(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 6, "Void function declaration reduction");
+	return {
+		std::make_unique<FunctionDeclarationASTNode>(
+			TakeToken(values, 1).lexeme,
+			TakeParameterList(values, 3),
+			std::nullopt,
+			TakeNode(values, 5)),
+		std::nullopt
+	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildReturnFunction(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 7, "Returning function declaration reduction");
+	return {
+		std::make_unique<FunctionDeclarationASTNode>(
+			TakeToken(values, 1).lexeme,
+			TakeParameterList(values, 3),
+			TakeType(values, 5),
+			TakeNode(values, 6)),
 		std::nullopt
 	};
 }
@@ -456,6 +515,18 @@ std::vector<std::string> AstReductionBuilder::TakeIdentifierList(
 	}
 
 	return std::move(values[index].identifiers);
+}
+
+std::vector<FunctionParameter> AstReductionBuilder::TakeParameterList(
+	std::vector<AstSemanticValue>& values,
+	const std::size_t index)
+{
+	if (values[index].parameters.empty())
+	{
+		throw std::runtime_error("Expected parameter list semantic value.");
+	}
+
+	return std::move(values[index].parameters);
 }
 
 Type AstReductionBuilder::TakeType(const std::vector<AstSemanticValue>& values, const std::size_t index)

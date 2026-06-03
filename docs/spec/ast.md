@@ -86,6 +86,8 @@ AST-узлы:
 | `@return_value` | `ReturnASTNode` со значением |
 | `@function_void_no_params` | `FunctionDeclarationASTNode` без параметров и без возвращаемого значения |
 | `@function_return_no_params` | `FunctionDeclarationASTNode` без параметров с возвращаемым значением |
+| `@function_void` | `FunctionDeclarationASTNode` с параметрами без возвращаемого значения |
+| `@function_return` | `FunctionDeclarationASTNode` с параметрами и возвращаемым значением |
 
 ## Аннотации типов
 

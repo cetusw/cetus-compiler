@@ -45,6 +45,12 @@ private:
 
 using ASTNodePtr = std::unique_ptr<ASTNode>;
 
+struct FunctionParameter
+{
+	std::string name;
+	Type type = Type::ERROR;
+};
+
 class StatementASTNode : public ASTNode
 {
 };
@@ -310,15 +316,21 @@ private:
 class FunctionDeclarationASTNode final : public StatementASTNode
 {
 public:
-	FunctionDeclarationASTNode(std::string name, std::optional<Type> returnType, ASTNodePtr body);
+	FunctionDeclarationASTNode(
+		std::string name,
+		std::vector<FunctionParameter> parameters,
+		std::optional<Type> returnType,
+		ASTNodePtr body);
 
 	[[nodiscard]] const std::string& GetName() const;
+	[[nodiscard]] const std::vector<FunctionParameter>& GetParameters() const;
 	[[nodiscard]] Type GetReturnType() const;
 	[[nodiscard]] const ASTNode& GetBody() const;
 	void Accept(ASTNodeVisitor& visitor) const override;
 
 private:
 	std::string m_name;
+	std::vector<FunctionParameter> m_parameters;
 	std::optional<Type> m_returnType;
 	ASTNodePtr m_body;
 };

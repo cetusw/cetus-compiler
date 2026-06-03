@@ -11,6 +11,8 @@
 ~Stmt~ -> IF ~Con~ ~Block~ ELSE ~Block~ @if_else
 ~Stmt~ -> FUNC IDENTIFIER LPAREN RPAREN ~Block~ @function_void_no_params
 ~Stmt~ -> FUNC IDENTIFIER LPAREN RPAREN ~TypeName~ ~Block~ @function_return_no_params
+~Stmt~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~Block~ @function_void
+~Stmt~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~TypeName~ ~Block~ @function_return
 
 ~SimpleStmt~ -> ~IdentifierList~ COLON_EQUAL ~ExpressionList~ @short_var_declaration
 ~SimpleStmt~ -> VAR ~IdentifierList~ EQUAL ~ExpressionList~ @var_inferred_declaration
@@ -30,6 +32,11 @@
 ~ExpressionList~ -> ~Con~ @expression_list_single
 
 ~TypeName~ -> IDENTIFIER @type_name
+
+~ParamList~ -> ~ParamList~ COMMA ~Param~ @param_list
+~ParamList~ -> ~Param~ @param_list_single
+
+~Param~ -> IDENTIFIER ~TypeName~ @param
 
 ~Con~ -> ~Con~ OR_OR ~Con1~ @binary
 ~Con~ -> ~Con1~ @pass_expr

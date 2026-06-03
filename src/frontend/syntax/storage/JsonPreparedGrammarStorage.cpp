@@ -118,6 +118,9 @@ std::string JsonPreparedGrammarStorage::SerializeSemanticTag(const SemanticTag t
 	case SemanticTag::EXPRESSION_LIST: return "expression_list";
 	case SemanticTag::EXPRESSION_LIST_SINGLE: return "expression_list_single";
 	case SemanticTag::TYPE_NAME: return "type_name";
+	case SemanticTag::PARAM: return "param";
+	case SemanticTag::PARAM_LIST: return "param_list";
+	case SemanticTag::PARAM_LIST_SINGLE: return "param_list_single";
 	case SemanticTag::MEMBER_ACCESS: return "member_access";
 	case SemanticTag::INDEX_ACCESS: return "index_access";
 	case SemanticTag::ASSIGNMENT: return "assignment";
@@ -137,6 +140,8 @@ std::string JsonPreparedGrammarStorage::SerializeSemanticTag(const SemanticTag t
 	case SemanticTag::RETURN_VALUE: return "return_value";
 	case SemanticTag::FUNCTION_VOID_NO_PARAMS: return "function_void_no_params";
 	case SemanticTag::FUNCTION_RETURN_NO_PARAMS: return "function_return_no_params";
+	case SemanticTag::FUNCTION_VOID: return "function_void";
+	case SemanticTag::FUNCTION_RETURN: return "function_return";
 	case SemanticTag::BLOCK: return "block";
 	case SemanticTag::BLOCK_EMPTY: return "block_empty";
 	}
