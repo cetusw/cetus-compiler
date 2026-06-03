@@ -40,6 +40,8 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildParameter(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildParameterList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildSingleParameterList(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildCallNoArgs(const std::vector<AstSemanticValue>& values);
+	[[nodiscard]] static AstSemanticValue BuildCall(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildMemberAccess(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildIndexAccess(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildAssignment(std::vector<AstSemanticValue> values);

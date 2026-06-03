@@ -152,6 +152,11 @@ void CodegenVisitor::Visit(const IndexASTNode&)
 	Fail("Index access code generation is not implemented yet.");
 }
 
+void CodegenVisitor::Visit(const CallExpressionASTNode&)
+{
+	Fail("Function call code generation is not implemented for VM bytecode yet.");
+}
+
 void CodegenVisitor::Visit(const AssignmentASTNode&)
 {
 	Fail("Assignment code generation is not implemented for VM bytecode yet.");

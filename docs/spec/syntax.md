@@ -74,7 +74,7 @@
 
 ## Выражения
 
-Текущая грамматика выражений разделяет логические, сравнительные и арифметические уровни:
+Грамматика выражений разделяет логические, сравнительные и арифметические уровни:
 
 ```text
 ~Con~ -> ~Con~ OR_OR ~Con1~ @binary
@@ -99,6 +99,8 @@
 ~Exp1~ -> ~Exp2~ @pass_expr
 
 ~Exp2~ -> LPAREN ~Con~ RPAREN @group
+~Exp2~ -> IDENTIFIER LPAREN RPAREN @call_no_args
+~Exp2~ -> IDENTIFIER LPAREN ~ExpressionList~ RPAREN @call
 ~Exp2~ -> MINUS ~Exp2~ @unary
 ~Exp2~ -> ~LargId~ @pass_expr
 ~Exp2~ -> INT_LIT @int_literal
@@ -118,7 +120,7 @@
 | 4 | `+ -`             |
 | 5 | `* / %`           |
 | 6 | унарные `! -`     |
-| 7 | `.` и `[]`        |
+| 7 | вызовы функций, `.` и `[]` |
 
 Бинарные операторы в грамматике лево-ассоциативны.
 

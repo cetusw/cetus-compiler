@@ -65,6 +65,15 @@ void AstDumper::Visit(const IndexASTNode& expr)
 	DumpChild(expr.GetIndex());
 }
 
+void AstDumper::Visit(const CallExpressionASTNode& expr)
+{
+	DumpLine("CallExpressionASTNode(" + expr.GetCalleeName() + ")");
+	for (const ASTNodePtr& argument : expr.GetArguments())
+	{
+		DumpChild(*argument);
+	}
+}
+
 void AstDumper::Visit(const AssignmentASTNode& expr)
 {
 	DumpLine("AssignmentASTNode(" + JoinNames(expr.GetNames()) + ")");

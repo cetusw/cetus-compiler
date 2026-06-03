@@ -177,6 +177,20 @@ private:
 	ASTNodePtr m_index;
 };
 
+class CallExpressionASTNode final : public ExpressionASTNode
+{
+public:
+	CallExpressionASTNode(std::string calleeName, std::vector<ASTNodePtr> arguments);
+
+	[[nodiscard]] const std::string& GetCalleeName() const;
+	[[nodiscard]] const std::vector<ASTNodePtr>& GetArguments() const;
+	void Accept(ASTNodeVisitor& visitor) const override;
+
+private:
+	std::string m_calleeName;
+	std::vector<ASTNodePtr> m_arguments;
+};
+
 class AssignmentASTNode final : public StatementASTNode
 {
 public:

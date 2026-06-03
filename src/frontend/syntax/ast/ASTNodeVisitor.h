@@ -9,6 +9,7 @@ class UnaryASTNode;
 class BinaryASTNode;
 class MemberAccessASTNode;
 class IndexASTNode;
+class CallExpressionASTNode;
 class AssignmentASTNode;
 class ShortVariableDeclarationASTNode;
 class VariableDeclarationASTNode;
@@ -35,6 +36,7 @@ public:
 	virtual void Visit(const BinaryASTNode& expr) = 0;
 	virtual void Visit(const MemberAccessASTNode& expr) = 0;
 	virtual void Visit(const IndexASTNode& expr) = 0;
+	virtual void Visit(const CallExpressionASTNode& expr) = 0;
 	virtual void Visit(const AssignmentASTNode& expr) = 0;
 	virtual void Visit(const ShortVariableDeclarationASTNode& expr) = 0;
 	virtual void Visit(const VariableDeclarationASTNode& expr) = 0;

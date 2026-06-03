@@ -82,6 +82,8 @@
 ~Exp1~ -> ~Exp2~ @pass_expr
 
 ~Exp2~ -> LPAREN ~Con~ RPAREN @group
+~Exp2~ -> IDENTIFIER LPAREN RPAREN @call_no_args
+~Exp2~ -> IDENTIFIER LPAREN ~ExpressionList~ RPAREN @call
 ~Exp2~ -> MINUS ~Exp2~ @unary
 ~Exp2~ -> ~LargId~ @pass_expr
 ~Exp2~ -> INT_LIT @int_literal

@@ -42,6 +42,10 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildParameterList(std::move(values));
 	case SemanticTag::PARAM_LIST_SINGLE:
 		return BuildSingleParameterList(std::move(values));
+	case SemanticTag::CALL_NO_ARGS:
+		return BuildCallNoArgs(values);
+	case SemanticTag::CALL:
+		return BuildCall(std::move(values));
 	case SemanticTag::MEMBER_ACCESS:
 		return BuildMemberAccess(std::move(values));
 	case SemanticTag::INDEX_ACCESS:
@@ -232,6 +236,23 @@ AstSemanticValue AstReductionBuilder::BuildSingleParameterList(std::vector<AstSe
 {
 	RequireValueCount(values, 1, "Single parameter list reduction");
 	return { nullptr, std::nullopt, {}, {}, TakeParameterList(values, 0) };
+}
+
+AstSemanticValue AstReductionBuilder::BuildCallNoArgs(const std::vector<AstSemanticValue>& values)
+{
+	RequireValueCount(values, 3, "Function call without arguments reduction");
+	return { std::make_unique<CallExpressionASTNode>(TakeToken(values, 0).lexeme, std::vector<ASTNodePtr>{}), std::nullopt };
+}
+
+AstSemanticValue AstReductionBuilder::BuildCall(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 4, "Function call reduction");
+	return {
+		std::make_unique<CallExpressionASTNode>(
+			TakeToken(values, 0).lexeme,
+			TakeExpressionList(values, 2)),
+		std::nullopt
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildMemberAccess(std::vector<AstSemanticValue> values)

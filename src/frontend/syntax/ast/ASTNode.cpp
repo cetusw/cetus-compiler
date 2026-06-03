@@ -177,6 +177,27 @@ void IndexASTNode::Accept(ASTNodeVisitor& visitor) const
 	visitor.Visit(*this);
 }
 
+CallExpressionASTNode::CallExpressionASTNode(std::string calleeName, std::vector<ASTNodePtr> arguments)
+	: m_calleeName(std::move(calleeName))
+	, m_arguments(std::move(arguments))
+{
+}
+
+const std::string& CallExpressionASTNode::GetCalleeName() const
+{
+	return m_calleeName;
+}
+
+const std::vector<ASTNodePtr>& CallExpressionASTNode::GetArguments() const
+{
+	return m_arguments;
+}
+
+void CallExpressionASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}
+
 AssignmentASTNode::AssignmentASTNode(std::vector<std::string> names, std::vector<ASTNodePtr> values)
 	: m_names(std::move(names))
 	, m_values(std::move(values))

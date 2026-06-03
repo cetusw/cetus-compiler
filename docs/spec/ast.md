@@ -42,6 +42,7 @@ AST-узлы:
 - `IdentifierASTNode`;
 - `MemberAccessASTNode`;
 - `IndexASTNode`;
+- `CallExpressionASTNode`;
 - `IfASTNode`;
 - `PrintfASTNode`;
 - `ReturnASTNode`;
@@ -84,6 +85,8 @@ AST-узлы:
 | `@printf` | `PrintfASTNode` |
 | `@return_void` | `ReturnASTNode` без значения |
 | `@return_value` | `ReturnASTNode` со значением |
+| `@call_no_args` | `CallExpressionASTNode` без аргументов |
+| `@call` | `CallExpressionASTNode` с аргументами |
 | `@function_void_no_params` | `FunctionDeclarationASTNode` без параметров и без возвращаемого значения |
 | `@function_return_no_params` | `FunctionDeclarationASTNode` без параметров с возвращаемым значением |
 | `@function_void` | `FunctionDeclarationASTNode` с параметрами без возвращаемого значения |

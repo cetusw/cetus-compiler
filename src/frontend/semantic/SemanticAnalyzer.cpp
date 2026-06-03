@@ -98,6 +98,47 @@ void SemanticAnalyzer::Visit(const IndexASTNode& node)
 	SetCurrentType(node, Type::ERROR);
 }
 
+void SemanticAnalyzer::Visit(const CallExpressionASTNode& node)
+{
+	const SemanticSymbol* symbol = m_symbolTable.Resolve(node.GetCalleeName());
+	if (!symbol)
+	{
+		AddDiagnostic("Undefined function: " + node.GetCalleeName());
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+	if (symbol->kind != SemanticSymbolKind::FUNCTION)
+	{
+		AddDiagnostic("Identifier is not a function: " + node.GetCalleeName());
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+
+	const std::vector<Type> argumentTypes = AnalyzeValues(node.GetArguments());
+	bool hasError = HasError(argumentTypes);
+	if (symbol->parameterTypes.size() != argumentTypes.size())
+	{
+		AddDiagnostic("Function call argument count does not match function parameters: " + node.GetCalleeName());
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+
+	for (std::size_t index = 0; index < argumentTypes.size(); ++index)
+	{
+		if (argumentTypes[index] == Type::ERROR)
+		{
+			continue;
+		}
+		if (argumentTypes[index] != symbol->parameterTypes[index])
+		{
+			AddDiagnostic("Function call argument type does not match parameter type: " + node.GetCalleeName());
+			hasError = true;
+		}
+	}
+
+	SetCurrentType(node, hasError ? Type::ERROR : symbol->type);
+}
+
 void SemanticAnalyzer::Visit(const AssignmentASTNode& node)
 {
 	const std::size_t diagnosticCount = m_diagnostics.size();
@@ -181,7 +222,7 @@ void SemanticAnalyzer::DefineShortVariables(const std::vector<std::string>& name
 			continue;
 		}
 
-		m_symbolTable.Define(SemanticSymbol{ names[index], valueTypes[index] });
+		m_symbolTable.Define(SemanticSymbol{ names[index], valueTypes[index], SemanticSymbolKind::VARIABLE, {} });
 	}
 }
 
@@ -220,7 +261,7 @@ void SemanticAnalyzer::DefineVariables(
 			continue;
 		}
 
-		m_symbolTable.Define(SemanticSymbol{ names[index], symbolType });
+		m_symbolTable.Define(SemanticSymbol{ names[index], symbolType, SemanticSymbolKind::VARIABLE, {} });
 	}
 }
 
@@ -360,7 +401,13 @@ void SemanticAnalyzer::Visit(const FunctionDeclarationASTNode& node)
 		return;
 	}
 
-	m_symbolTable.Define(SemanticSymbol{ node.GetName(), node.GetReturnType(), SemanticSymbolKind::FUNCTION });
+	std::vector<Type> parameterTypes;
+	parameterTypes.reserve(node.GetParameters().size());
+	for (const FunctionParameter& parameter : node.GetParameters())
+	{
+		parameterTypes.push_back(parameter.type);
+	}
+	m_symbolTable.Define(SemanticSymbol{ node.GetName(), node.GetReturnType(), SemanticSymbolKind::FUNCTION, std::move(parameterTypes) });
 
 	const std::optional<Type> previousReturnType = m_currentFunctionReturnType;
 	m_currentFunctionReturnType = node.GetReturnType();
@@ -375,7 +422,7 @@ void SemanticAnalyzer::Visit(const FunctionDeclarationASTNode& node)
 			continue;
 		}
 
-		m_symbolTable.Define(SemanticSymbol{ parameter.name, parameter.type });
+		m_symbolTable.Define(SemanticSymbol{ parameter.name, parameter.type, SemanticSymbolKind::VARIABLE, {} });
 	}
 	const Type bodyType = AnalyzeChild(node.GetBody());
 	m_symbolTable.ExitScope();

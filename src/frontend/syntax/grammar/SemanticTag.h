@@ -25,6 +25,8 @@ enum class SemanticTag
 	PARAM,
 	PARAM_LIST,
 	PARAM_LIST_SINGLE,
+	CALL_NO_ARGS,
+	CALL,
 	MEMBER_ACCESS,
 	INDEX_ACCESS,
 	ASSIGNMENT,
@@ -71,6 +73,8 @@ enum class SemanticTag
 	if (value == "param") return SemanticTag::PARAM;
 	if (value == "param_list") return SemanticTag::PARAM_LIST;
 	if (value == "param_list_single") return SemanticTag::PARAM_LIST_SINGLE;
+	if (value == "call_no_args") return SemanticTag::CALL_NO_ARGS;
+	if (value == "call") return SemanticTag::CALL;
 	if (value == "member_access") return SemanticTag::MEMBER_ACCESS;
 	if (value == "index_access") return SemanticTag::INDEX_ACCESS;
 	if (value == "assignment") return SemanticTag::ASSIGNMENT;
