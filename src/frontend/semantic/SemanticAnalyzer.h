@@ -54,6 +54,9 @@ private:
 	void PredeclareFunction(const FunctionDeclarationASTNode& node);
 	[[nodiscard]] bool DefineFunctionSymbol(const FunctionDeclarationASTNode& node);
 	[[nodiscard]] static std::vector<Type> BuildParameterTypes(const FunctionDeclarationASTNode& node);
+	[[nodiscard]] static bool AlwaysReturns(const ASTNode& node);
+	[[nodiscard]] static bool StatementListAlwaysReturns(const StatementListASTNode& node);
+	[[nodiscard]] static bool IfAlwaysReturns(const IfASTNode& node);
 	void SetCurrentType(const ASTNode& node, Type type);
 	void SetTypeCheckResult(const ASTNode& node, TypeCheckResult result);
 	void AddDiagnostic(std::string message);

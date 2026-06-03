@@ -421,7 +421,14 @@ void SemanticAnalyzer::Visit(const FunctionDeclarationASTNode& node)
 	m_symbolTable.ExitScope();
 	m_currentFunctionReturnType = previousReturnType;
 
-	SetCurrentType(node, hasParameterError || bodyType == Type::ERROR ? Type::ERROR : Type::VOID);
+	bool hasReturnError = false;
+	if (node.GetReturnType() != Type::VOID && !AlwaysReturns(node.GetBody()))
+	{
+		AddDiagnostic("Non-void function must return a value on all execution paths: " + node.GetName());
+		hasReturnError = true;
+	}
+
+	SetCurrentType(node, hasParameterError || hasReturnError || bodyType == Type::ERROR ? Type::ERROR : Type::VOID);
 }
 
 void SemanticAnalyzer::PredeclareTopLevelFunctions(const ASTNode& node)
@@ -481,6 +488,48 @@ std::vector<Type> SemanticAnalyzer::BuildParameterTypes(const FunctionDeclaratio
 		parameterTypes.push_back(parameter.type);
 	}
 	return parameterTypes;
+}
+
+// TODO избавиться от dynamic_cast
+bool SemanticAnalyzer::AlwaysReturns(const ASTNode& node)
+{
+	if (dynamic_cast<const ReturnASTNode*>(&node))
+	{
+		return true;
+	}
+	if (const auto* statementList = dynamic_cast<const StatementListASTNode*>(&node))
+	{
+		return StatementListAlwaysReturns(*statementList);
+	}
+	if (const auto* block = dynamic_cast<const BlockASTNode*>(&node))
+	{
+		return AlwaysReturns(block->GetStatements());
+	}
+	if (const auto* ifNode = dynamic_cast<const IfASTNode*>(&node))
+	{
+		return IfAlwaysReturns(*ifNode);
+	}
+
+	return false;
+}
+
+bool SemanticAnalyzer::StatementListAlwaysReturns(const StatementListASTNode& node)
+{
+	for (const ASTNodePtr& child : node.GetStatements())
+	{
+		if (AlwaysReturns(*child))
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool SemanticAnalyzer::IfAlwaysReturns(const IfASTNode& node)
+{
+	const ASTNode* elseBranch = node.GetElseBranch();
+	return elseBranch && AlwaysReturns(node.GetThenBranch()) && AlwaysReturns(*elseBranch);
 }
 
 Type SemanticAnalyzer::AnalyzeChild(const ASTNode& node)
