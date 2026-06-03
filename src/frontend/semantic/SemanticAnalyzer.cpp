@@ -270,7 +270,9 @@ void SemanticAnalyzer::Visit(const ProgramASTNode& node)
 {
 	PredeclareTopLevelFunctions(node.GetStatements());
 	const Type statementsType = AnalyzeChild(node.GetStatements());
-	SetCurrentType(node, statementsType == Type::ERROR ? Type::ERROR : Type::VOID);
+	const std::size_t diagnosticCount = m_diagnostics.size();
+	ValidateEntryPoint();
+	SetCurrentType(node, statementsType == Type::ERROR || m_diagnostics.size() != diagnosticCount ? Type::ERROR : Type::VOID);
 }
 
 void SemanticAnalyzer::Visit(const StatementListASTNode& node)
@@ -472,6 +474,29 @@ void SemanticAnalyzer::PredeclareFunction(const FunctionDeclarationASTNode& node
 	m_predeclaredFunctions.insert(&node);
 	const bool wasDefined = DefineFunctionSymbol(node);
 	(void)wasDefined;
+}
+
+void SemanticAnalyzer::ValidateEntryPoint()
+{
+	const SemanticSymbol* mainSymbol = m_symbolTable.ResolveInCurrentScope("main");
+	if (!mainSymbol)
+	{
+		AddDiagnostic("Program entry point main is not declared.");
+		return;
+	}
+	if (mainSymbol->kind != SemanticSymbolKind::FUNCTION)
+	{
+		AddDiagnostic("Program entry point main must be a function.");
+		return;
+	}
+	if (!mainSymbol->parameterTypes.empty())
+	{
+		AddDiagnostic("Program entry point main must not have parameters.");
+	}
+	if (mainSymbol->type != Type::VOID)
+	{
+		AddDiagnostic("Program entry point main must return void.");
+	}
 }
 
 bool SemanticAnalyzer::DefineFunctionSymbol(const FunctionDeclarationASTNode& node)
