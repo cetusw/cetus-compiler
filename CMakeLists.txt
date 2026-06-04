@@ -34,7 +34,11 @@ add_library(cetus_support STATIC
 )
 
 add_library(cetus_frontend STATIC
+        src/frontend/codegen/BytecodeEmitter.cpp
         src/frontend/codegen/CodegenVisitor.cpp
+        src/frontend/codegen/FunctionContext.cpp
+        src/frontend/codegen/OperatorOpcodeResolver.cpp
+        src/frontend/codegen/ProgramContext.cpp
         src/frontend/lexical/LexicalAnalyzer.cpp
         src/frontend/syntax/SyntaxAnalyzer.cpp
         src/frontend/syntax/ast/AstDumper.cpp

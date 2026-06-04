@@ -1,10 +1,14 @@
 #include "CodegenVisitor.h"
 
+#include "OperatorOpcodeResolver.h"
 #include "src/backend/vm/objects/ObjFunction.h"
 #include "src/backend/vm/objects/ObjString.h"
-#include "src/backend/vm/types/Chunk.h"
 #include "src/frontend/syntax/ast/ASTNode.h"
-#include <limits>
+
+namespace
+{
+constexpr auto PRINTF_NATIVE_NAME = "println";
+}
 
 CodegenVisitor::CodegenVisitor(const SymbolTable& symbols, const TypeCheckResult& typeInfo)
 	: m_symbols(symbols)
@@ -14,8 +18,8 @@ CodegenVisitor::CodegenVisitor(const SymbolTable& symbols, const TypeCheckResult
 
 CodegenResult CodegenVisitor::Generate(const ASTNode& expr)
 {
-	m_function = std::make_shared<ObjFunction>();
-	m_function->name = std::make_shared<ObjString>("expr");
+	m_programContext.Reset();
+	m_functionStack.clear();
 	m_error.reset();
 
 	if (!EnsureTyped(expr))
@@ -29,8 +33,12 @@ CodegenResult CodegenVisitor::Generate(const ASTNode& expr)
 		return CodegenResult::Error(*m_error);
 	}
 
-	EmitOpcode(OP_RETURN);
-	return CodegenResult::Success(m_function);
+	if (!m_programContext.HasEntryPoint())
+	{
+		return CodegenResult::Error("Program entry point main was not generated.");
+	}
+
+	return CodegenResult::Success(m_programContext.Build());
 }
 
 void CodegenVisitor::Visit(const BoolLiteralASTNode& expr)
@@ -40,9 +48,10 @@ void CodegenVisitor::Visit(const BoolLiteralASTNode& expr)
 		return;
 	}
 
-	EmitConstant(Value(expr.GetValue()));
+	CurrentEmitter().EmitConstant(Value(expr.GetValue()));
 }
 
+// TODO в VM нужно поддержать тип int, кроме double, чтобы различать int и float на уровне бекенда
 void CodegenVisitor::Visit(const IntLiteralASTNode& expr)
 {
 	if (!EnsureTyped(expr))
@@ -50,7 +59,7 @@ void CodegenVisitor::Visit(const IntLiteralASTNode& expr)
 		return;
 	}
 
-	EmitConstant(Value(std::stod(expr.GetValue())));
+	CurrentEmitter().EmitConstant(Value(std::stod(expr.GetValue())));
 }
 
 void CodegenVisitor::Visit(const FloatLiteralASTNode& expr)
@@ -60,7 +69,7 @@ void CodegenVisitor::Visit(const FloatLiteralASTNode& expr)
 		return;
 	}
 
-	EmitConstant(Value(std::stod(expr.GetValue())));
+	CurrentEmitter().EmitConstant(Value(std::stod(expr.GetValue())));
 }
 
 void CodegenVisitor::Visit(const StringLiteralASTNode&)
@@ -74,13 +83,8 @@ void CodegenVisitor::Visit(const IdentifierASTNode& expr)
 	{
 		return;
 	}
-	if (!m_symbols.Resolve(expr.GetName()))
-	{
-		Fail("Undefined identifier during code generation: " + expr.GetName());
-		return;
-	}
 
-	EmitGlobalLoad(expr.GetName());
+	CurrentEmitter().EmitGlobalLoad(expr.GetName());
 }
 
 void CodegenVisitor::Visit(const UnaryASTNode& expr)
@@ -96,17 +100,14 @@ void CodegenVisitor::Visit(const UnaryASTNode& expr)
 		return;
 	}
 
-	switch (expr.GetOperator())
+	const std::optional<OpCode> opcode = OperatorOpcodeResolver::Resolve(expr.GetOperator());
+	if (!opcode.has_value())
 	{
-	case UnaryOperator::NEGATE:
-		EmitOpcode(OP_NEGATE);
-		return;
-	case UnaryOperator::NOT:
-		EmitOpcode(OP_NOT);
+		Fail("Unsupported unary operator during code generation.");
 		return;
 	}
 
-	Fail("Unsupported unary operator during code generation.");
+	CurrentEmitter().EmitOpcode(*opcode);
 }
 
 void CodegenVisitor::Visit(const BinaryASTNode& expr)
@@ -152,64 +153,232 @@ void CodegenVisitor::Visit(const IndexASTNode&)
 	Fail("Index access code generation is not implemented yet.");
 }
 
-void CodegenVisitor::Visit(const CallExpressionASTNode&)
+void CodegenVisitor::Visit(const CallExpressionASTNode& expr)
 {
-	Fail("Function call code generation is not implemented for VM bytecode yet.");
+	if (!EnsureTyped(expr))
+	{
+		return;
+	}
+
+	const std::string& calleeName = expr.GetCalleeName();
+	const std::string targetName = calleeName == "printf" ? PRINTF_NATIVE_NAME : calleeName;
+	CurrentEmitter().EmitGlobalLoad(targetName);
+
+	for (const ASTNodePtr& argument : expr.GetArguments())
+	{
+		argument->Accept(*this);
+		if (m_error.has_value())
+		{
+			return;
+		}
+	}
+
+	CurrentEmitter().EmitOpcode(OP_CALL);
+	CurrentEmitter().EmitOperandByte(static_cast<int>(expr.GetArguments().size()));
 }
 
-void CodegenVisitor::Visit(const AssignmentASTNode&)
+void CodegenVisitor::Visit(const AssignmentASTNode& expr)
 {
-	Fail("Assignment code generation is not implemented for VM bytecode yet.");
+	if (!EnsureTyped(expr))
+	{
+		return;
+	}
+
+	const std::vector<std::string>& names = expr.GetNames();
+	const std::vector<ASTNodePtr>& values = expr.GetValues();
+
+	for (std::size_t i = 0; i < names.size(); ++i)
+	{
+		values[i]->Accept(*this);
+		if (m_error.has_value())
+		{
+			return;
+		}
+
+		CurrentEmitter().EmitGlobalSet(names[i]);
+		CurrentEmitter().EmitOpcode(OP_POP);
+	}
 }
 
-void CodegenVisitor::Visit(const ShortVariableDeclarationASTNode&)
+void CodegenVisitor::Visit(const ShortVariableDeclarationASTNode& expr)
 {
-	Fail("Short variable declaration code generation is not implemented for VM bytecode yet.");
+	if (!EnsureTyped(expr))
+	{
+		return;
+	}
+
+	const std::vector<std::string>& names = expr.GetNames();
+	const std::vector<ASTNodePtr>& values = expr.GetValues();
+
+	for (std::size_t i = 0; i < names.size(); ++i)
+	{
+		values[i]->Accept(*this);
+		if (m_error.has_value())
+		{
+			return;
+		}
+
+		CurrentEmitter().EmitGlobalDefine(names[i]);
+	}
 }
 
-void CodegenVisitor::Visit(const VariableDeclarationASTNode&)
+void CodegenVisitor::Visit(const VariableDeclarationASTNode& expr)
 {
-	Fail("Variable declaration code generation is not implemented for VM bytecode yet.");
+	if (!EnsureTyped(expr))
+	{
+		return;
+	}
+
+	const std::vector<std::string>& names = expr.GetNames();
+	const std::vector<ASTNodePtr>& values = expr.GetValues();
+
+	if (values.empty())
+	{
+		const Type defaultType = expr.GetDeclaredType().value_or(Type::ERROR);
+		for (const std::string& name : names)
+		{
+			EmitDefault(defaultType);
+			CurrentEmitter().EmitGlobalDefine(name);
+		}
+		return;
+	}
+
+	for (std::size_t i = 0; i < names.size(); ++i)
+	{
+		values[i]->Accept(*this);
+		if (m_error.has_value())
+		{
+			return;
+		}
+
+		CurrentEmitter().EmitGlobalDefine(names[i]);
+	}
 }
 
-void CodegenVisitor::Visit(const ExpressionStatementASTNode&)
+void CodegenVisitor::Visit(const ExpressionStatementASTNode& expr)
 {
-	Fail("Expression statement code generation is not implemented for VM bytecode yet.");
+	expr.GetExpression().Accept(*this);
+	if (m_error.has_value())
+	{
+		return;
+	}
+
+	CurrentEmitter().EmitOpcode(OP_POP);
 }
 
-void CodegenVisitor::Visit(const ProgramASTNode&)
+void CodegenVisitor::Visit(const ProgramASTNode& expr)
 {
-	Fail("Program code generation is not implemented for VM bytecode yet.");
+	expr.GetStatements().Accept(*this);
 }
 
-void CodegenVisitor::Visit(const StatementListASTNode&)
+void CodegenVisitor::Visit(const StatementListASTNode& expr)
 {
-	Fail("Statement list code generation is not implemented for VM bytecode yet.");
+	for (const ASTNodePtr& statement : expr.GetStatements())
+	{
+		statement->Accept(*this);
+		if (m_error.has_value())
+		{
+			return;
+		}
+	}
 }
 
-void CodegenVisitor::Visit(const BlockASTNode&)
+void CodegenVisitor::Visit(const BlockASTNode& expr)
 {
-	Fail("Block code generation is not implemented for VM bytecode yet.");
+	expr.GetStatements().Accept(*this);
 }
 
-void CodegenVisitor::Visit(const IfASTNode&)
+void CodegenVisitor::Visit(const IfASTNode& expr)
 {
-	Fail("If code generation is not implemented for VM bytecode yet.");
+	if (!EnsureTyped(expr))
+	{
+		return;
+	}
+
+	expr.GetCondition().Accept(*this);
+	if (m_error.has_value())
+	{
+		return;
+	}
+
+	const int elseJump = CurrentEmitter().EmitJump(OP_JUMP_IF_FALSE);
+	CurrentEmitter().EmitOpcode(OP_POP);
+	expr.GetThenBranch().Accept(*this);
+	if (m_error.has_value())
+	{
+		return;
+	}
+
+	const int endJump = CurrentEmitter().EmitJump(OP_JUMP);
+	CurrentEmitter().PatchJump(elseJump);
+	CurrentEmitter().EmitOpcode(OP_POP);
+
+	if (const ASTNode* elseBranch = expr.GetElseBranch())
+	{
+		elseBranch->Accept(*this);
+		if (m_error.has_value())
+		{
+			return;
+		}
+	}
+
+	CurrentEmitter().PatchJump(endJump);
 }
 
-void CodegenVisitor::Visit(const ReturnASTNode&)
+void CodegenVisitor::Visit(const ReturnASTNode& expr)
 {
-	Fail("Return code generation is not implemented for VM bytecode yet.");
+	if (!EnsureTyped(expr))
+	{
+		return;
+	}
+
+	if (const ASTNode* value = expr.GetValue())
+	{
+		value->Accept(*this);
+		if (m_error.has_value())
+		{
+			return;
+		}
+	}
+	else
+	{
+		CurrentEmitter().EmitConstant(Value());
+	}
+
+	CurrentEmitter().EmitOpcode(OP_RETURN);
 }
 
-void CodegenVisitor::Visit(const FunctionDeclarationASTNode&)
+void CodegenVisitor::Visit(const FunctionDeclarationASTNode& expr)
 {
-	Fail("Function declaration code generation is not implemented for VM bytecode yet.");
+	if (!EnsureTyped(expr))
+	{
+		return;
+	}
+
+	auto function = std::make_shared<ObjFunction>();
+	function->name = std::make_shared<ObjString>(expr.GetName());
+	function->arity = static_cast<int>(expr.GetParameters().size());
+
+	m_functionStack.emplace_back(function, m_error);
+	expr.GetBody().Accept(*this);
+	if (!m_error.has_value())
+	{
+		CurrentEmitter().EmitConstant(Value());
+		CurrentEmitter().EmitOpcode(OP_RETURN);
+	}
+	m_functionStack.pop_back();
+
+	if (m_error.has_value())
+	{
+		return;
+	}
+
+	m_programContext.AddFunction(std::move(function));
 }
 
-Chunk& CodegenVisitor::CurrentChunk() const
+BytecodeEmitter& CodegenVisitor::CurrentEmitter()
 {
-	return m_function->chunk;
+	return m_functionStack.back().Emitter();
 }
 
 void CodegenVisitor::Fail(std::string message)
@@ -220,82 +389,38 @@ void CodegenVisitor::Fail(std::string message)
 	}
 }
 
-void CodegenVisitor::EmitByte(const uint8_t byte) const
+void CodegenVisitor::EmitDefault(const Type type)
 {
-	CurrentChunk().Write(byte, DEFAULT_LINE);
-}
-
-void CodegenVisitor::EmitOpcode(const OpCode opcode) const
-{
-	EmitByte(opcode);
-}
-
-void CodegenVisitor::EmitOperandByte(const int value)
-{
-	if (value < 0 || value > std::numeric_limits<uint8_t>::max())
+	switch (type)
 	{
-		Fail("Bytecode operand exceeds 1-byte limit.");
+	case Type::INT:
+	case Type::FLOAT:
+		CurrentEmitter().EmitConstant(Value(0.0));
 		return;
-	}
-
-	EmitByte(static_cast<uint8_t>(value));
-}
-
-void CodegenVisitor::EmitConstant(const Value& value)
-{
-	const int constantIndex = CurrentChunk().AddConstant(value);
-	EmitOpcode(OP_CONSTANT);
-	EmitOperandByte(constantIndex);
-}
-
-int CodegenVisitor::EmitJump(const OpCode opcode) const
-{
-	EmitOpcode(opcode);
-	EmitByte(0xff);
-	EmitByte(0xff);
-	return CurrentChunk().GetCodeSize() - 2;
-}
-
-void CodegenVisitor::PatchJump(const int jumpOffset)
-{
-	const int jumpDistance = CurrentChunk().GetCodeSize() - jumpOffset - 2;
-	if (jumpDistance < 0 || jumpDistance > std::numeric_limits<uint16_t>::max())
-	{
-		Fail("Jump offset exceeds 2-byte limit.");
+	case Type::BOOL:
+		CurrentEmitter().EmitConstant(Value(false));
 		return;
+	default:
+		CurrentEmitter().EmitConstant(Value());
 	}
-
-	EmitShortOperand(jumpDistance, jumpOffset);
-}
-
-void CodegenVisitor::EmitShortOperand(const int value, const int patchOffset) const
-{
-	CurrentChunk().PatchByte(patchOffset, static_cast<uint8_t>(value >> 8 & 0xff));
-	CurrentChunk().PatchByte(patchOffset + 1, static_cast<uint8_t>(value & 0xff));
 }
 
 void CodegenVisitor::EmitBinaryOperation(const BinaryOperator op)
 {
-	switch (op)
+	if (op == BinaryOperator::OR || op == BinaryOperator::AND)
 	{
-	case BinaryOperator::ADD: EmitOpcode(OP_ADD); return;
-	case BinaryOperator::SUBTRACT: EmitOpcode(OP_SUBTRACT); return;
-	case BinaryOperator::MULTIPLY: EmitOpcode(OP_MULTIPLY); return;
-	case BinaryOperator::DIVIDE: EmitOpcode(OP_DIVIDE); return;
-	case BinaryOperator::MODULO: EmitOpcode(OP_MODULO); return;
-	case BinaryOperator::LESS: EmitOpcode(OP_LESS); return;
-	case BinaryOperator::LESS_EQUAL: EmitOpcode(OP_LESS_OR_EQUAL); return;
-	case BinaryOperator::NOT_EQUAL: EmitOpcode(OP_NOT_EQUAL); return;
-	case BinaryOperator::EQUAL: EmitOpcode(OP_EQUAL); return;
-	case BinaryOperator::GREATER: EmitOpcode(OP_GREATER); return;
-	case BinaryOperator::GREATER_EQUAL: EmitOpcode(OP_GREATER_OR_EQUAL); return;
-	case BinaryOperator::OR:
-	case BinaryOperator::AND:
 		Fail("Logical operator should be emitted via short-circuit code path.");
 		return;
 	}
 
-	Fail("Unsupported binary operator during code generation.");
+	const std::optional<OpCode> opcode = OperatorOpcodeResolver::Resolve(op);
+	if (!opcode.has_value())
+	{
+		Fail("Unsupported binary operator during code generation.");
+		return;
+	}
+
+	CurrentEmitter().EmitOpcode(*opcode);
 }
 
 void CodegenVisitor::EmitLogicalAnd(const BinaryASTNode& expr)
@@ -306,15 +431,15 @@ void CodegenVisitor::EmitLogicalAnd(const BinaryASTNode& expr)
 		return;
 	}
 
-	const int falseJump = EmitJump(OP_JUMP_IF_FALSE);
-	EmitOpcode(OP_POP);
+	const int falseJump = CurrentEmitter().EmitJump(OP_JUMP_IF_FALSE);
+	CurrentEmitter().EmitOpcode(OP_POP);
 	expr.GetRight().Accept(*this);
 	if (m_error.has_value())
 	{
 		return;
 	}
 
-	PatchJump(falseJump);
+	CurrentEmitter().PatchJump(falseJump);
 }
 
 void CodegenVisitor::EmitLogicalOr(const BinaryASTNode& expr)
@@ -325,24 +450,17 @@ void CodegenVisitor::EmitLogicalOr(const BinaryASTNode& expr)
 		return;
 	}
 
-	const int falseJump = EmitJump(OP_JUMP_IF_FALSE);
-	const int endJump = EmitJump(OP_JUMP);
-	PatchJump(falseJump);
-	EmitOpcode(OP_POP);
+	const int falseJump = CurrentEmitter().EmitJump(OP_JUMP_IF_FALSE);
+	const int endJump = CurrentEmitter().EmitJump(OP_JUMP);
+	CurrentEmitter().PatchJump(falseJump);
+	CurrentEmitter().EmitOpcode(OP_POP);
 	expr.GetRight().Accept(*this);
 	if (m_error.has_value())
 	{
 		return;
 	}
 
-	PatchJump(endJump);
-}
-
-void CodegenVisitor::EmitGlobalLoad(const std::string& name)
-{
-	EmitOpcode(OP_GET_GLOBAL);
-	const int constantIndex = CurrentChunk().AddConstant(Value(std::make_shared<ObjString>(name)));
-	EmitOperandByte(constantIndex);
+	CurrentEmitter().PatchJump(endJump);
 }
 
 bool CodegenVisitor::EnsureTyped(const ASTNode& expr)

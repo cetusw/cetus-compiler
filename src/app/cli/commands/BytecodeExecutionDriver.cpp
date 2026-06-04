@@ -22,7 +22,7 @@ void BytecodeExecutionDriver::Execute(const Configuration& configuration)
 	disassembler::DisassembleChunk(mainFunction->chunk, mainFunction->name->GetData());
 
 	VM vm;
-	const InterpretResult result = vm.Interpret(mainFunction);
+	const InterpretResult result = vm.InterpretFunction(mainFunction);
 
 	if (result == InterpretResult::OK)
 	{

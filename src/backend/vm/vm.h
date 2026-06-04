@@ -2,6 +2,7 @@
 #include "Common.h"
 #include "types/CallFrame.h"
 #include "types/InterpretResult.h"
+#include "types/Program.h"
 #include "types/Value.h"
 #include <unordered_map>
 
@@ -12,7 +13,8 @@ public:
 	VM();
 	~VM();
 
-	InterpretResult Interpret(const std::shared_ptr<ObjFunction>& function);
+	InterpretResult InterpretFunction(const std::shared_ptr<ObjFunction>& function);
+	InterpretResult InterpretProgram(const Program& program);
 	uint8_t ReadByte();
 	Value ReadConstant();
 

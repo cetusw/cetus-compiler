@@ -4,6 +4,7 @@
 InterpretResult ReturnInstruction::Execute(VM& vm) const
 {
 	const Value result = vm.Pop();
+	Value* calleeSlot = vm.GetCurrentFrame().slots;
 
 	const int newFrameCount = vm.GetFrameCount() - 1;
 	vm.SetFrameCount(newFrameCount);
@@ -15,7 +16,7 @@ InterpretResult ReturnInstruction::Execute(VM& vm) const
 		return InterpretResult::OK_DONE;
 	}
 
-	vm.SetStackTop(vm.GetCurrentFrame().slots);
+	vm.SetStackTop(calleeSlot);
 
 	vm.Push(result);
 

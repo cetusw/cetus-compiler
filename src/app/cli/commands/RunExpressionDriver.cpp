@@ -64,7 +64,7 @@ void RunExpressionDriver::Execute(const Configuration& configuration)
 	}
 
 	VM vm;
-	if (vm.Interpret(codegenResult.function) != InterpretResult::OK)
+	if (vm.InterpretProgram(codegenResult.program) != InterpretResult::OK)
 	{
 		throw std::runtime_error("VM execution failed.");
 	}

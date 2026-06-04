@@ -18,7 +18,7 @@ VM::VM()
 
 VM::~VM() = default;
 
-InterpretResult VM::Interpret(const std::shared_ptr<ObjFunction>& function)
+InterpretResult VM::InterpretFunction(const std::shared_ptr<ObjFunction>& function)
 {
 	if (!function)
 	{
@@ -36,6 +36,20 @@ InterpretResult VM::Interpret(const std::shared_ptr<ObjFunction>& function)
 	m_frameCount = 1;
 
 	return Run();
+}
+
+InterpretResult VM::InterpretProgram(const Program& program)
+{
+	for (const std::shared_ptr<ObjFunction>& function : program.functions)
+	{
+		if (!function || !function->name)
+		{
+			return InterpretResult::RUNTIME_ERROR;
+		}
+		DefineGlobal(function->name->GetData(), Value(function));
+	}
+
+	return InterpretFunction(program.entryPoint);
 }
 
 inline uint8_t VM::ReadByte()

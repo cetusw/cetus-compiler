@@ -3,12 +3,13 @@
 #include "../semantic/rules/TypeCheckResult.h"
 #include "../semantic/symbols/SymbolTable.h"
 #include "CodegenResult.h"
+#include "FunctionContext.h"
+#include "ProgramContext.h"
 #include "src/backend/vm/types/OpCode.h"
 #include "src/frontend/syntax/ast/ASTNode.h"
+#include <vector>
 
-class Chunk;
 class ASTNode;
-class ObjFunction;
 
 class CodegenVisitor final : public ASTNodeVisitor
 {
@@ -39,25 +40,17 @@ public:
 	void Visit(const FunctionDeclarationASTNode& expr) override;
 
 private:
-	static constexpr int DEFAULT_LINE = 1;
-
-	[[nodiscard]] Chunk& CurrentChunk() const;
+	[[nodiscard]] BytecodeEmitter& CurrentEmitter();
 	void Fail(std::string message);
-	void EmitByte(uint8_t byte) const;
-	void EmitOpcode(OpCode opcode) const;
-	void EmitOperandByte(int value);
-	void EmitConstant(const Value& value);
-	[[nodiscard]] int EmitJump(OpCode opcode) const;
-	void PatchJump(int jumpOffset);
-	void EmitShortOperand(int value, int patchOffset) const;
+	void EmitDefault(Type type);
 	void EmitBinaryOperation(BinaryOperator op);
 	void EmitLogicalAnd(const BinaryASTNode& expr);
 	void EmitLogicalOr(const BinaryASTNode& expr);
-	void EmitGlobalLoad(const std::string& name);
 	[[nodiscard]] bool EnsureTyped(const ASTNode& expr);
 
 	const SymbolTable& m_symbols;
 	const TypeCheckResult& m_typeInfo;
-	std::shared_ptr<ObjFunction> m_function;
+	ProgramContext m_programContext;
+	std::vector<FunctionContext> m_functionStack;
 	std::optional<std::string> m_error;
 };

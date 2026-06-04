@@ -1,16 +1,15 @@
 #pragma once
 
-#include "src/backend/vm/objects/ObjFunction.h"
-#include <memory>
+#include "src/backend/vm/types/Program.h"
 #include <optional>
 #include <string>
 
 struct CodegenResult
 {
-	[[nodiscard]] static CodegenResult Success(std::shared_ptr<ObjFunction> function)
+	[[nodiscard]] static CodegenResult Success(Program program)
 	{
 		CodegenResult result;
-		result.function = std::move(function);
+		result.program = std::move(program);
 		return result;
 	}
 
@@ -21,6 +20,6 @@ struct CodegenResult
 		return result;
 	}
 
-	std::shared_ptr<ObjFunction> function;
+	Program program;
 	std::optional<std::string> error;
 };
