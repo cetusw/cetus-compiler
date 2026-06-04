@@ -201,7 +201,14 @@ void CodegenVisitor::Visit(const AssignmentASTNode& expr)
 			return;
 		}
 
-		CurrentEmitter().EmitGlobalSet(names[i]);
+		if (const std::optional<int> localSlot = m_functionStack.back().ResolveLocal(names[i]))
+		{
+			CurrentEmitter().EmitLocalSet(*localSlot);
+		}
+		else
+		{
+			CurrentEmitter().EmitGlobalSet(names[i]);
+		}
 		CurrentEmitter().EmitOpcode(OP_POP);
 	}
 }

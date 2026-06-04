@@ -59,6 +59,12 @@ void BytecodeEmitter::EmitLocalLoad(const int slot) const
 	EmitOperandByte(slot);
 }
 
+void BytecodeEmitter::EmitLocalSet(const int slot) const
+{
+	EmitOpcode(OP_SET_LOCAL);
+	EmitOperandByte(slot);
+}
+
 void BytecodeEmitter::EmitGlobalLoad(const std::string& name) const
 {
 	EmitOpcode(OP_GET_GLOBAL);

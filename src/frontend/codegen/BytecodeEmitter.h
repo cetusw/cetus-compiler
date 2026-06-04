@@ -19,6 +19,7 @@ public:
 	[[nodiscard]] int EmitJump(OpCode opcode) const;
 	void PatchJump(int jumpOffset) const;
 	void EmitLocalLoad(int slot) const;
+	void EmitLocalSet(int slot) const;
 	void EmitGlobalLoad(const std::string& name) const;
 	void EmitGlobalDefine(const std::string& name) const;
 	void EmitGlobalSet(const std::string& name) const;
