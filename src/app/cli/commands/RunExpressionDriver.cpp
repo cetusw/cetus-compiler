@@ -1,6 +1,5 @@
 #include "RunExpressionDriver.h"
 
-#include "../../../frontend/semantic/rules/TypeRules.h"
 #include "src/backend/vm/vm.h"
 #include "src/frontend/codegen/CodegenVisitor.h"
 #include "src/frontend/lexical/LexicalAnalyzer.h"
@@ -68,9 +67,4 @@ void RunExpressionDriver::Execute(const Configuration& configuration)
 	{
 		throw std::runtime_error("VM execution failed.");
 	}
-
-	// TODO Убрать, как только будет весь язык
-	std::printf("Type: %s\nResult: ", TypeRules::ToString(typeResult.type));
-	vm.GetLastResult().Print();
-	std::printf("\n");
 }

@@ -34,15 +34,11 @@ public:
 	[[nodiscard]] CallFrame& GetCurrentFrame();
 	[[nodiscard]] int GetFrameCount() const;
 	Value GetGlobal(const std::string& name) const;
-	// TODO Убрать, как только будет весь язык
-	[[nodiscard]] Value GetLastResult() const;
 
 	void SetStack(int index, const Value& value);
 	void SetStackTop(Value* value);
 	void SetFrame(int index, const CallFrame& frame);
 	void SetFrameCount(int count);
-	// TODO Убрать, как только будет весь язык
-	void SetLastResult(const Value& value);
 	bool SetGlobal(const std::string& name, const Value& value);
 
 
@@ -53,9 +49,6 @@ private:
 	CallFrame m_frames[FRAMES_MAX];
 	int m_frameCount;
 	std::unordered_map<std::string, Value> m_globals;
-
-	// TODO Убрать, как только будет весь язык
-	Value m_lastResult;
 
 	InterpretResult Run();
 	void TraceExecution();
