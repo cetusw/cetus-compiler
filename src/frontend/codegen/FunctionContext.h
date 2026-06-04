@@ -5,7 +5,7 @@
 #include <memory>
 #include <optional>
 #include <string>
-#include <unordered_map>
+#include <vector>
 
 class FunctionContext
 {
@@ -16,10 +16,22 @@ public:
 	[[nodiscard]] ObjFunction& Function() const;
 	[[nodiscard]] BytecodeEmitter& Emitter();
 	void RegisterParameter(const std::string& name, int slot);
+	void BeginScope();
+	[[nodiscard]] int EndScope();
+	int DeclareLocal(const std::string& name);
 	[[nodiscard]] std::optional<int> ResolveLocal(const std::string& name) const;
 
 private:
+	struct LocalSlot
+	{
+		std::string name;
+		int slot;
+		int scopeDepth;
+	};
+
 	std::shared_ptr<ObjFunction> m_function;
 	BytecodeEmitter m_emitter;
-	std::unordered_map<std::string, int> m_localSlots;
+	std::vector<LocalSlot> m_localSlots;
+	int m_scopeDepth = 0;
+	int m_nextLocalSlot = 1;
 };

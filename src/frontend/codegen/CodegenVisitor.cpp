@@ -224,7 +224,7 @@ void CodegenVisitor::Visit(const ShortVariableDeclarationASTNode& expr)
 			return;
 		}
 
-		CurrentEmitter().EmitGlobalDefine(names[i]);
+		m_functionStack.back().DeclareLocal(names[i]);
 	}
 }
 
@@ -244,7 +244,7 @@ void CodegenVisitor::Visit(const VariableDeclarationASTNode& expr)
 		for (const std::string& name : names)
 		{
 			EmitDefault(defaultType);
-			CurrentEmitter().EmitGlobalDefine(name);
+			m_functionStack.back().DeclareLocal(name);
 		}
 		return;
 	}
@@ -257,7 +257,7 @@ void CodegenVisitor::Visit(const VariableDeclarationASTNode& expr)
 			return;
 		}
 
-		CurrentEmitter().EmitGlobalDefine(names[i]);
+		m_functionStack.back().DeclareLocal(names[i]);
 	}
 }
 
@@ -291,7 +291,18 @@ void CodegenVisitor::Visit(const StatementListASTNode& expr)
 
 void CodegenVisitor::Visit(const BlockASTNode& expr)
 {
+	m_functionStack.back().BeginScope();
 	expr.GetStatements().Accept(*this);
+	const int localCount = m_functionStack.back().EndScope();
+	if (m_error.has_value())
+	{
+		return;
+	}
+
+	for (int i = 0; i < localCount; ++i)
+	{
+		CurrentEmitter().EmitOpcode(OP_POP);
+	}
 }
 
 void CodegenVisitor::Visit(const IfASTNode& expr)

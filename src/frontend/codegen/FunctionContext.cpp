@@ -1,5 +1,7 @@
 #include "FunctionContext.h"
 
+#include <ranges>
+
 FunctionContext::FunctionContext(std::shared_ptr<ObjFunction> function, std::optional<std::string>& error)
 	: m_function(std::move(function))
 	, m_emitter(m_function->chunk, error)
@@ -23,16 +25,49 @@ BytecodeEmitter& FunctionContext::Emitter()
 
 void FunctionContext::RegisterParameter(const std::string& name, const int slot)
 {
-	m_localSlots[name] = slot;
+	m_localSlots.push_back(LocalSlot{ name, slot, 0 });
+	if (slot >= m_nextLocalSlot)
+	{
+		m_nextLocalSlot = slot + 1;
+	}
+}
+
+void FunctionContext::BeginScope()
+{
+	++m_scopeDepth;
+}
+
+int FunctionContext::EndScope()
+{
+	int localCount = 0;
+	while (!m_localSlots.empty() && m_localSlots.back().scopeDepth == m_scopeDepth)
+	{
+		m_localSlots.pop_back();
+		--m_nextLocalSlot;
+		++localCount;
+	}
+
+	--m_scopeDepth;
+	return localCount;
+}
+
+int FunctionContext::DeclareLocal(const std::string& name)
+{
+	const int slot = m_nextLocalSlot;
+	m_localSlots.push_back(LocalSlot{ name, slot, m_scopeDepth });
+	++m_nextLocalSlot;
+	return slot;
 }
 
 std::optional<int> FunctionContext::ResolveLocal(const std::string& name) const
 {
-	const auto local = m_localSlots.find(name);
-	if (local == m_localSlots.end())
+	for (const auto & m_localSlot : std::views::reverse(m_localSlots))
 	{
-		return std::nullopt;
+		if (m_localSlot.name == name)
+		{
+			return m_localSlot.slot;
+		}
 	}
 
-	return local->second;
+	return std::nullopt;
 }
