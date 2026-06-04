@@ -18,9 +18,10 @@ public:
 	void EmitConstant(const Value& value) const;
 	[[nodiscard]] int EmitJump(OpCode opcode) const;
 	void PatchJump(int jumpOffset) const;
-	void EmitGlobalLoad(const std::string& name);
-	void EmitGlobalDefine(const std::string& name);
-	void EmitGlobalSet(const std::string& name);
+	void EmitLocalLoad(int slot) const;
+	void EmitGlobalLoad(const std::string& name) const;
+	void EmitGlobalDefine(const std::string& name) const;
+	void EmitGlobalSet(const std::string& name) const;
 
 private:
 	static constexpr int DEFAULT_LINE = 1;

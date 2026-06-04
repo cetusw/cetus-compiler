@@ -84,6 +84,12 @@ void CodegenVisitor::Visit(const IdentifierASTNode& expr)
 		return;
 	}
 
+	if (const std::optional<int> localSlot = m_functionStack.back().ResolveLocal(expr.GetName()))
+	{
+		CurrentEmitter().EmitLocalLoad(*localSlot);
+		return;
+	}
+
 	CurrentEmitter().EmitGlobalLoad(expr.GetName());
 }
 
@@ -360,6 +366,13 @@ void CodegenVisitor::Visit(const FunctionDeclarationASTNode& expr)
 	function->arity = static_cast<int>(expr.GetParameters().size());
 
 	m_functionStack.emplace_back(function, m_error);
+	int parameterSlot = 1;
+	for (const FunctionParameter& parameter : expr.GetParameters())
+	{
+		m_functionStack.back().RegisterParameter(parameter.name, parameterSlot);
+		++parameterSlot;
+	}
+
 	expr.GetBody().Accept(*this);
 	if (!m_error.has_value())
 	{

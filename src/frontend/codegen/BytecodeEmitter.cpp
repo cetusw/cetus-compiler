@@ -53,21 +53,27 @@ void BytecodeEmitter::PatchJump(const int jumpOffset) const
 	EmitShortOperand(jumpDistance, jumpOffset);
 }
 
-void BytecodeEmitter::EmitGlobalLoad(const std::string& name)
+void BytecodeEmitter::EmitLocalLoad(const int slot) const
+{
+	EmitOpcode(OP_GET_LOCAL);
+	EmitOperandByte(slot);
+}
+
+void BytecodeEmitter::EmitGlobalLoad(const std::string& name) const
 {
 	EmitOpcode(OP_GET_GLOBAL);
 	const int constantIndex = m_chunk.AddConstant(Value(std::make_shared<ObjString>(name)));
 	EmitOperandByte(constantIndex);
 }
 
-void BytecodeEmitter::EmitGlobalDefine(const std::string& name)
+void BytecodeEmitter::EmitGlobalDefine(const std::string& name) const
 {
 	EmitOpcode(OP_DEFINE_GLOBAL);
 	const int constantIndex = m_chunk.AddConstant(Value(std::make_shared<ObjString>(name)));
 	EmitOperandByte(constantIndex);
 }
 
-void BytecodeEmitter::EmitGlobalSet(const std::string& name)
+void BytecodeEmitter::EmitGlobalSet(const std::string& name) const
 {
 	EmitOpcode(OP_SET_GLOBAL);
 	const int constantIndex = m_chunk.AddConstant(Value(std::make_shared<ObjString>(name)));

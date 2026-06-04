@@ -20,3 +20,19 @@ BytecodeEmitter& FunctionContext::Emitter()
 {
 	return m_emitter;
 }
+
+void FunctionContext::RegisterParameter(const std::string& name, const int slot)
+{
+	m_localSlots[name] = slot;
+}
+
+std::optional<int> FunctionContext::ResolveLocal(const std::string& name) const
+{
+	const auto local = m_localSlots.find(name);
+	if (local == m_localSlots.end())
+	{
+		return std::nullopt;
+	}
+
+	return local->second;
+}
