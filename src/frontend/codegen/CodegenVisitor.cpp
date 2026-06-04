@@ -193,21 +193,25 @@ void CodegenVisitor::Visit(const AssignmentASTNode& expr)
 	const std::vector<std::string>& names = expr.GetNames();
 	const std::vector<ASTNodePtr>& values = expr.GetValues();
 
-	for (std::size_t i = 0; i < names.size(); ++i)
+	for (const ASTNodePtr& value : values)
 	{
-		values[i]->Accept(*this);
+		value->Accept(*this);
 		if (m_error.has_value())
 		{
 			return;
 		}
+	}
 
-		if (const std::optional<int> localSlot = m_functionStack.back().ResolveLocal(names[i]))
+	for (std::size_t i = names.size(); i > 0; --i)
+	{
+		const std::string& name = names[i - 1];
+		if (const std::optional<int> localSlot = m_functionStack.back().ResolveLocal(name))
 		{
 			CurrentEmitter().EmitLocalSet(*localSlot);
 		}
 		else
 		{
-			CurrentEmitter().EmitGlobalSet(names[i]);
+			CurrentEmitter().EmitGlobalSet(name);
 		}
 		CurrentEmitter().EmitOpcode(OP_POP);
 	}
