@@ -43,5 +43,6 @@ for file in "${ROOT_DIR}"/tests/smoke/positive/*.cetus; do
 done
 
 run_negative "${ROOT_DIR}/tests/smoke/negative/missing_main.cetus" "Program entry point main is not declared"
+run_negative "${ROOT_DIR}/tests/smoke/negative/duplicate_local.cetus" "Variable is already declared in current scope: value"
 
 echo "[smoke] ok"
