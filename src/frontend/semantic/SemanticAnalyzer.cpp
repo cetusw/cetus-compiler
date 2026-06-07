@@ -192,6 +192,58 @@ void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, c
 		return;
 	}
 
+	if (calleeName == "readString")
+	{
+		if (!argumentTypes.empty())
+		{
+			AddDiagnostic("readString expects no arguments.");
+			SetCurrentType(node, Type::ERROR);
+			return;
+		}
+
+		SetCurrentType(node, Type::STRING);
+		return;
+	}
+
+	if (calleeName == "readInt")
+	{
+		if (!argumentTypes.empty())
+		{
+			AddDiagnostic("readInt expects no arguments.");
+			SetCurrentType(node, Type::ERROR);
+			return;
+		}
+
+		SetCurrentType(node, Type::INT);
+		return;
+	}
+
+	if (calleeName == "readFloat")
+	{
+		if (!argumentTypes.empty())
+		{
+			AddDiagnostic("readFloat expects no arguments.");
+			SetCurrentType(node, Type::ERROR);
+			return;
+		}
+
+		SetCurrentType(node, Type::FLOAT);
+		return;
+	}
+
+	if (calleeName == "readBool")
+	{
+		if (!argumentTypes.empty())
+		{
+			AddDiagnostic("readBool expects no arguments.");
+			SetCurrentType(node, Type::ERROR);
+			return;
+		}
+
+		SetCurrentType(node, Type::BOOL);
+		return;
+	}
+
 	AddDiagnostic("Unsupported builtin function: " + node.GetCalleeName());
 	SetCurrentType(node, Type::ERROR);
 }
@@ -623,6 +675,10 @@ void SemanticAnalyzer::DefineBuiltinFunctions()
 	m_symbolTable.Define(SemanticSymbol{ "print", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { Type::ERROR } });
 	m_symbolTable.Define(SemanticSymbol{ "println", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { Type::ERROR } });
 	m_symbolTable.Define(SemanticSymbol{ "len", Type::INT, SemanticSymbolKind::BUILTIN_FUNCTION, { Type::STRING } });
+	m_symbolTable.Define(SemanticSymbol{ "readString", Type::STRING, SemanticSymbolKind::BUILTIN_FUNCTION, {} });
+	m_symbolTable.Define(SemanticSymbol{ "readInt", Type::INT, SemanticSymbolKind::BUILTIN_FUNCTION, {} });
+	m_symbolTable.Define(SemanticSymbol{ "readFloat", Type::FLOAT, SemanticSymbolKind::BUILTIN_FUNCTION, {} });
+	m_symbolTable.Define(SemanticSymbol{ "readBool", Type::BOOL, SemanticSymbolKind::BUILTIN_FUNCTION, {} });
 }
 
 bool SemanticAnalyzer::DefineFunctionSymbol(const FunctionDeclarationASTNode& node)

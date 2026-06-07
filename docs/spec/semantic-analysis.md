@@ -124,7 +124,7 @@ Expression statement может иметь тип `void`. Остальные val
 
 Для встроенной функции применяются правила конкретной встроенной функции.
 
-`printf` является встроенной функцией с типом возврата `void`. Она принимает один truthy-compatible аргумент: `int`, `float` или `bool`.
+`print`, `println`, `printf`, `len` и `read*` являются встроенными функциями. Их сигнатуры описаны в `docs/spec/standard-library.md`. `printf` является compatibility alias для `println`.
 
 ## Диагностики
 

@@ -70,6 +70,7 @@ add_library(cetus_tooling STATIC
 )
 
 add_library(cetus_backend_vm STATIC
+        src/backend/vm/NativeRegistry.cpp
         src/backend/vm/vm.cpp
         src/backend/vm/types/Chunk.cpp
         src/backend/vm/types/Value.cpp

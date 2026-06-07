@@ -1,8 +1,8 @@
 #include "vm.h"
-#include "NativeFunctions.h"
+
+#include "NativeRegistry.h"
 #include "disassembler/Disassembler.h"
 #include "instructions/InstructionRegistry.h"
-#include "objects/ObjNative.h"
 
 VM::VM()
 	: m_registry(std::make_unique<InstructionRegistry>())
@@ -11,9 +11,7 @@ VM::VM()
 {
 	m_stackTop = m_stack;
 
-	DefineGlobal("print", Value(std::make_shared<ObjNative>(NativeFunctions::NativePrint)));
-	DefineGlobal("println", Value(std::make_shared<ObjNative>(NativeFunctions::NativePrintln)));
-	DefineGlobal("len", Value(std::make_shared<ObjNative>(NativeFunctions::NativeLen)));
+	NativeRegistry::RegisterStdLib(*this);
 }
 
 VM::~VM() = default;

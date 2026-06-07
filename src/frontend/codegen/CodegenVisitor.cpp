@@ -8,6 +8,15 @@
 namespace
 {
 constexpr auto PRINTF_NATIVE_NAME = "println";
+
+std::string ResolveBuiltinRuntimeName(const std::string& sourceName)
+{
+	if (sourceName == "printf")
+	{
+		return PRINTF_NATIVE_NAME;
+	}
+	return sourceName;
+}
 }
 
 CodegenVisitor::CodegenVisitor(const SymbolTable& symbols, const TypeCheckResult& typeInfo)
@@ -171,7 +180,7 @@ void CodegenVisitor::Visit(const CallExpressionASTNode& expr)
 	}
 
 	const std::string& calleeName = expr.GetCalleeName();
-	const std::string targetName = calleeName == "printf" ? PRINTF_NATIVE_NAME : calleeName;
+	const std::string targetName = ResolveBuiltinRuntimeName(calleeName);
 	CurrentEmitter().EmitGlobalLoad(targetName);
 
 	for (const ASTNodePtr& argument : expr.GetArguments())
