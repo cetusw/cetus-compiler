@@ -51,7 +51,6 @@ void CodegenVisitor::Visit(const BoolLiteralASTNode& expr)
 	CurrentEmitter().EmitConstant(Value(expr.GetValue()));
 }
 
-// TODO в VM нужно поддержать тип int, кроме double, чтобы различать int и float на уровне бекенда
 void CodegenVisitor::Visit(const IntLiteralASTNode& expr)
 {
 	if (!EnsureTyped(expr))
@@ -59,7 +58,7 @@ void CodegenVisitor::Visit(const IntLiteralASTNode& expr)
 		return;
 	}
 
-	CurrentEmitter().EmitConstant(Value(std::stod(expr.GetValue())));
+	CurrentEmitter().EmitConstant(Value(static_cast<RuntimeInt>(std::stoll(expr.GetValue()))));
 }
 
 void CodegenVisitor::Visit(const FloatLiteralASTNode& expr)
@@ -72,9 +71,14 @@ void CodegenVisitor::Visit(const FloatLiteralASTNode& expr)
 	CurrentEmitter().EmitConstant(Value(std::stod(expr.GetValue())));
 }
 
-void CodegenVisitor::Visit(const StringLiteralASTNode&)
+void CodegenVisitor::Visit(const StringLiteralASTNode& expr)
 {
-	Fail("String literal code generation is not implemented for VM bytecode yet.");
+	if (!EnsureTyped(expr))
+	{
+		return;
+	}
+
+	CurrentEmitter().EmitConstant(Value(std::make_shared<ObjString>(expr.GetValue())));
 }
 
 void CodegenVisitor::Visit(const IdentifierASTNode& expr)
@@ -429,6 +433,8 @@ void CodegenVisitor::EmitDefault(const Type type)
 	switch (type)
 	{
 	case Type::INT:
+		CurrentEmitter().EmitConstant(Value(static_cast<RuntimeInt>(0)));
+		return;
 	case Type::FLOAT:
 		CurrentEmitter().EmitConstant(Value(0.0));
 		return;

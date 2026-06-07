@@ -1,8 +1,8 @@
 .def
 .name ControlFlow
 .constants
-number 10
-number 5
+int 10
+int 5
 string "Greater"
 string "Smaller"
 .code

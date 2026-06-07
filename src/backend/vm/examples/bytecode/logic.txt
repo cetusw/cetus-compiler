@@ -1,8 +1,8 @@
 .def
 .name Logic
 .constants
-number 10
-number 20
+int 10
+int 20
 bool true
 bool false
 .code

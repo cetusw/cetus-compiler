@@ -1,7 +1,7 @@
 .def main
 .constants
 string "g_var"
-number 42
+int 42
 string "hello"
 .code
 0 const 1

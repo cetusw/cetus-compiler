@@ -17,6 +17,25 @@ run_positive() {
     "${CETUS_BIN}" --run-expr "$file" >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"
 }
 
+run_positive_output() {
+    local file="$1"
+    local expected="$2"
+    run_positive "$file"
+
+    local actual
+    actual="$(grep -v -E '^(--- Trace Execution ---|\[|[0-9]{4} OP_|$)' "${SMOKE_STDOUT}" || true)"
+    if [[ "${actual}" != "${expected}" ]]; then
+        echo "Unexpected stdout for: $file" >&2
+        echo "expected:" >&2
+        printf '%s\n' "${expected}" >&2
+        echo "actual:" >&2
+        printf '%s\n' "${actual}" >&2
+        echo "stderr:" >&2
+        cat "${SMOKE_STDERR}" >&2
+        exit 1
+    fi
+}
+
 run_negative() {
     local file="$1"
     local expected="$2"
@@ -44,5 +63,10 @@ done
 
 run_negative "${ROOT_DIR}/tests/smoke/negative/missing_main.cetus" "Program entry point main is not declared"
 run_negative "${ROOT_DIR}/tests/smoke/negative/duplicate_local.cetus" "Variable is already declared in current scope: value"
+run_negative "${ROOT_DIR}/tests/smoke/negative/float_modulo.cetus" "Modulo operator expects int operands"
+
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/runtime_numbers.cetus" $'1\n1.5\n1\n3\n3.5'
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_literal.cetus" "hello"
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_operations.cetus" $'abc\ntrue\ntrue\n3'
 
 echo "[smoke] ok"

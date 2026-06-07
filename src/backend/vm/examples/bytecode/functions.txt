@@ -9,8 +9,8 @@
 .def main
 .constants
 function AddNums
-number 10
-number 20
+int 10
+int 20
 .code
 0 const 0
 2 const 1

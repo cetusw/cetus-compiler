@@ -1,5 +1,7 @@
 #pragma once
+
 #include "src/backend/vm/objects/Obj.h"
+#include "src/backend/vm/types/RuntimeTypes.h"
 #include <cstddef>
 #include <string>
 #include <variant>
@@ -11,11 +13,14 @@ class Value
 {
 public:
 	Value();
-	explicit Value(double value);
-	explicit Value(bool value);
+	explicit Value(RuntimeInt value);
+	explicit Value(RuntimeFloat value);
+	explicit Value(RuntimeBool value);
 	explicit Value(HeapObject obj);
 
 	[[nodiscard]] bool IsNull() const;
+	[[nodiscard]] bool IsInt() const;
+	[[nodiscard]] bool IsFloat() const;
 	[[nodiscard]] bool IsNumber() const;
 	[[nodiscard]] bool IsBool() const;
 	[[nodiscard]] bool IsString() const;
@@ -23,8 +28,10 @@ public:
 	[[nodiscard]] bool IsFunction() const;
 	[[nodiscard]] bool IsNative() const;
 
+	[[nodiscard]] RuntimeInt AsInt() const;
+	[[nodiscard]] RuntimeFloat AsFloat() const;
 	[[nodiscard]] double AsNumber() const;
-	[[nodiscard]] bool AsBool() const;
+	[[nodiscard]] RuntimeBool AsBool() const;
 	[[nodiscard]] const std::string& AsString() const;
 	[[nodiscard]] std::shared_ptr<ObjFunction> AsFunction() const;
 	[[nodiscard]] std::shared_ptr<ObjNative> AsNative() const;
@@ -46,5 +53,5 @@ public:
 	Value operator<=(const Value& other) const;
 
 private:
-	std::variant<std::nullptr_t, double, bool, HeapObject> m_data;
+	std::variant<std::nullptr_t, RuntimeInt, RuntimeFloat, RuntimeBool, HeapObject> m_data;
 };

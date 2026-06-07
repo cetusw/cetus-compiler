@@ -34,6 +34,12 @@ TypeCheckResult TypeRules::CheckBinaryOperator(
 	case BinaryOperator::AND:
 		return CheckLogicalOperator(leftType, rightType);
 	case BinaryOperator::ADD:
+		// TODO to refactor
+		if (leftType == Type::STRING && rightType == Type::STRING)
+		{
+			return TypeCheckResult::Success(Type::STRING);
+		}
+		return CheckArithmeticOperator(leftType, rightType);
 	case BinaryOperator::SUBTRACT:
 	case BinaryOperator::MULTIPLY:
 	case BinaryOperator::DIVIDE:

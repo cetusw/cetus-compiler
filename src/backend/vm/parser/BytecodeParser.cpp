@@ -143,9 +143,13 @@ void BytecodeParser::ParseConstant(std::stringstream& ss)
 	ss >> type;
 	std::getline(ss >> std::ws, value);
 
-	if (type == "number")
+	if (type == "float")
 	{
 		m_currentFunc->chunk.AddConstant(Value(std::stod(value)));
+	}
+	else if (type == "int")
+	{
+		m_currentFunc->chunk.AddConstant(Value(static_cast<RuntimeInt>(std::stoll(value))));
 	}
 	else if (type == "bool")
 	{

@@ -1,4 +1,5 @@
 #pragma once
+
 #include "types/Value.h"
 #include <iostream>
 
@@ -26,6 +27,6 @@ inline Value NativeLen(int argc, Value* args)
 	{
 		return {};
 	}
-	return Value(static_cast<double>(args[0].AsString().length()));
+	return Value(static_cast<RuntimeInt>(args[0].AsString().length()));
 }
 } // namespace NativeFunctions

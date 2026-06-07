@@ -1,9 +1,9 @@
 .def
 .name Arithmetic
 .constants
-number 10
-number 5
-number 12
+int 10
+int 5
+int 12
 string "Result is: "
 .code
 # var x = 10

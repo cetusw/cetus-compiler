@@ -4,20 +4,26 @@
 #include "src/backend/vm/objects/ObjNative.h"
 
 #include <cassert>
-#include <cmath>
+#include <cinttypes>
 #include <cstdio>
+#include <type_traits>
 
 Value::Value()
 	: m_data(nullptr)
 {
 }
 
-Value::Value(const double value)
+Value::Value(const RuntimeInt value)
 	: m_data(value)
 {
 }
 
-Value::Value(bool value)
+Value::Value(const RuntimeFloat value)
+	: m_data(value)
+{
+}
+
+Value::Value(RuntimeBool value)
 	: m_data(value)
 {
 }
@@ -34,12 +40,22 @@ bool Value::IsNull() const
 
 bool Value::IsNumber() const
 {
-	return std::holds_alternative<double>(m_data);
+	return IsInt() || IsFloat();
+}
+
+bool Value::IsInt() const
+{
+	return std::holds_alternative<RuntimeInt>(m_data);
+}
+
+bool Value::IsFloat() const
+{
+	return std::holds_alternative<RuntimeFloat>(m_data);
 }
 
 bool Value::IsBool() const
 {
-	return std::holds_alternative<bool>(m_data);
+	return std::holds_alternative<RuntimeBool>(m_data);
 }
 
 bool Value::IsString() const
@@ -70,14 +86,28 @@ bool Value::IsNative() const
 	return std::holds_alternative<HeapObject>(m_data) && std::get<HeapObject>(m_data)->GetType() == ObjType::NATIVE;
 }
 
-double Value::AsNumber() const
+RuntimeInt Value::AsInt() const
 {
-	return std::get<double>(m_data);
+	return std::get<RuntimeInt>(m_data);
 }
 
-bool Value::AsBool() const
+RuntimeFloat Value::AsFloat() const
 {
-	return std::get<bool>(m_data);
+	return std::get<RuntimeFloat>(m_data);
+}
+
+double Value::AsNumber() const
+{
+	if (IsInt())
+	{
+		return static_cast<double>(AsInt());
+	}
+	return AsFloat();
+}
+
+RuntimeBool Value::AsBool() const
+{
+	return std::get<RuntimeBool>(m_data);
 }
 
 const std::string& Value::AsString() const
@@ -98,18 +128,23 @@ std::shared_ptr<ObjNative> Value::AsNative() const
 	return std::static_pointer_cast<ObjNative>(obj);
 }
 
+// TODO to refactor
 void Value::Print() const
 {
 	std::visit([]<typename T>(const T& arg) {
 		if constexpr (std::is_same_v<T, std::nullptr_t>)
 		{
-			std::printf("nullptr");
+			std::printf("nil");
 		}
-		else if constexpr (std::is_same_v<T, double>)
+		else if constexpr (std::is_same_v<T, RuntimeInt>)
+		{
+			std::printf("%" PRId64, arg);
+		}
+		else if constexpr (std::is_same_v<T, RuntimeFloat>)
 		{
 			std::printf("%g", arg);
 		}
-		else if constexpr (std::is_same_v<T, bool>)
+		else if constexpr (std::is_same_v<T, RuntimeBool>)
 		{
 			std::printf(arg ? "true" : "false");
 		}
@@ -122,7 +157,11 @@ void Value::Print() const
 			else if (arg->GetType() == ObjType::FUNCTION)
 			{
 				auto func = std::static_pointer_cast<ObjFunction>(arg);
-				std::printf("<fn %s>", func->name->GetData() == "" ? "script" : func->name->GetData().c_str());
+				std::printf("<fn %s>", func->name->GetData().empty() ? "anonymous" : func->name->GetData().c_str());
+			}
+			else if (arg->GetType() == ObjType::NATIVE)
+			{
+				std::printf("<native fn>");
 			}
 		}
 	},
@@ -135,20 +174,25 @@ Value Value::operator-() const
 	{
 		return {};
 	}
+	if (IsInt())
+	{
+		return Value(-AsInt());
+	}
 	return Value(-AsNumber());
 }
 
 Value Value::LogicalNot() const
 {
-	if (!IsBool())
-	{
-		return {};
-	}
-	return Value(!AsBool());
+	return Value(IsFalsey());
 }
 
 Value Value::operator+(const Value& other) const
 {
+	if (IsInt() && other.IsInt())
+	{
+		return Value(AsInt() + other.AsInt());
+	}
+
 	if (IsNumber() && other.IsNumber())
 	{
 		return Value(AsNumber() + other.AsNumber());
@@ -169,6 +213,10 @@ Value Value::operator-(const Value& other) const
 	{
 		return {};
 	}
+	if (IsInt() && other.IsInt())
+	{
+		return Value(AsInt() - other.AsInt());
+	}
 	return Value(AsNumber() - other.AsNumber());
 }
 
@@ -177,6 +225,10 @@ Value Value::operator*(const Value& other) const
 	if (!IsNumber() || !other.IsNumber())
 	{
 		return {};
+	}
+	if (IsInt() && other.IsInt())
+	{
+		return Value(AsInt() * other.AsInt());
 	}
 	return Value(AsNumber() * other.AsNumber());
 }
@@ -187,20 +239,37 @@ Value Value::operator/(const Value& other) const
 	{
 		return {};
 	}
+	if (IsInt() && other.IsInt())
+	{
+		if (other.AsInt() == 0)
+		{
+			return {};
+		}
+		return Value(AsInt() / other.AsInt());
+	}
 	return Value(AsNumber() / other.AsNumber());
 }
 
 Value Value::operator%(const Value& other) const
 {
-	if (!IsNumber() || !other.IsNumber())
+	if (!IsInt() || !other.IsInt())
 	{
 		return {};
 	}
-	return Value(std::fmod(AsNumber(), other.AsNumber()));
+	if (other.AsInt() == 0)
+	{
+		return {};
+	}
+	return Value(AsInt() % other.AsInt());
 }
 
 Value Value::operator==(const Value& other) const
 {
+	if (IsNumber() && other.IsNumber())
+	{
+		return Value(AsNumber() == other.AsNumber());
+	}
+
 	if (m_data.index() != other.m_data.index())
 	{
 		return Value(false);

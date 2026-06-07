@@ -136,13 +136,15 @@ void SemanticAnalyzer::Visit(const CallExpressionASTNode& node)
 	TypeCheckFunctionCall(node, *symbol, argumentTypes);
 }
 
+// TODO to refactor
 void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, const std::vector<Type>& argumentTypes)
 {
-	if (node.GetCalleeName() == "printf")
+	const std::string& calleeName = node.GetCalleeName();
+	if (calleeName == "printf" || calleeName == "print" || calleeName == "println")
 	{
 		if (argumentTypes.size() != 1)
 		{
-			AddDiagnostic("printf expects exactly one argument.");
+			AddDiagnostic(calleeName + " expects exactly one argument.");
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
@@ -151,14 +153,42 @@ void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, c
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
-		if (!IsFalsey(argumentTypes.front()))
+		const Type argumentType = argumentTypes.front();
+		if (argumentType != Type::INT
+			&& argumentType != Type::FLOAT
+			&& argumentType != Type::BOOL
+			&& argumentType != Type::STRING)
 		{
-			AddDiagnostic("printf expects int, float or bool argument.");
+			AddDiagnostic(calleeName + " expects int, float, bool or string argument.");
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
 
 		SetCurrentType(node, Type::VOID);
+		return;
+	}
+
+	if (calleeName == "len")
+	{
+		if (argumentTypes.size() != 1)
+		{
+			AddDiagnostic("len expects exactly one argument.");
+			SetCurrentType(node, Type::ERROR);
+			return;
+		}
+		if (!ValidateValueExpression(argumentTypes.front(), "function argument"))
+		{
+			SetCurrentType(node, Type::ERROR);
+			return;
+		}
+		if (argumentTypes.front() != Type::STRING)
+		{
+			AddDiagnostic("len expects string argument.");
+			SetCurrentType(node, Type::ERROR);
+			return;
+		}
+
+		SetCurrentType(node, Type::INT);
 		return;
 	}
 
@@ -590,6 +620,9 @@ void SemanticAnalyzer::DefineBuiltinFunctions()
 	}
 
 	m_symbolTable.Define(SemanticSymbol{ "printf", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { Type::ERROR } });
+	m_symbolTable.Define(SemanticSymbol{ "print", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { Type::ERROR } });
+	m_symbolTable.Define(SemanticSymbol{ "println", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { Type::ERROR } });
+	m_symbolTable.Define(SemanticSymbol{ "len", Type::INT, SemanticSymbolKind::BUILTIN_FUNCTION, { Type::STRING } });
 }
 
 bool SemanticAnalyzer::DefineFunctionSymbol(const FunctionDeclarationASTNode& node)
