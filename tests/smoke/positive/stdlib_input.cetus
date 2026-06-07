@@ -1,0 +1,6 @@
+func main() {
+    println(readString());
+    println(readInt());
+    println(readFloat());
+    println(readBool());
+}

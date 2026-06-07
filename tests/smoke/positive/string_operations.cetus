@@ -1,0 +1,6 @@
+func main() {
+    printf("a" + "bc");
+    printf("a" == "a");
+    printf("a" != "b");
+    printf(len("abc"));
+}
