@@ -366,6 +366,135 @@ void CodegenVisitor::Visit(const IfASTNode& expr)
 	CurrentEmitter().PatchJump(endJump);
 }
 
+void CodegenVisitor::Visit(const ForASTNode& expr)
+{
+	if (!EnsureTyped(expr))
+	{
+		return;
+	}
+
+	const bool isClassicFor = expr.GetInitializer() != nullptr || expr.GetPost() != nullptr;
+	const int outerScopeDepth = m_functionStack.back().CurrentScopeDepth();
+	if (isClassicFor)
+	{
+		m_functionStack.back().BeginScope();
+	}
+
+	if (const ASTNode* initializer = expr.GetInitializer())
+	{
+		initializer->Accept(*this);
+		if (m_error.has_value())
+		{
+			return;
+		}
+	}
+
+	const int loopStart = CurrentEmitter().CurrentOffset();
+	expr.GetCondition().Accept(*this);
+	if (m_error.has_value())
+	{
+		return;
+	}
+
+	const int exitJump = CurrentEmitter().EmitJump(OP_JUMP_IF_FALSE);
+	CurrentEmitter().EmitOpcode(OP_POP);
+
+	LoopContext loopContext;
+	loopContext.breakScopeDepth = outerScopeDepth;
+	loopContext.continueScopeDepth = isClassicFor
+		? m_functionStack.back().CurrentScopeDepth()
+		: outerScopeDepth;
+	loopContext.continueTarget = loopStart;
+	loopContext.continueJumpsForward = isClassicFor;
+	m_loopStack.push_back(std::move(loopContext));
+
+	expr.GetBody().Accept(*this);
+	if (m_error.has_value())
+	{
+		return;
+	}
+
+	LoopContext completedLoop = std::move(m_loopStack.back());
+	m_loopStack.pop_back();
+
+	if (const ASTNode* post = expr.GetPost())
+	{
+		const int postStart = CurrentEmitter().CurrentOffset();
+		for (const int continueJump : completedLoop.continueJumps)
+		{
+			CurrentEmitter().PatchJump(continueJump);
+		}
+		post->Accept(*this);
+		if (m_error.has_value())
+		{
+			return;
+		}
+		CurrentEmitter().EmitLoop(loopStart);
+		(void)postStart;
+	}
+	else
+	{
+		CurrentEmitter().EmitLoop(loopStart);
+	}
+
+	CurrentEmitter().PatchJump(exitJump);
+	CurrentEmitter().EmitOpcode(OP_POP);
+
+	if (isClassicFor)
+	{
+		const int localCount = m_functionStack.back().EndScope();
+		for (int i = 0; i < localCount; ++i)
+		{
+			CurrentEmitter().EmitOpcode(OP_POP);
+		}
+	}
+
+	for (const int breakJump : completedLoop.breakJumps)
+	{
+		CurrentEmitter().PatchJump(breakJump);
+	}
+}
+
+void CodegenVisitor::Visit(const BreakASTNode& expr)
+{
+	if (!EnsureTyped(expr))
+	{
+		return;
+	}
+	if (m_loopStack.empty())
+	{
+		Fail("Break statement is not allowed outside loop.");
+		return;
+	}
+
+	LoopContext& loopContext = m_loopStack.back();
+	EmitScopeCleanup(loopContext.breakScopeDepth);
+	loopContext.breakJumps.push_back(CurrentEmitter().EmitJump(OP_JUMP));
+}
+
+void CodegenVisitor::Visit(const ContinueASTNode& expr)
+{
+	if (!EnsureTyped(expr))
+	{
+		return;
+	}
+	if (m_loopStack.empty())
+	{
+		Fail("Continue statement is not allowed outside loop.");
+		return;
+	}
+
+	LoopContext& loopContext = m_loopStack.back();
+	EmitScopeCleanup(loopContext.continueScopeDepth);
+	if (loopContext.continueJumpsForward)
+	{
+		loopContext.continueJumps.push_back(CurrentEmitter().EmitJump(OP_JUMP));
+		return;
+	}
+
+	CurrentEmitter().EmitLoop(loopContext.continueTarget);
+}
+
 void CodegenVisitor::Visit(const ReturnASTNode& expr)
 {
 	if (!EnsureTyped(expr))
@@ -511,6 +640,15 @@ void CodegenVisitor::EmitLogicalOr(const BinaryASTNode& expr)
 	}
 
 	CurrentEmitter().PatchJump(endJump);
+}
+
+void CodegenVisitor::EmitScopeCleanup(const int scopeDepth)
+{
+	const int localCount = m_functionStack.back().CountLocalsAboveDepth(scopeDepth);
+	for (int i = 0; i < localCount; ++i)
+	{
+		CurrentEmitter().EmitOpcode(OP_POP);
+	}
 }
 
 bool CodegenVisitor::EnsureTyped(const ASTNode& expr)

@@ -112,6 +112,67 @@ if a > b {
 
 `if` является statement-конструкцией и имеет тип `void`. Типы веток `then` и `else` не обязаны совпадать.
 
+## For
+
+Поддерживается базовая Go-like форма:
+
+```cetus
+for i < 3 {
+    println(i);
+    i = i + 1;
+}
+```
+
+Условие `for` должно быть truthy-compatible. Сейчас это `int` или `bool`.
+
+Поддерживается classic форма:
+
+```cetus
+for i := 0; i < 3; i = i + 1 {
+    println(i);
+}
+```
+
+В classic форме:
+
+- `init` выполняется один раз перед первой проверкой condition;
+- `condition` проверяется перед каждой итерацией;
+- `post` выполняется после тела перед следующей проверкой condition;
+- `init` создаёт scope цикла;
+- переменные из `init` видны в condition, body и post;
+- `post` не может объявлять новые переменные.
+
+`for` имеет тип `void`.
+
+## Break и continue
+
+`break` завершает ближайший внешний цикл:
+
+```cetus
+for i := 0; i < 10; i = i + 1 {
+    if i == 3 {
+        break;
+    }
+}
+```
+
+`continue` переходит к следующей итерации ближайшего внешнего цикла:
+
+```cetus
+for i := 0; i < 3; i = i + 1 {
+    if i == 1 {
+        continue;
+    }
+    println(i);
+}
+```
+
+Для basic `for condition`, `continue` переходит к повторной проверке condition.
+
+Для classic `for init; condition; post`, `continue` переходит к `post`, затем к condition.
+
+`break` и `continue` вне цикла являются семантическими ошибками.
+
 ## Блок
 
 Блок содержит список операторов:

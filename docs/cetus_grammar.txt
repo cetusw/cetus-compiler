@@ -19,6 +19,10 @@
 ~Stmt~ -> RETURN ~Con~ SEMICOLON @return_value
 ~Stmt~ -> IF ~Con~ ~Block~ @if
 ~Stmt~ -> IF ~Con~ ~Block~ ELSE ~Block~ @if_else
+~Stmt~ -> FOR ~Con~ ~Block~ @for_condition
+~Stmt~ -> FOR ~SimpleStmt~ SEMICOLON ~Con~ SEMICOLON ~SimpleStmt~ ~Block~ @for_classic
+~Stmt~ -> BREAK SEMICOLON @break
+~Stmt~ -> CONTINUE SEMICOLON @continue
 
 ~SimpleStmt~ -> ~IdentifierList~ COLON_EQUAL ~ExpressionList~ @short_var_declaration
 ~SimpleStmt~ -> VAR ~IdentifierList~ EQUAL ~ExpressionList~ @var_inferred_declaration

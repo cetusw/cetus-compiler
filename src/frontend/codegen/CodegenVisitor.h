@@ -36,6 +36,9 @@ public:
 	void Visit(const StatementListASTNode& expr) override;
 	void Visit(const BlockASTNode& expr) override;
 	void Visit(const IfASTNode& expr) override;
+	void Visit(const ForASTNode& expr) override;
+	void Visit(const BreakASTNode& expr) override;
+	void Visit(const ContinueASTNode& expr) override;
 	void Visit(const ReturnASTNode& expr) override;
 	void Visit(const FunctionDeclarationASTNode& expr) override;
 
@@ -46,11 +49,23 @@ private:
 	void EmitBinaryOperation(BinaryOperator op);
 	void EmitLogicalAnd(const BinaryASTNode& expr);
 	void EmitLogicalOr(const BinaryASTNode& expr);
+	void EmitScopeCleanup(int scopeDepth);
 	[[nodiscard]] bool EnsureTyped(const ASTNode& expr);
+
+	struct LoopContext
+	{
+		std::vector<int> breakJumps;
+		std::vector<int> continueJumps;
+		int breakScopeDepth = 0;
+		int continueScopeDepth = 0;
+		int continueTarget = 0;
+		bool continueJumpsForward = false;
+	};
 
 	const SymbolTable& m_symbols;
 	const TypeCheckResult& m_typeInfo;
 	ProgramContext m_programContext;
 	std::vector<FunctionContext> m_functionStack;
+	std::vector<LoopContext> m_loopStack;
 	std::optional<std::string> m_error;
 };

@@ -73,6 +73,10 @@ bool Value::IsFalsey() const
 	{
 		return !AsBool();
 	}
+	if (IsInt())
+	{
+		return AsInt() == 0;
+	}
 	return false;
 }
 

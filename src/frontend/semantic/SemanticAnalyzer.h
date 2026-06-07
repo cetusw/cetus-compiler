@@ -34,6 +34,9 @@ public:
 	void Visit(const StatementListASTNode& node) override;
 	void Visit(const BlockASTNode& node) override;
 	void Visit(const IfASTNode& node) override;
+	void Visit(const ForASTNode& node) override;
+	void Visit(const BreakASTNode& node) override;
+	void Visit(const ContinueASTNode& node) override;
 	void Visit(const ReturnASTNode& node) override;
 	void Visit(const FunctionDeclarationASTNode& node) override;
 
@@ -73,4 +76,5 @@ private:
 	Type m_currentType = Type::ERROR;
 	std::vector<SemanticDiagnostic> m_diagnostics;
 	std::unordered_set<const FunctionDeclarationASTNode*> m_predeclaredFunctions;
+	int m_loopDepth = 0;
 };

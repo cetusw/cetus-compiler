@@ -511,6 +511,86 @@ void SemanticAnalyzer::Visit(const IfASTNode& node)
 	SetCurrentType(node, hasError ? Type::ERROR : Type::VOID);
 }
 
+void SemanticAnalyzer::Visit(const ForASTNode& node)
+{
+	bool hasError = false;
+	if (const ASTNode* initializer = node.GetInitializer())
+	{
+		m_symbolTable.EnterScope();
+		const Type initializerType = AnalyzeChild(*initializer);
+		if (initializerType == Type::ERROR)
+		{
+			hasError = true;
+		}
+	}
+
+	const Type conditionType = AnalyzeChild(node.GetCondition());
+	if (!ValidateValueExpression(conditionType, "for condition"))
+	{
+		hasError = true;
+	}
+	else if (!IsFalsey(conditionType))
+	{
+		AddDiagnostic("For condition expects truthy-compatible expression.");
+		hasError = true;
+	}
+
+	if (const ASTNode* post = node.GetPost())
+	{
+		if (dynamic_cast<const ShortVariableDeclarationASTNode*>(post)
+			|| dynamic_cast<const VariableDeclarationASTNode*>(post))
+		{
+			AddDiagnostic("For post statement cannot declare variables.");
+			hasError = true;
+		}
+
+		const Type postType = AnalyzeChild(*post);
+		if (postType == Type::ERROR)
+		{
+			hasError = true;
+		}
+	}
+
+	++m_loopDepth;
+	const Type bodyType = AnalyzeChild(node.GetBody());
+	--m_loopDepth;
+	if (bodyType == Type::ERROR)
+	{
+		hasError = true;
+	}
+
+	if (node.GetInitializer())
+	{
+		m_symbolTable.ExitScope();
+	}
+
+	SetCurrentType(node, hasError ? Type::ERROR : Type::VOID);
+}
+
+void SemanticAnalyzer::Visit(const BreakASTNode& node)
+{
+	if (m_loopDepth == 0)
+	{
+		AddDiagnostic("Break statement is not allowed outside loop.");
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+
+	SetCurrentType(node, Type::VOID);
+}
+
+void SemanticAnalyzer::Visit(const ContinueASTNode& node)
+{
+	if (m_loopDepth == 0)
+	{
+		AddDiagnostic("Continue statement is not allowed outside loop.");
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+
+	SetCurrentType(node, Type::VOID);
+}
+
 void SemanticAnalyzer::Visit(const ReturnASTNode& node)
 {
 	if (!m_currentFunctionReturnType.has_value())

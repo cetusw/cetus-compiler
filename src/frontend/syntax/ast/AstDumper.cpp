@@ -139,6 +139,31 @@ void AstDumper::Visit(const IfASTNode& expr)
 	}
 }
 
+void AstDumper::Visit(const ForASTNode& expr)
+{
+	DumpLine("ForASTNode");
+	if (const ASTNode* initializer = expr.GetInitializer())
+	{
+		DumpChild(*initializer);
+	}
+	DumpChild(expr.GetCondition());
+	if (const ASTNode* post = expr.GetPost())
+	{
+		DumpChild(*post);
+	}
+	DumpChild(expr.GetBody());
+}
+
+void AstDumper::Visit(const BreakASTNode&)
+{
+	DumpLine("BreakASTNode");
+}
+
+void AstDumper::Visit(const ContinueASTNode&)
+{
+	DumpLine("ContinueASTNode");
+}
+
 void AstDumper::Visit(const ReturnASTNode& expr)
 {
 	DumpLine("ReturnASTNode");

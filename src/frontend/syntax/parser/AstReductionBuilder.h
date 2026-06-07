@@ -58,6 +58,10 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildEmptyBlock(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildIf(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildIfElse(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildForCondition(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildForClassic(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildBreak(const std::vector<AstSemanticValue>& values);
+	[[nodiscard]] static AstSemanticValue BuildContinue(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildReturnVoid(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildReturnValue(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildVoidFunctionNoParams(std::vector<AstSemanticValue> values);

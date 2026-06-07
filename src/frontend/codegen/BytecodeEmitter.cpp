@@ -33,6 +33,11 @@ void BytecodeEmitter::EmitConstant(const Value& value) const
 	EmitOperandByte(constantIndex);
 }
 
+int BytecodeEmitter::CurrentOffset() const
+{
+	return m_chunk.GetCodeSize();
+}
+
 int BytecodeEmitter::EmitJump(const OpCode opcode) const
 {
 	EmitOpcode(opcode);
@@ -51,6 +56,21 @@ void BytecodeEmitter::PatchJump(const int jumpOffset) const
 	}
 
 	EmitShortOperand(jumpDistance, jumpOffset);
+}
+
+void BytecodeEmitter::EmitLoop(const int loopStart) const
+{
+	const int loopOpcodeOffset = m_chunk.GetCodeSize();
+	EmitOpcode(OP_LOOP);
+	const int offset = loopOpcodeOffset - loopStart;
+	if (offset < 0 || offset > std::numeric_limits<uint16_t>::max())
+	{
+		Fail("Loop offset exceeds 2-byte limit.");
+		return;
+	}
+
+	EmitByte(static_cast<uint8_t>(offset >> 8 & 0xff));
+	EmitByte(static_cast<uint8_t>(offset & 0xff));
 }
 
 void BytecodeEmitter::EmitLocalLoad(const int slot) const

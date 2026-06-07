@@ -16,8 +16,10 @@ public:
 	void EmitOpcode(OpCode opcode) const;
 	void EmitOperandByte(int value) const;
 	void EmitConstant(const Value& value) const;
+	[[nodiscard]] int CurrentOffset() const;
 	[[nodiscard]] int EmitJump(OpCode opcode) const;
 	void PatchJump(int jumpOffset) const;
+	void EmitLoop(int loopStart) const;
 	void EmitLocalLoad(int slot) const;
 	void EmitLocalSet(int slot) const;
 	void EmitGlobalLoad(const std::string& name) const;

@@ -74,6 +74,14 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildIf(std::move(values));
 	case SemanticTag::IF_ELSE:
 		return BuildIfElse(std::move(values));
+	case SemanticTag::FOR_CONDITION:
+		return BuildForCondition(std::move(values));
+	case SemanticTag::FOR_CLASSIC:
+		return BuildForClassic(std::move(values));
+	case SemanticTag::BREAK:
+		return BuildBreak(values);
+	case SemanticTag::CONTINUE:
+		return BuildContinue(values);
 	case SemanticTag::RETURN_VOID:
 		return BuildReturnVoid(values);
 	case SemanticTag::RETURN_VALUE:
@@ -408,6 +416,44 @@ AstSemanticValue AstReductionBuilder::BuildIfElse(std::vector<AstSemanticValue> 
 			TakeNode(values, 4)),
 		std::nullopt
 	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildForCondition(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 3, "For condition reduction");
+	return {
+		std::make_unique<ForASTNode>(
+			nullptr,
+			TakeNode(values, 1),
+			nullptr,
+			TakeNode(values, 2)),
+		std::nullopt
+	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildForClassic(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 7, "Classic for reduction");
+	return {
+		std::make_unique<ForASTNode>(
+			TakeNode(values, 1),
+			TakeNode(values, 3),
+			TakeNode(values, 5),
+			TakeNode(values, 6)),
+		std::nullopt
+	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildBreak(const std::vector<AstSemanticValue>& values)
+{
+	RequireValueCount(values, 2, "Break reduction");
+	return { std::make_unique<BreakASTNode>(), std::nullopt };
+}
+
+AstSemanticValue AstReductionBuilder::BuildContinue(const std::vector<AstSemanticValue>& values)
+{
+	RequireValueCount(values, 2, "Continue reduction");
+	return { std::make_unique<ContinueASTNode>(), std::nullopt };
 }
 
 AstSemanticValue AstReductionBuilder::BuildReturnVoid(const std::vector<AstSemanticValue>& values)

@@ -51,6 +51,11 @@ int FunctionContext::EndScope()
 	return localCount;
 }
 
+int FunctionContext::CurrentScopeDepth() const
+{
+	return m_scopeDepth;
+}
+
 int FunctionContext::DeclareLocal(const std::string& name)
 {
 	const int slot = m_nextLocalSlot;
@@ -70,4 +75,17 @@ std::optional<int> FunctionContext::ResolveLocal(const std::string& name) const
 	}
 
 	return std::nullopt;
+}
+
+int FunctionContext::CountLocalsAboveDepth(const int scopeDepth) const
+{
+	int localCount = 0;
+	for (const LocalSlot& localSlot : m_localSlots)
+	{
+		if (localSlot.scopeDepth > scopeDepth)
+		{
+			++localCount;
+		}
+	}
+	return localCount;
 }

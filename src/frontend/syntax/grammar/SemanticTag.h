@@ -41,6 +41,10 @@ enum class SemanticTag
 	STATEMENT_LIST_SINGLE,
 	IF,
 	IF_ELSE,
+	FOR_CONDITION,
+	FOR_CLASSIC,
+	BREAK,
+	CONTINUE,
 	RETURN_VOID,
 	RETURN_VALUE,
 	FUNCTION_VOID_NO_PARAMS,
@@ -88,6 +92,10 @@ enum class SemanticTag
 	if (value == "statement_list_single") return SemanticTag::STATEMENT_LIST_SINGLE;
 	if (value == "if") return SemanticTag::IF;
 	if (value == "if_else") return SemanticTag::IF_ELSE;
+	if (value == "for_condition") return SemanticTag::FOR_CONDITION;
+	if (value == "for_classic") return SemanticTag::FOR_CLASSIC;
+	if (value == "break") return SemanticTag::BREAK;
+	if (value == "continue") return SemanticTag::CONTINUE;
 	if (value == "return_void") return SemanticTag::RETURN_VOID;
 	if (value == "return_value") return SemanticTag::RETURN_VALUE;
 	if (value == "function_void_no_params") return SemanticTag::FUNCTION_VOID_NO_PARAMS;

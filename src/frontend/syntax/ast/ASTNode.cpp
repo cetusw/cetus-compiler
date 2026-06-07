@@ -362,6 +362,49 @@ void IfASTNode::Accept(ASTNodeVisitor& visitor) const
 	visitor.Visit(*this);
 }
 
+ForASTNode::ForASTNode(ASTNodePtr initializer, ASTNodePtr condition, ASTNodePtr post, ASTNodePtr body)
+	: m_initializer(std::move(initializer))
+	, m_condition(std::move(condition))
+	, m_post(std::move(post))
+	, m_body(std::move(body))
+{
+}
+
+const ASTNode* ForASTNode::GetInitializer() const
+{
+	return m_initializer.get();
+}
+
+const ASTNode& ForASTNode::GetCondition() const
+{
+	return *m_condition;
+}
+
+const ASTNode* ForASTNode::GetPost() const
+{
+	return m_post.get();
+}
+
+const ASTNode& ForASTNode::GetBody() const
+{
+	return *m_body;
+}
+
+void ForASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}
+
+void BreakASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}
+
+void ContinueASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}
+
 ReturnASTNode::ReturnASTNode(ASTNodePtr value)
 	: m_value(std::move(value))
 {

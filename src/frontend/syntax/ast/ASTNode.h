@@ -303,6 +303,36 @@ private:
 	ASTNodePtr m_elseBranch;
 };
 
+class ForASTNode final : public StatementASTNode
+{
+public:
+	ForASTNode(ASTNodePtr initializer, ASTNodePtr condition, ASTNodePtr post, ASTNodePtr body);
+
+	[[nodiscard]] const ASTNode* GetInitializer() const;
+	[[nodiscard]] const ASTNode& GetCondition() const;
+	[[nodiscard]] const ASTNode* GetPost() const;
+	[[nodiscard]] const ASTNode& GetBody() const;
+	void Accept(ASTNodeVisitor& visitor) const override;
+
+private:
+	ASTNodePtr m_initializer;
+	ASTNodePtr m_condition;
+	ASTNodePtr m_post;
+	ASTNodePtr m_body;
+};
+
+class BreakASTNode final : public StatementASTNode
+{
+public:
+	void Accept(ASTNodeVisitor& visitor) const override;
+};
+
+class ContinueASTNode final : public StatementASTNode
+{
+public:
+	void Accept(ASTNodeVisitor& visitor) const override;
+};
+
 class ReturnASTNode final : public StatementASTNode
 {
 public:

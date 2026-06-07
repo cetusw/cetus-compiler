@@ -18,8 +18,10 @@ public:
 	void RegisterParameter(const std::string& name, int slot);
 	void BeginScope();
 	[[nodiscard]] int EndScope();
+	[[nodiscard]] int CurrentScopeDepth() const;
 	int DeclareLocal(const std::string& name);
 	[[nodiscard]] std::optional<int> ResolveLocal(const std::string& name) const;
+	[[nodiscard]] int CountLocalsAboveDepth(int scopeDepth) const;
 
 private:
 	struct LocalSlot
