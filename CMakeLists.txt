@@ -75,6 +75,7 @@ add_library(cetus_backend_vm STATIC
         src/backend/vm/types/Chunk.cpp
         src/backend/vm/types/Value.cpp
         src/backend/vm/objects/Obj.cpp
+        src/backend/vm/objects/ObjRef.cpp
         src/backend/vm/objects/ObjString.cpp
         src/backend/vm/disassembler/Disassembler.cpp
         src/backend/vm/parser/BytecodeParser.cpp
@@ -89,6 +90,8 @@ add_library(cetus_backend_vm STATIC
         src/backend/vm/instructions/NegateInstruction.cpp
         src/backend/vm/instructions/NotInstruction.cpp
         src/backend/vm/instructions/PopInstruction.cpp
+        src/backend/vm/instructions/RefGlobalInstruction.cpp
+        src/backend/vm/instructions/RefLocalInstruction.cpp
         src/backend/vm/instructions/ReturnInstruction.cpp
         src/backend/vm/instructions/SetGlobalInstruction.cpp
         src/backend/vm/instructions/SetLocalInstruction.cpp
