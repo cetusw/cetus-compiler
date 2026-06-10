@@ -1,5 +1,6 @@
 #pragma once
 
+#include "objects/ObjRef.h"
 #include "objects/ObjString.h"
 #include "types/Value.h"
 #include <iostream>
@@ -32,71 +33,60 @@ inline Value NativeLen(int argc, Value* args)
 	return Value(static_cast<RuntimeInt>(args[0].AsString().length()));
 }
 
-inline Value NativeReadString(int argc, Value* args)
+inline Value NativeScan(int argc, Value* args)
 {
-	(void)args;
-	if (argc != 0)
+	if (argc != 1 || !args[0].IsRef())
 	{
 		return {};
 	}
 
-	std::string value;
-	if (!(std::cin >> value))
+	const auto ref = args[0].AsRef();
+	const Value current = ref->Get().Dereference();
+	if (current.IsInt())
 	{
-		std::cin.clear();
-		value.clear();
+		RuntimeInt value = 0;
+		if (!(std::cin >> value))
+		{
+			std::cin.clear();
+			value = 0;
+		}
+		ref->Set(Value(value));
+		return {};
 	}
-	return Value(std::make_shared<ObjString>(std::move(value)));
-}
-
-inline Value NativeReadInt(int argc, Value* args)
-{
-	(void)args;
-	if (argc != 0)
+	if (current.IsFloat())
 	{
+		RuntimeFloat value = 0.0;
+		if (!(std::cin >> value))
+		{
+			std::cin.clear();
+			value = 0.0;
+		}
+		ref->Set(Value(value));
+		return {};
+	}
+	if (current.IsBool())
+	{
+		std::string value;
+		if (!(std::cin >> value))
+		{
+			std::cin.clear();
+			value.clear();
+		}
+		ref->Set(Value(value == "true" || value == "1"));
+		return {};
+	}
+	if (current.IsString())
+	{
+		std::string value;
+		if (!(std::cin >> value))
+		{
+			std::cin.clear();
+			value.clear();
+		}
+		ref->Set(Value(std::make_shared<ObjString>(std::move(value))));
 		return {};
 	}
 
-	RuntimeInt value = 0;
-	if (!(std::cin >> value))
-	{
-		std::cin.clear();
-		return Value(static_cast<RuntimeInt>(0));
-	}
-	return Value(value);
-}
-
-inline Value NativeReadFloat(int argc, Value* args)
-{
-	(void)args;
-	if (argc != 0)
-	{
-		return {};
-	}
-
-	RuntimeFloat value = 0.0;
-	if (!(std::cin >> value))
-	{
-		std::cin.clear();
-		return Value(0.0);
-	}
-	return Value(value);
-}
-
-inline Value NativeReadBool(int argc, Value* args)
-{
-	(void)args;
-	if (argc != 0)
-	{
-		return {};
-	}
-
-	std::string value;
-	if (!(std::cin >> value))
-	{
-		std::cin.clear();
-		return Value(false);
-	}
-	return Value(value == "true" || value == "1");
+	return {};
 }
 } // namespace NativeFunctions
