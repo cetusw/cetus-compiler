@@ -26,10 +26,7 @@ VM создаётся со стандартной библиотекой чер�
 - `print(value)`;
 - `println(value)`;
 - `len(value)`;
-- `readString()`;
-- `readInt()`;
-- `readFloat()`;
-- `readBool()`.
+- `scan(&value)`.
 
 ## Вывод
 
@@ -112,11 +109,9 @@ func main() {
 
 ## Ввод
 
-Input native-функции читают значение из `stdin` и возвращают типизированное значение языка.
+Input native-функция `scan` читает значение из `stdin` и записывает его в destination-переменную.
 
-`readString`, `readInt`, `readFloat` и `readBool` являются временным минимальным API до появления ref-параметров.
-
-Целевая Go-like модель ввода:
+Go-like модель ввода в текущем синтаксисе Cetus:
 
 ```cetus
 func main() {
@@ -126,53 +121,29 @@ func main() {
 }
 ```
 
-В этой модели тип чтения определяется destination-переменной, а не именем функции. Переход к `scan/read` должен быть выполнен после реализации ссылок/ref-параметров.
+В этой модели тип чтения определяется destination-переменной, а не именем функции. `scan` принимает адрес destination-переменной, поэтому аргумент должен иметь форму `&identifier`.
 
-### `readString()`
-
-Сигнатура:
-
-```text
-readString() string
-```
-
-Читает следующий whitespace-delimited token. При EOF возвращает пустую строку.
-
-### `readInt()`
+### `scan(&value)`
 
 Сигнатура:
 
 ```text
-readInt() int
+scan(value *T) void
 ```
 
-Читает `int`. При ошибке парсинга возвращает `0`.
+Поддерживаемые destination-типы:
 
-### `readFloat()`
-
-Сигнатура:
-
-```text
-readFloat() float
-```
-
-Читает `float`. При ошибке парсинга возвращает `0.0`.
-
-### `readBool()`
-
-Сигнатура:
-
-```text
-readBool() bool
-```
-
-Читает token. Значения `true` и `1` интерпретируются как `true`; остальные значения интерпретируются как `false`. При EOF возвращает `false`.
+- `int`;
+- `float`;
+- `bool`;
+- `string`.
 
 Пример:
 
 ```cetus
 func main() {
-    value := readInt();
+    var value int;
+    scan(&value);
     println(value);
 }
 ```
@@ -220,10 +191,7 @@ func main() {
 - `println`;
 - `printf`;
 - `len`;
-- `readString`;
-- `readInt`;
-- `readFloat`;
-- `readBool`.
+- `scan`.
 
 ## Будущие модули
 
