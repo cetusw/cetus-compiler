@@ -65,6 +65,8 @@ int DisassembleInstruction(const Chunk& chunk, const int offset)
 		return ByteInstruction("OP_GET_LOCAL", chunk, offset);
 	case OP_SET_LOCAL:
 		return ByteInstruction("OP_SET_LOCAL", chunk, offset);
+	case OP_REF_LOCAL:
+		return ByteInstruction("OP_REF_LOCAL", chunk, offset);
 	case OP_POP:
 		return SimpleInstruction("OP_POP", offset);
 	case OP_NEGATE:
@@ -109,6 +111,8 @@ int DisassembleInstruction(const Chunk& chunk, const int offset)
 		return ConstantInstruction("OP_GET_GLOBAL", chunk, offset);
 	case OP_SET_GLOBAL:
 		return ConstantInstruction("OP_SET_GLOBAL", chunk, offset);
+	case OP_REF_GLOBAL:
+		return ConstantInstruction("OP_REF_GLOBAL", chunk, offset);
 	default:
 		std::printf("%s %i\n", "Unknown opcode:", static_cast<int>(instruction));
 		return offset + 1;
