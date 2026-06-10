@@ -113,12 +113,14 @@ std::string JsonPreparedGrammarStorage::SerializeSemanticTag(const SemanticTag t
 	case SemanticTag::FLOAT_LITERAL: return "float_literal";
 	case SemanticTag::STRING_LITERAL: return "string_literal";
 	case SemanticTag::IDENTIFIER: return "identifier";
+	case SemanticTag::ADDRESS_OF: return "address_of";
 	case SemanticTag::IDENTIFIER_LIST: return "identifier_list";
 	case SemanticTag::IDENTIFIER_LIST_SINGLE: return "identifier_list_single";
 	case SemanticTag::EXPRESSION_LIST: return "expression_list";
 	case SemanticTag::EXPRESSION_LIST_SINGLE: return "expression_list_single";
 	case SemanticTag::TYPE_NAME: return "type_name";
 	case SemanticTag::PARAM: return "param";
+	case SemanticTag::POINTER_PARAM: return "pointer_param";
 	case SemanticTag::PARAM_LIST: return "param_list";
 	case SemanticTag::PARAM_LIST_SINGLE: return "param_list_single";
 	case SemanticTag::CALL_NO_ARGS: return "call_no_args";
