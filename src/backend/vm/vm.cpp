@@ -152,6 +152,12 @@ Value VM::GetStack(const int index)
 {
 	return GetCurrentFrame().slots[index];
 }
+
+Value* VM::GetStackAddress(const int index)
+{
+	return &GetCurrentFrame().slots[index];
+}
+
 Value* VM::GetStackTop() const
 {
 	return m_stackTop;
@@ -175,6 +181,16 @@ int VM::GetFrameCount() const
 Value VM::GetGlobal(const std::string& name) const
 {
 	return m_globals.at(name);
+}
+
+Value* VM::GetGlobalAddress(const std::string& name)
+{
+	const auto it = m_globals.find(name);
+	if (it == m_globals.end())
+	{
+		return nullptr;
+	}
+	return &it->second;
 }
 
 void VM::SetStack(const int index, const Value& value)

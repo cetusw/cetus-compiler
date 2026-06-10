@@ -29,11 +29,13 @@ public:
 	bool HasGlobal(const std::string& name) const;
 
 	[[nodiscard]] Value GetStack(int index);
+	[[nodiscard]] Value* GetStackAddress(int index);
 	[[nodiscard]] Value* GetStackTop() const;
 	[[nodiscard]] CallFrame GetFrame(int index) const;
 	[[nodiscard]] CallFrame& GetCurrentFrame();
 	[[nodiscard]] int GetFrameCount() const;
 	Value GetGlobal(const std::string& name) const;
+	Value* GetGlobalAddress(const std::string& name);
 
 	void SetStack(int index, const Value& value);
 	void SetStackTop(Value* value);
