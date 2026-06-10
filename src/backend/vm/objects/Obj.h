@@ -6,6 +6,7 @@ enum class ObjType
 	STRING,
 	FUNCTION,
 	NATIVE,
+	REF,
 };
 
 class Obj

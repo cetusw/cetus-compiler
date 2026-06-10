@@ -13,6 +13,8 @@
 #include "NegateInstruction.h"
 #include "NotInstruction.h"
 #include "PopInstruction.h"
+#include "RefGlobalInstruction.h"
+#include "RefLocalInstruction.h"
 #include "ReturnInstruction.h"
 #include "SetGlobalInstruction.h"
 #include "SetLocalInstruction.h"
@@ -26,9 +28,11 @@ public:
 		m_table[OP_CONSTANT] = std::make_unique<ConstantInstruction>();
 		m_table[OP_GET_LOCAL] = std::make_unique<GetLocalInstruction>();
 		m_table[OP_SET_LOCAL] = std::make_unique<SetLocalInstruction>();
+		m_table[OP_REF_LOCAL] = std::make_unique<RefLocalInstruction>();
 		m_table[OP_DEFINE_GLOBAL] = std::make_unique<DefineGlobalInstruction>();
 		m_table[OP_GET_GLOBAL] = std::make_unique<GetGlobalInstruction>();
 		m_table[OP_SET_GLOBAL] = std::make_unique<SetGlobalInstruction>();
+		m_table[OP_REF_GLOBAL] = std::make_unique<RefGlobalInstruction>();
 		m_table[OP_POP] = std::make_unique<PopInstruction>();
 
 		m_table[OP_NEGATE] = std::make_unique<NegateInstruction>();

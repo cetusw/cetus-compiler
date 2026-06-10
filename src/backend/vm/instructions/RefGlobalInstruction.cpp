@@ -1,17 +1,20 @@
-#include "GetGlobalInstruction.h"
-#include "../vm.h"
+#include "RefGlobalInstruction.h"
 
-InterpretResult GetGlobalInstruction::Execute(VM& vm) const
+#include "../vm.h"
+#include "src/backend/vm/objects/ObjRef.h"
+
+InterpretResult RefGlobalInstruction::Execute(VM& vm) const
 {
 	const Value nameValue = vm.ReadConstant();
 	const std::string& name = nameValue.AsString();
 
-	if (!vm.HasGlobal(name))
+	Value* global = vm.GetGlobalAddress(name);
+	if (!global)
 	{
 		std::fprintf(stderr, "Runtime Error: Undefined variable '%s'.\n", name.c_str());
 		return InterpretResult::RUNTIME_ERROR;
 	}
 
-	vm.Push(vm.GetGlobal(name).Dereference());
+	vm.Push(Value(std::make_shared<ObjRef>(global)));
 	return InterpretResult::OK;
 }

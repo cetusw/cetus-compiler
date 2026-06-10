@@ -4,6 +4,6 @@
 InterpretResult GetLocalInstruction::Execute(VM& vm) const
 {
 	const uint8_t slot = vm.ReadByte();
-	vm.Push(vm.GetStack(slot));
+	vm.Push(vm.GetStack(slot).Dereference());
 	return InterpretResult::OK;
 }

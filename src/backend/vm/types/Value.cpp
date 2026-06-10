@@ -1,5 +1,6 @@
 #include "Value.h"
 #include "../objects/ObjFunction.h"
+#include "../objects/ObjRef.h"
 #include "../objects/ObjString.h"
 #include "src/backend/vm/objects/ObjNative.h"
 
@@ -90,6 +91,11 @@ bool Value::IsNative() const
 	return std::holds_alternative<HeapObject>(m_data) && std::get<HeapObject>(m_data)->GetType() == ObjType::NATIVE;
 }
 
+bool Value::IsRef() const
+{
+	return std::holds_alternative<HeapObject>(m_data) && std::get<HeapObject>(m_data)->GetType() == ObjType::REF;
+}
+
 RuntimeInt Value::AsInt() const
 {
 	return std::get<RuntimeInt>(m_data);
@@ -132,6 +138,21 @@ std::shared_ptr<ObjNative> Value::AsNative() const
 	return std::static_pointer_cast<ObjNative>(obj);
 }
 
+std::shared_ptr<ObjRef> Value::AsRef() const
+{
+	const auto obj = std::get<HeapObject>(m_data);
+	return std::static_pointer_cast<ObjRef>(obj);
+}
+
+Value Value::Dereference() const
+{
+	if (IsRef())
+	{
+		return AsRef()->Get();
+	}
+	return *this;
+}
+
 // TODO to refactor
 void Value::Print() const
 {
@@ -166,6 +187,10 @@ void Value::Print() const
 			else if (arg->GetType() == ObjType::NATIVE)
 			{
 				std::printf("<native fn>");
+			}
+			else if (arg->GetType() == ObjType::REF)
+			{
+				std::printf("<ref>");
 			}
 		}
 	},
