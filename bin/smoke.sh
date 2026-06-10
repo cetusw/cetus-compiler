@@ -85,18 +85,20 @@ done
 run_negative "${ROOT_DIR}/tests/smoke/negative/missing_main.cetus" "Program entry point main is not declared"
 run_negative "${ROOT_DIR}/tests/smoke/negative/duplicate_local.cetus" "Variable is already declared in current scope: value"
 run_negative "${ROOT_DIR}/tests/smoke/negative/float_modulo.cetus" "Modulo operator expects int operands"
-run_negative "${ROOT_DIR}/tests/smoke/negative/read_int_args.cetus" "readInt expects no arguments"
 run_negative "${ROOT_DIR}/tests/smoke/negative/break_outside_loop.cetus" "Break statement is not allowed outside loop"
 run_negative "${ROOT_DIR}/tests/smoke/negative/continue_outside_loop.cetus" "Continue statement is not allowed outside loop"
 run_negative "${ROOT_DIR}/tests/smoke/negative/for_post_declaration.cetus" "For post statement cannot declare variables"
+run_negative "${ROOT_DIR}/tests/smoke/negative/ref_temporary.cetus" "Pointer parameter expects address of assignable identifier argument"
+run_negative "${ROOT_DIR}/tests/smoke/negative/function_arity.cetus" "Function call argument count does not match function parameters"
 
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/if_nested_empty.cetus" $'1\n2'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/for_condition.cetus" $'0\n1\n2'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/for_classic.cetus" $'0\n1\n2'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/for_break_continue.cetus" $'0\n2\n3'
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/ref_parameter.cetus" "2"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/runtime_numbers.cetus" $'1\n1.5\n1\n3\n3.5'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_literal.cetus" "hello"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_operations.cetus" $'abc\ntrue\ntrue\n3'
-run_positive_output_stdin "${ROOT_DIR}/tests/smoke/positive/stdlib_input.cetus" $'cetus\n42\n2.5\ntrue\n' $'cetus\n42\n2.5\ntrue'
+run_positive_output_stdin "${ROOT_DIR}/tests/smoke/positive/scan_input.cetus" $'cetus\n42\n2.5\ntrue\n' $'cetus\n42\n2.5\ntrue'
 
 echo "[smoke] ok"

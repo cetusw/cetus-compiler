@@ -1,0 +1,14 @@
+func main() {
+    var text string;
+    var integer int;
+    var number float;
+    var flag bool;
+    scan(&text);
+    scan(&integer);
+    scan(&number);
+    scan(&flag);
+    println(text);
+    println(integer);
+    println(number);
+    println(flag);
+}
