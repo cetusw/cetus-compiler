@@ -26,6 +26,8 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildStringLiteral(values);
 	case SemanticTag::IDENTIFIER:
 		return BuildIdentifier(values);
+	case SemanticTag::ADDRESS_OF:
+		return BuildAddressOf(std::move(values));
 	case SemanticTag::IDENTIFIER_LIST:
 		return BuildIdentifierList(std::move(values));
 	case SemanticTag::IDENTIFIER_LIST_SINGLE:
@@ -38,6 +40,8 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildTypeName(values);
 	case SemanticTag::PARAM:
 		return BuildParameter(values);
+	case SemanticTag::POINTER_PARAM:
+		return BuildPointerParameter(values);
 	case SemanticTag::PARAM_LIST:
 		return BuildParameterList(std::move(values));
 	case SemanticTag::PARAM_LIST_SINGLE:
@@ -227,6 +231,24 @@ AstSemanticValue AstReductionBuilder::BuildParameter(const std::vector<AstSemant
 {
 	RequireValueCount(values, 2, "Parameter reduction");
 	return { nullptr, std::nullopt, {}, {}, { FunctionParameter{ TakeToken(values, 0).lexeme, TakeType(values, 1) } } };
+}
+
+AstSemanticValue AstReductionBuilder::BuildPointerParameter(const std::vector<AstSemanticValue>& values)
+{
+	RequireValueCount(values, 3, "Pointer parameter reduction");
+	return {
+		nullptr,
+		std::nullopt,
+		{},
+		{},
+		{ FunctionParameter{ TakeToken(values, 0).lexeme, TakeType(values, 2), true } }
+	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildAddressOf(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 2, "Address-of reduction");
+	return { std::make_unique<AddressOfASTNode>(TakeNode(values, 1)), std::nullopt };
 }
 
 AstSemanticValue AstReductionBuilder::BuildParameterList(std::vector<AstSemanticValue> values)

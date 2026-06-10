@@ -32,12 +32,14 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildFloatLiteral(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildStringLiteral(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildIdentifier(const std::vector<AstSemanticValue>& values);
+	[[nodiscard]] static AstSemanticValue BuildAddressOf(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildIdentifierList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildSingleIdentifierList(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildExpressionList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildSingleExpressionList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildTypeName(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildParameter(const std::vector<AstSemanticValue>& values);
+	[[nodiscard]] static AstSemanticValue BuildPointerParameter(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildParameterList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildSingleParameterList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildCallNoArgs(const std::vector<AstSemanticValue>& values);
