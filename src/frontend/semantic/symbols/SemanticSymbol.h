@@ -5,6 +5,12 @@
 #include <string>
 #include <vector>
 
+struct ParameterSignature
+{
+	Type type = Type::ERROR;
+	bool isPointer = false;
+};
+
 enum class SemanticSymbolKind
 {
 	VARIABLE,
@@ -17,5 +23,5 @@ struct SemanticSymbol
 	std::string name;
 	Type type = Type::ERROR;
 	SemanticSymbolKind kind = SemanticSymbolKind::VARIABLE;
-	std::vector<Type> parameterTypes;
+	std::vector<ParameterSignature> parameters;
 };

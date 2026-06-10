@@ -21,6 +21,7 @@ public:
 	void Visit(const FloatLiteralASTNode& node) override;
 	void Visit(const StringLiteralASTNode& node) override;
 	void Visit(const IdentifierASTNode& node) override;
+	void Visit(const AddressOfASTNode& node) override;
 	void Visit(const UnaryASTNode& node) override;
 	void Visit(const BinaryASTNode& node) override;
 	void Visit(const MemberAccessASTNode& node) override;
@@ -61,7 +62,7 @@ private:
 	[[nodiscard]] bool ValidateValueExpression(Type type, const char* context);
 	[[nodiscard]] bool ValidateUserDefinedName(const std::string& name, const char* declarationKind);
 	[[nodiscard]] bool DefineFunctionSymbol(const FunctionDeclarationASTNode& node);
-	[[nodiscard]] static std::vector<Type> BuildParameterTypes(const FunctionDeclarationASTNode& node);
+	[[nodiscard]] static std::vector<ParameterSignature> BuildParameterSignatures(const FunctionDeclarationASTNode& node);
 	[[nodiscard]] static bool AlwaysReturns(const ASTNode& node);
 	[[nodiscard]] static bool StatementListAlwaysReturns(const StatementListASTNode& node);
 	[[nodiscard]] static bool IfAlwaysReturns(const IfASTNode& node);

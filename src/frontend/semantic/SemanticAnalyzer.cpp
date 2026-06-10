@@ -3,6 +3,25 @@
 #include "rules/TypeRules.h"
 #include "src/frontend/syntax/ast/ASTNode.h"
 
+// TODO избавится от dynamic_cast
+namespace
+{
+const IdentifierASTNode* GetAddressedIdentifier(const ASTNode& node)
+{
+	const auto* addressOf = dynamic_cast<const AddressOfASTNode*>(&node);
+	if (!addressOf)
+	{
+		return nullptr;
+	}
+	return dynamic_cast<const IdentifierASTNode*>(&addressOf->GetTarget());
+}
+
+bool IsAddressOfExpression(const ASTNode& node)
+{
+	return dynamic_cast<const AddressOfASTNode*>(&node) != nullptr;
+}
+}
+
 SemanticAnalyzer::SemanticAnalyzer(SymbolTable symbols)
 	: m_symbolTable(std::move(symbols))
 {
@@ -61,6 +80,18 @@ void SemanticAnalyzer::Visit(const IdentifierASTNode& node)
 	}
 
 	SetCurrentType(node, symbol->type);
+}
+
+void SemanticAnalyzer::Visit(const AddressOfASTNode& node)
+{
+	if (GetAddressedIdentifier(node) == nullptr)
+	{
+		AddDiagnostic("Address-of operator expects assignable identifier.");
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+
+	SetCurrentType(node, AnalyzeChild(node.GetTarget()));
 }
 
 void SemanticAnalyzer::Visit(const UnaryASTNode& node)
@@ -140,20 +171,26 @@ void SemanticAnalyzer::Visit(const CallExpressionASTNode& node)
 void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, const std::vector<Type>& argumentTypes)
 {
 	const std::string& calleeName = node.GetCalleeName();
-	if (calleeName == "printf" || calleeName == "print" || calleeName == "println")
-	{
+		if (calleeName == "printf" || calleeName == "print" || calleeName == "println")
+		{
 		if (argumentTypes.size() != 1)
 		{
 			AddDiagnostic(calleeName + " expects exactly one argument.");
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
-		if (!ValidateValueExpression(argumentTypes.front(), "function argument"))
-		{
-			SetCurrentType(node, Type::ERROR);
-			return;
-		}
-		const Type argumentType = argumentTypes.front();
+			if (!ValidateValueExpression(argumentTypes.front(), "function argument"))
+			{
+				SetCurrentType(node, Type::ERROR);
+				return;
+			}
+			if (IsAddressOfExpression(*node.GetArguments().front()))
+			{
+				AddDiagnostic(calleeName + " expects value argument, not address argument.");
+				SetCurrentType(node, Type::ERROR);
+				return;
+			}
+			const Type argumentType = argumentTypes.front();
 		if (argumentType != Type::INT
 			&& argumentType != Type::FLOAT
 			&& argumentType != Type::BOOL
@@ -176,12 +213,18 @@ void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, c
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
-		if (!ValidateValueExpression(argumentTypes.front(), "function argument"))
-		{
-			SetCurrentType(node, Type::ERROR);
-			return;
-		}
-		if (argumentTypes.front() != Type::STRING)
+			if (!ValidateValueExpression(argumentTypes.front(), "function argument"))
+			{
+				SetCurrentType(node, Type::ERROR);
+				return;
+			}
+			if (IsAddressOfExpression(*node.GetArguments().front()))
+			{
+				AddDiagnostic("len expects value argument, not address argument.");
+				SetCurrentType(node, Type::ERROR);
+				return;
+			}
+			if (argumentTypes.front() != Type::STRING)
 		{
 			AddDiagnostic("len expects string argument.");
 			SetCurrentType(node, Type::ERROR);
@@ -192,55 +235,27 @@ void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, c
 		return;
 	}
 
-	if (calleeName == "readString")
+	if (calleeName == "scan")
 	{
-		if (!argumentTypes.empty())
+		if (argumentTypes.size() != 1)
 		{
-			AddDiagnostic("readString expects no arguments.");
+			AddDiagnostic("scan expects exactly one argument.");
+			SetCurrentType(node, Type::ERROR);
+			return;
+		}
+			if (GetAddressedIdentifier(*node.GetArguments().front()) == nullptr)
+			{
+				AddDiagnostic("scan expects address of assignable identifier argument.");
+				SetCurrentType(node, Type::ERROR);
+				return;
+		}
+		if (!ValidateValueExpression(argumentTypes.front(), "function argument"))
+		{
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
 
-		SetCurrentType(node, Type::STRING);
-		return;
-	}
-
-	if (calleeName == "readInt")
-	{
-		if (!argumentTypes.empty())
-		{
-			AddDiagnostic("readInt expects no arguments.");
-			SetCurrentType(node, Type::ERROR);
-			return;
-		}
-
-		SetCurrentType(node, Type::INT);
-		return;
-	}
-
-	if (calleeName == "readFloat")
-	{
-		if (!argumentTypes.empty())
-		{
-			AddDiagnostic("readFloat expects no arguments.");
-			SetCurrentType(node, Type::ERROR);
-			return;
-		}
-
-		SetCurrentType(node, Type::FLOAT);
-		return;
-	}
-
-	if (calleeName == "readBool")
-	{
-		if (!argumentTypes.empty())
-		{
-			AddDiagnostic("readBool expects no arguments.");
-			SetCurrentType(node, Type::ERROR);
-			return;
-		}
-
-		SetCurrentType(node, Type::BOOL);
+		SetCurrentType(node, Type::VOID);
 		return;
 	}
 
@@ -281,7 +296,7 @@ void SemanticAnalyzer::TypeCheckFunctionCall(
 	const std::vector<Type>& argumentTypes)
 {
 	bool hasError = false;
-	if (symbol.parameterTypes.size() != argumentTypes.size())
+	if (symbol.parameters.size() != argumentTypes.size())
 	{
 		AddDiagnostic("Function call argument count does not match function parameters: " + node.GetCalleeName());
 		SetCurrentType(node, Type::ERROR);
@@ -295,9 +310,21 @@ void SemanticAnalyzer::TypeCheckFunctionCall(
 			hasError = true;
 			continue;
 		}
-		if (argumentTypes[index] != symbol.parameterTypes[index])
+		const ParameterSignature& parameter = symbol.parameters[index];
+		if (argumentTypes[index] != parameter.type)
 		{
 			AddDiagnostic("Function call argument type does not match parameter type: " + node.GetCalleeName());
+			hasError = true;
+		}
+		const bool isAddressArgument = IsAddressOfExpression(*node.GetArguments()[index]);
+		if (parameter.isPointer && GetAddressedIdentifier(*node.GetArguments()[index]) == nullptr)
+		{
+			AddDiagnostic("Pointer parameter expects address of assignable identifier argument: " + node.GetCalleeName());
+			hasError = true;
+		}
+		if (!parameter.isPointer && isAddressArgument)
+		{
+			AddDiagnostic("Address argument requires pointer parameter: " + node.GetCalleeName());
 			hasError = true;
 		}
 	}
@@ -734,7 +761,7 @@ void SemanticAnalyzer::ValidateEntryPoint()
 		AddDiagnostic("Program entry point main must be a function.");
 		return;
 	}
-	if (!mainSymbol->parameterTypes.empty())
+	if (!mainSymbol->parameters.empty())
 	{
 		AddDiagnostic("Program entry point main must not have parameters.");
 	}
@@ -751,14 +778,11 @@ void SemanticAnalyzer::DefineBuiltinFunctions()
 		return;
 	}
 
-	m_symbolTable.Define(SemanticSymbol{ "printf", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { Type::ERROR } });
-	m_symbolTable.Define(SemanticSymbol{ "print", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { Type::ERROR } });
-	m_symbolTable.Define(SemanticSymbol{ "println", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { Type::ERROR } });
-	m_symbolTable.Define(SemanticSymbol{ "len", Type::INT, SemanticSymbolKind::BUILTIN_FUNCTION, { Type::STRING } });
-	m_symbolTable.Define(SemanticSymbol{ "readString", Type::STRING, SemanticSymbolKind::BUILTIN_FUNCTION, {} });
-	m_symbolTable.Define(SemanticSymbol{ "readInt", Type::INT, SemanticSymbolKind::BUILTIN_FUNCTION, {} });
-	m_symbolTable.Define(SemanticSymbol{ "readFloat", Type::FLOAT, SemanticSymbolKind::BUILTIN_FUNCTION, {} });
-	m_symbolTable.Define(SemanticSymbol{ "readBool", Type::BOOL, SemanticSymbolKind::BUILTIN_FUNCTION, {} });
+	m_symbolTable.Define(SemanticSymbol{ "printf", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, false } } });
+	m_symbolTable.Define(SemanticSymbol{ "print", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, false } } });
+	m_symbolTable.Define(SemanticSymbol{ "println", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, false } } });
+	m_symbolTable.Define(SemanticSymbol{ "len", Type::INT, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::STRING, false } } });
+	m_symbolTable.Define(SemanticSymbol{ "scan", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, true } } });
 }
 
 bool SemanticAnalyzer::DefineFunctionSymbol(const FunctionDeclarationASTNode& node)
@@ -782,19 +806,19 @@ bool SemanticAnalyzer::DefineFunctionSymbol(const FunctionDeclarationASTNode& no
 		node.GetName(),
 		node.GetReturnType(),
 		SemanticSymbolKind::FUNCTION,
-		BuildParameterTypes(node) });
+		BuildParameterSignatures(node) });
 	return true;
 }
 
-std::vector<Type> SemanticAnalyzer::BuildParameterTypes(const FunctionDeclarationASTNode& node)
+std::vector<ParameterSignature> SemanticAnalyzer::BuildParameterSignatures(const FunctionDeclarationASTNode& node)
 {
-	std::vector<Type> parameterTypes;
-	parameterTypes.reserve(node.GetParameters().size());
+	std::vector<ParameterSignature> parameterSignatures;
+	parameterSignatures.reserve(node.GetParameters().size());
 	for (const FunctionParameter& parameter : node.GetParameters())
 	{
-		parameterTypes.push_back(parameter.type);
+		parameterSignatures.push_back(ParameterSignature{ parameter.type, parameter.isPointer });
 	}
-	return parameterTypes;
+	return parameterSignatures;
 }
 
 // TODO избавиться от dynamic_cast

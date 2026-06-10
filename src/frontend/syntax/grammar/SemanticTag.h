@@ -17,12 +17,14 @@ enum class SemanticTag
 	FLOAT_LITERAL,
 	STRING_LITERAL,
 	IDENTIFIER,
+	ADDRESS_OF,
 	IDENTIFIER_LIST,
 	IDENTIFIER_LIST_SINGLE,
 	EXPRESSION_LIST,
 	EXPRESSION_LIST_SINGLE,
 	TYPE_NAME,
 	PARAM,
+	POINTER_PARAM,
 	PARAM_LIST,
 	PARAM_LIST_SINGLE,
 	CALL_NO_ARGS,
@@ -68,12 +70,14 @@ enum class SemanticTag
 	if (value == "float_literal") return SemanticTag::FLOAT_LITERAL;
 	if (value == "string_literal") return SemanticTag::STRING_LITERAL;
 	if (value == "identifier") return SemanticTag::IDENTIFIER;
+	if (value == "address_of") return SemanticTag::ADDRESS_OF;
 	if (value == "identifier_list") return SemanticTag::IDENTIFIER_LIST;
 	if (value == "identifier_list_single") return SemanticTag::IDENTIFIER_LIST_SINGLE;
 	if (value == "expression_list") return SemanticTag::EXPRESSION_LIST;
 	if (value == "expression_list_single") return SemanticTag::EXPRESSION_LIST_SINGLE;
 	if (value == "type_name") return SemanticTag::TYPE_NAME;
 	if (value == "param") return SemanticTag::PARAM;
+	if (value == "pointer_param") return SemanticTag::POINTER_PARAM;
 	if (value == "param_list") return SemanticTag::PARAM_LIST;
 	if (value == "param_list_single") return SemanticTag::PARAM_LIST_SINGLE;
 	if (value == "call_no_args") return SemanticTag::CALL_NO_ARGS;
