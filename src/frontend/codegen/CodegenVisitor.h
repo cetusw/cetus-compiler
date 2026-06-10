@@ -23,6 +23,7 @@ public:
 	void Visit(const FloatLiteralASTNode& expr) override;
 	void Visit(const StringLiteralASTNode& expr) override;
 	void Visit(const IdentifierASTNode& expr) override;
+	void Visit(const AddressOfASTNode& expr) override;
 	void Visit(const UnaryASTNode& expr) override;
 	void Visit(const BinaryASTNode& expr) override;
 	void Visit(const MemberAccessASTNode& expr) override;
@@ -50,6 +51,8 @@ private:
 	void EmitLogicalAnd(const BinaryASTNode& expr);
 	void EmitLogicalOr(const BinaryASTNode& expr);
 	void EmitScopeCleanup(int scopeDepth);
+	void EmitIdentifierRef(const IdentifierASTNode& expr);
+	[[nodiscard]] bool ShouldPassArgumentByPointer(const std::string& calleeName, std::size_t argumentIndex) const;
 	[[nodiscard]] bool EnsureTyped(const ASTNode& expr);
 
 	struct LoopContext

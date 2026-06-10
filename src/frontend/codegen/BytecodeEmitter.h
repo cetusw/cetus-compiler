@@ -22,9 +22,11 @@ public:
 	void EmitLoop(int loopStart) const;
 	void EmitLocalLoad(int slot) const;
 	void EmitLocalSet(int slot) const;
+	void EmitLocalRef(int slot) const;
 	void EmitGlobalLoad(const std::string& name) const;
 	void EmitGlobalDefine(const std::string& name) const;
 	void EmitGlobalSet(const std::string& name) const;
+	void EmitGlobalRef(const std::string& name) const;
 
 private:
 	static constexpr int DEFAULT_LINE = 1;

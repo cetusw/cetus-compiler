@@ -9,6 +9,17 @@ namespace
 {
 constexpr auto PRINTF_NATIVE_NAME = "println";
 
+// TODO избавиться от дубликата
+const IdentifierASTNode* GetAddressedIdentifier(const ASTNode& node)
+{
+	const auto* addressOf = dynamic_cast<const AddressOfASTNode*>(&node);
+	if (!addressOf)
+	{
+		return nullptr;
+	}
+	return dynamic_cast<const IdentifierASTNode*>(&addressOf->GetTarget());
+}
+
 std::string ResolveBuiltinRuntimeName(const std::string& sourceName)
 {
 	if (sourceName == "printf")
@@ -106,6 +117,11 @@ void CodegenVisitor::Visit(const IdentifierASTNode& expr)
 	CurrentEmitter().EmitGlobalLoad(expr.GetName());
 }
 
+void CodegenVisitor::Visit(const AddressOfASTNode&)
+{
+	Fail("Address-of expression can only be used as argument for pointer parameter.");
+}
+
 void CodegenVisitor::Visit(const UnaryASTNode& expr)
 {
 	if (!EnsureTyped(expr))
@@ -183,9 +199,23 @@ void CodegenVisitor::Visit(const CallExpressionASTNode& expr)
 	const std::string targetName = ResolveBuiltinRuntimeName(calleeName);
 	CurrentEmitter().EmitGlobalLoad(targetName);
 
-	for (const ASTNodePtr& argument : expr.GetArguments())
+	const std::vector<ASTNodePtr>& arguments = expr.GetArguments();
+	for (std::size_t index = 0; index < arguments.size(); ++index)
 	{
-		argument->Accept(*this);
+		if (ShouldPassArgumentByPointer(calleeName, index))
+		{
+			const IdentifierASTNode* identifier = GetAddressedIdentifier(*arguments[index]);
+			if (!identifier)
+			{
+				Fail("Pointer argument code generation expects address of identifier.");
+				return;
+			}
+			EmitIdentifierRef(*identifier);
+		}
+		else
+		{
+			arguments[index]->Accept(*this);
+		}
 		if (m_error.has_value())
 		{
 			return;
@@ -579,6 +609,9 @@ void CodegenVisitor::EmitDefault(const Type type)
 	case Type::BOOL:
 		CurrentEmitter().EmitConstant(Value(false));
 		return;
+	case Type::STRING:
+		CurrentEmitter().EmitConstant(Value(std::make_shared<ObjString>("")));
+		return;
 	default:
 		CurrentEmitter().EmitConstant(Value());
 	}
@@ -660,4 +693,31 @@ bool CodegenVisitor::EnsureTyped(const ASTNode& expr)
 
 	Fail("Typed AST information is missing for code generation.");
 	return false;
+}
+
+void CodegenVisitor::EmitIdentifierRef(const IdentifierASTNode& expr)
+{
+	if (const std::optional<int> localSlot = m_functionStack.back().ResolveLocal(expr.GetName()))
+	{
+		CurrentEmitter().EmitLocalRef(*localSlot);
+		return;
+	}
+
+	CurrentEmitter().EmitGlobalRef(expr.GetName());
+}
+
+bool CodegenVisitor::ShouldPassArgumentByPointer(const std::string& calleeName, const std::size_t argumentIndex) const
+{
+	if (calleeName == "scan")
+	{
+		return argumentIndex == 0;
+	}
+
+	const SemanticSymbol* symbol = m_symbols.Resolve(calleeName);
+	if (!symbol || argumentIndex >= symbol->parameters.size())
+	{
+		return false;
+	}
+
+	return symbol->parameters[argumentIndex].isPointer;
 }

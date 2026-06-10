@@ -85,6 +85,12 @@ void BytecodeEmitter::EmitLocalSet(const int slot) const
 	EmitOperandByte(slot);
 }
 
+void BytecodeEmitter::EmitLocalRef(const int slot) const
+{
+	EmitOpcode(OP_REF_LOCAL);
+	EmitOperandByte(slot);
+}
+
 void BytecodeEmitter::EmitGlobalLoad(const std::string& name) const
 {
 	EmitOpcode(OP_GET_GLOBAL);
@@ -102,6 +108,13 @@ void BytecodeEmitter::EmitGlobalDefine(const std::string& name) const
 void BytecodeEmitter::EmitGlobalSet(const std::string& name) const
 {
 	EmitOpcode(OP_SET_GLOBAL);
+	const int constantIndex = m_chunk.AddConstant(Value(std::make_shared<ObjString>(name)));
+	EmitOperandByte(constantIndex);
+}
+
+void BytecodeEmitter::EmitGlobalRef(const std::string& name) const
+{
+	EmitOpcode(OP_REF_GLOBAL);
 	const int constantIndex = m_chunk.AddConstant(Value(std::make_shared<ObjString>(name)));
 	EmitOperandByte(constantIndex);
 }
