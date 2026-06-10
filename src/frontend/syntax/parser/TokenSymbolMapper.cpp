@@ -13,6 +13,8 @@ std::string_view TokenTypeToGrammarTerminal(const TokenType type)
 		return "OR_OR";
 	case TokenType::AND_AND:
 		return "AND_AND";
+	case TokenType::BIT_AND:
+		return "BIT_AND";
 	case TokenType::SEMICOLON:
 		return "SEMICOLON";
 	case TokenType::IF:
