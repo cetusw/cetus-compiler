@@ -55,7 +55,7 @@ void RunExpressionDriver::Execute(const Configuration& configuration)
 		throw std::runtime_error(*error);
 	}
 
-	CodegenVisitor codegen(symbols, typeResult);
+	CodegenVisitor codegen(typeResult.symbols, typeResult);
 	const CodegenResult codegenResult = codegen.Generate(*parseResult.ast);
 	if (codegenResult.error.has_value())
 	{
