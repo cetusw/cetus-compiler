@@ -12,6 +12,7 @@ public:
 	void Visit(const FloatLiteralASTNode& expr) override;
 	void Visit(const StringLiteralASTNode& expr) override;
 	void Visit(const IdentifierASTNode& expr) override;
+	void Visit(const AddressOfASTNode& expr) override;
 	void Visit(const UnaryASTNode& expr) override;
 	void Visit(const BinaryASTNode& expr) override;
 	void Visit(const MemberAccessASTNode& expr) override;

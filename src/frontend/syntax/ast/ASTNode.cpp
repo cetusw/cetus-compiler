@@ -87,6 +87,21 @@ void IdentifierASTNode::Accept(ASTNodeVisitor& visitor) const
 	visitor.Visit(*this);
 }
 
+AddressOfASTNode::AddressOfASTNode(ASTNodePtr target)
+	: m_target(std::move(target))
+{
+}
+
+const ASTNode& AddressOfASTNode::GetTarget() const
+{
+	return *m_target;
+}
+
+void AddressOfASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}
+
 UnaryASTNode::UnaryASTNode(const UnaryOperator op, ASTNodePtr operand)
 	: m_op(op)
 	, m_operand(std::move(operand))

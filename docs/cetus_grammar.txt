@@ -46,6 +46,7 @@
 ~ParamList~ -> ~Param~ @param_list_single
 
 ~Param~ -> IDENTIFIER ~TypeName~ @param
+~Param~ -> IDENTIFIER STAR ~TypeName~ @pointer_param
 
 ~Con~ -> ~Con~ OR_OR ~Con1~ @binary
 ~Con~ -> ~Con1~ @pass_expr
@@ -72,6 +73,7 @@
 ~Exp2~ -> IDENTIFIER LPAREN RPAREN @call_no_args
 ~Exp2~ -> IDENTIFIER LPAREN ~ExpressionList~ RPAREN @call
 ~Exp2~ -> MINUS ~Exp2~ @unary
+~Exp2~ -> BIT_AND ~LargId~ @address_of
 ~Exp2~ -> ~LargId~ @pass_expr
 ~Exp2~ -> INT_LIT @int_literal
 ~Exp2~ -> FLOAT_LIT @float_literal

@@ -5,6 +5,7 @@ class IntLiteralASTNode;
 class FloatLiteralASTNode;
 class StringLiteralASTNode;
 class IdentifierASTNode;
+class AddressOfASTNode;
 class UnaryASTNode;
 class BinaryASTNode;
 class MemberAccessASTNode;
@@ -34,6 +35,7 @@ public:
 	virtual void Visit(const FloatLiteralASTNode& expr) = 0;
 	virtual void Visit(const StringLiteralASTNode& expr) = 0;
 	virtual void Visit(const IdentifierASTNode& expr) = 0;
+	virtual void Visit(const AddressOfASTNode& expr) = 0;
 	virtual void Visit(const UnaryASTNode& expr) = 0;
 	virtual void Visit(const BinaryASTNode& expr) = 0;
 	virtual void Visit(const MemberAccessASTNode& expr) = 0;

@@ -39,6 +39,12 @@ void AstDumper::Visit(const IdentifierASTNode& expr)
 	DumpLine("IdentifierASTNode(" + expr.GetName() + ")");
 }
 
+void AstDumper::Visit(const AddressOfASTNode& expr)
+{
+	DumpLine("AddressOfASTNode");
+	DumpChild(expr.GetTarget());
+}
+
 void AstDumper::Visit(const UnaryASTNode& expr)
 {
 	DumpLine(std::string("UnaryASTNode(") + ToString(expr.GetOperator()) + ")");
@@ -214,7 +220,12 @@ std::string AstDumper::JoinParameters(const std::vector<FunctionParameter>& para
 		{
 			result += ", ";
 		}
-		result += parameters[index].name + " " + ToString(parameters[index].type);
+		result += parameters[index].name + " ";
+		if (parameters[index].isPointer)
+		{
+			result += "*";
+		}
+		result += ToString(parameters[index].type);
 	}
 	return result;
 }

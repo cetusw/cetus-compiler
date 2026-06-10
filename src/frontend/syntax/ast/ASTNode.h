@@ -49,6 +49,7 @@ struct FunctionParameter
 {
 	std::string name;
 	Type type = Type::ERROR;
+	bool isPointer = false;
 };
 
 class StatementASTNode : public ASTNode
@@ -117,6 +118,18 @@ public:
 
 private:
 	std::string m_name;
+};
+
+class AddressOfASTNode final : public ExpressionASTNode
+{
+public:
+	explicit AddressOfASTNode(ASTNodePtr target);
+
+	[[nodiscard]] const ASTNode& GetTarget() const;
+	void Accept(ASTNodeVisitor& visitor) const override;
+
+private:
+	ASTNodePtr m_target;
 };
 
 class UnaryASTNode final : public ExpressionASTNode
