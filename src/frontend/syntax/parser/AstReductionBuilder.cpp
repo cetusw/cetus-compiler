@@ -52,6 +52,10 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildCallNoArgs(values);
 	case SemanticTag::CALL:
 		return BuildCall(std::move(values));
+	case SemanticTag::METHOD_CALL_NO_ARGS:
+		return BuildMethodCallNoArgs(std::move(values));
+	case SemanticTag::METHOD_CALL:
+		return BuildMethodCall(std::move(values));
 	case SemanticTag::MEMBER_ACCESS:
 		return BuildMemberAccess(std::move(values));
 	case SemanticTag::INDEX_ACCESS:
@@ -112,6 +116,14 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildVoidFunction(std::move(values));
 	case SemanticTag::FUNCTION_RETURN:
 		return BuildReturnFunction(std::move(values));
+	case SemanticTag::METHOD_VOID_NO_PARAMS:
+		return BuildVoidMethodNoParams(std::move(values));
+	case SemanticTag::METHOD_RETURN_NO_PARAMS:
+		return BuildReturnMethodNoParams(std::move(values));
+	case SemanticTag::METHOD_VOID:
+		return BuildVoidMethod(std::move(values));
+	case SemanticTag::METHOD_RETURN:
+		return BuildReturnMethod(std::move(values));
 	case SemanticTag::BLOCK:
 		return BuildBlock(std::move(values));
 	case SemanticTag::BLOCK_EMPTY:
@@ -304,6 +316,30 @@ AstSemanticValue AstReductionBuilder::BuildCall(std::vector<AstSemanticValue> va
 		std::make_unique<CallExpressionASTNode>(
 			TakeToken(values, 0).lexeme,
 			TakeExpressionList(values, 2)),
+		std::nullopt
+	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildMethodCallNoArgs(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 5, "Method call without arguments reduction");
+	return {
+		std::make_unique<CallExpressionASTNode>(
+			TakeNode(values, 0),
+			TakeToken(values, 2).lexeme,
+			std::vector<ASTNodePtr>{}),
+		std::nullopt
+	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildMethodCall(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 6, "Method call reduction");
+	return {
+		std::make_unique<CallExpressionASTNode>(
+			TakeNode(values, 0),
+			TakeToken(values, 2).lexeme,
+			TakeExpressionList(values, 4)),
 		std::nullopt
 	};
 }
@@ -611,6 +647,62 @@ AstSemanticValue AstReductionBuilder::BuildReturnFunction(std::vector<AstSemanti
 			TakeParameterList(values, 3),
 			TakeType(values, 5),
 			TakeNode(values, 6)),
+		std::nullopt
+	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildVoidMethodNoParams(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 8, "Void method declaration reduction");
+	return {
+		std::make_unique<FunctionDeclarationASTNode>(
+			TakeParameterList(values, 2).front(),
+			TakeToken(values, 4).lexeme,
+			std::vector<FunctionParameter>{},
+			std::nullopt,
+			TakeNode(values, 7)),
+		std::nullopt
+	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildReturnMethodNoParams(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 9, "Returning method declaration reduction");
+	return {
+		std::make_unique<FunctionDeclarationASTNode>(
+			TakeParameterList(values, 2).front(),
+			TakeToken(values, 4).lexeme,
+			std::vector<FunctionParameter>{},
+			TakeType(values, 7),
+			TakeNode(values, 8)),
+		std::nullopt
+	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildVoidMethod(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 9, "Void method declaration reduction");
+	return {
+		std::make_unique<FunctionDeclarationASTNode>(
+			TakeParameterList(values, 2).front(),
+			TakeToken(values, 4).lexeme,
+			TakeParameterList(values, 6),
+			std::nullopt,
+			TakeNode(values, 8)),
+		std::nullopt
+	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildReturnMethod(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 10, "Returning method declaration reduction");
+	return {
+		std::make_unique<FunctionDeclarationASTNode>(
+			TakeParameterList(values, 2).front(),
+			TakeToken(values, 4).lexeme,
+			TakeParameterList(values, 6),
+			TakeType(values, 8),
+			TakeNode(values, 9)),
 		std::nullopt
 	};
 }

@@ -72,6 +72,10 @@ func main() {
 ~FunctionDecl~ -> FUNC IDENTIFIER LPAREN RPAREN ~Type~ ~Block~ @function_return_no_params
 ~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~Block~ @function_void
 ~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~Type~ ~Block~ @function_return
+~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN RPAREN ~Block~ @method_void_no_params
+~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN RPAREN ~Type~ ~Block~ @method_return_no_params
+~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN ~ParamList~ RPAREN ~Block~ @method_void
+~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN ~ParamList~ RPAREN ~Type~ ~Block~ @method_return
 ```
 
 Объявления struct type также являются объявлениями верхнего уровня:

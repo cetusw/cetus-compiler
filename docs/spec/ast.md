@@ -88,10 +88,16 @@ AST-узлы:
 | `@return_value` | `ReturnASTNode` со значением |
 | `@call_no_args` | `CallExpressionASTNode` без аргументов |
 | `@call` | `CallExpressionASTNode` с аргументами |
+| `@method_call_no_args` | `CallExpressionASTNode` с receiver без аргументов |
+| `@method_call` | `CallExpressionASTNode` с receiver и аргументами |
 | `@function_void_no_params` | `FunctionDeclarationASTNode` без параметров и без возвращаемого значения |
 | `@function_return_no_params` | `FunctionDeclarationASTNode` без параметров с возвращаемым значением |
 | `@function_void` | `FunctionDeclarationASTNode` с параметрами без возвращаемого значения |
 | `@function_return` | `FunctionDeclarationASTNode` с параметрами и возвращаемым значением |
+| `@method_void_no_params` | `FunctionDeclarationASTNode` с receiver, без параметров и без возвращаемого значения |
+| `@method_return_no_params` | `FunctionDeclarationASTNode` с receiver, без параметров с возвращаемым значением |
+| `@method_void` | `FunctionDeclarationASTNode` с receiver и параметрами без возвращаемого значения |
+| `@method_return` | `FunctionDeclarationASTNode` с receiver и параметрами с возвращаемым значением |
 | `@struct_declaration` | `StructDeclarationASTNode` |
 | `@struct_field` | `StructField` |
 

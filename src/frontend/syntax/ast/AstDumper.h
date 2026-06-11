@@ -40,6 +40,7 @@ private:
 	void DumpLine(const std::string& text) const;
 	static std::string JoinNames(const std::vector<std::string>& names);
 	static std::string JoinParameters(const std::vector<FunctionParameter>& parameters);
+	static std::string FormatParameter(const FunctionParameter& parameter);
 	static std::string FormatField(const StructField& field);
 	static std::string ToString(const TypeDescriptor& type);
 	static const char* ToString(UnaryOperator op);

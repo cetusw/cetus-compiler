@@ -17,6 +17,14 @@ struct FieldSignature
 	TypeDescriptor type = Type::ERROR;
 };
 
+struct MethodSignature
+{
+	std::string name;
+	std::string qualifiedName;
+	TypeDescriptor type = Type::ERROR;
+	std::vector<ParameterSignature> parameters;
+};
+
 enum class SemanticSymbolKind
 {
 	VARIABLE,
@@ -32,4 +40,5 @@ struct SemanticSymbol
 	SemanticSymbolKind kind = SemanticSymbolKind::VARIABLE;
 	std::vector<ParameterSignature> parameters;
 	std::vector<FieldSignature> fields;
+	std::vector<MethodSignature> methods;
 };

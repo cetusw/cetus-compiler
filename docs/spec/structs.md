@@ -8,6 +8,7 @@
 - [Использование как тип](#использование-как-тип)
 - [Runtime Instance](#runtime-instance)
 - [Member Access](#member-access)
+- [Методы](#методы)
 - [Связь с grammar](#связь-с-grammar)
 
 ## Статус
@@ -29,7 +30,14 @@
 - `p.x = value;` записывает поле;
 - semantic analyzer проверяет, что поле существует.
 
-Методы добавляются следующими фазами 7.x.
+Фаза 7.4 добавляет методы с value receiver:
+
+- `func (p Point) Sum() int { ... }`;
+- semantic analyzer хранит method table per type;
+- method call `p.Sum()` проверяется по типу receiver;
+- codegen вызывает method как обычную функцию с receiver первым аргументом.
+
+Pointer/ref receiver добавляется отдельной фазой.
 
 ## Объявление типа
 
@@ -148,6 +156,50 @@ func main() {
 1
 ```
 
+## Методы
+
+Метод объявляется на верхнем уровне программы:
+
+```cetus
+func (p Point) Sum() int {
+    return p.x + p.y;
+}
+```
+
+Вызов:
+
+```cetus
+p.Sum()
+```
+
+Эквивалентен runtime-вызову функции `Point.Sum`, куда `p` передаётся первым аргументом.
+
+Пример:
+
+```cetus
+type Point struct {
+    x int;
+    y int;
+}
+
+func (p Point) Sum() int {
+    return p.x + p.y;
+}
+
+func main() {
+    var p Point;
+    p.x = 2;
+    p.y = 3;
+    printf(p.Sum());
+}
+```
+
+Ожидаемый вывод:
+
+```text
+5
+```
+
 ## Связь с grammar
 
 Live grammar содержит:
@@ -161,6 +213,11 @@ Live grammar содержит:
 ~StructFieldList~ -> ~StructField~ @struct_field_list_single
 
 ~StructField~ -> IDENTIFIER ~Type~ SEMICOLON @struct_field
+
+~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN RPAREN ~Block~ @method_void_no_params
+~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN RPAREN ~Type~ ~Block~ @method_return_no_params
+~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN ~ParamList~ RPAREN ~Block~ @method_void
+~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN ~ParamList~ RPAREN ~Type~ ~Block~ @method_return
 ```
 
 AST node:

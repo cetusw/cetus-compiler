@@ -200,12 +200,16 @@ class CallExpressionASTNode final : public ExpressionASTNode
 {
 public:
 	CallExpressionASTNode(std::string calleeName, std::vector<ASTNodePtr> arguments);
+	CallExpressionASTNode(ASTNodePtr receiver, std::string calleeName, std::vector<ASTNodePtr> arguments);
 
 	[[nodiscard]] const std::string& GetCalleeName() const;
+	[[nodiscard]] bool IsMethodCall() const;
+	[[nodiscard]] const ASTNode* GetReceiver() const;
 	[[nodiscard]] const std::vector<ASTNodePtr>& GetArguments() const;
 	void Accept(ASTNodeVisitor& visitor) const override;
 
 private:
+	ASTNodePtr m_receiver;
 	std::string m_calleeName;
 	std::vector<ASTNodePtr> m_arguments;
 };
@@ -372,14 +376,24 @@ public:
 		std::vector<FunctionParameter> parameters,
 		const std::optional<TypeDescriptor>& returnType,
 		ASTNodePtr body);
+	FunctionDeclarationASTNode(
+		FunctionParameter receiver,
+		std::string name,
+		std::vector<FunctionParameter> parameters,
+		const std::optional<TypeDescriptor>& returnType,
+		ASTNodePtr body);
 
 	[[nodiscard]] const std::string& GetName() const;
+	[[nodiscard]] std::string GetQualifiedName() const;
+	[[nodiscard]] bool IsMethod() const;
+	[[nodiscard]] const FunctionParameter* GetReceiver() const;
 	[[nodiscard]] const std::vector<FunctionParameter>& GetParameters() const;
 	[[nodiscard]] TypeDescriptor GetReturnType() const;
 	[[nodiscard]] const ASTNode& GetBody() const;
 	void Accept(ASTNodeVisitor& visitor) const override;
 
 private:
+	std::optional<FunctionParameter> m_receiver;
 	std::string m_name;
 	std::vector<FunctionParameter> m_parameters;
 	std::optional<TypeDescriptor> m_returnType;

@@ -187,6 +187,35 @@ void SemanticAnalyzer::Visit(const IndexASTNode& node)
 // TODO отрефакторить
 void SemanticAnalyzer::Visit(const CallExpressionASTNode& node)
 {
+	if (node.IsMethodCall())
+	{
+		const ASTNode* receiver = node.GetReceiver();
+		if (!receiver)
+		{
+			AddDiagnostic("Method call receiver is missing: " + node.GetCalleeName());
+			SetCurrentType(node, Type::ERROR);
+			return;
+		}
+
+		const TypeDescriptor receiverType = AnalyzeChild(*receiver);
+		if (!ValidateValueExpression(receiverType, "method receiver"))
+		{
+			SetCurrentType(node, Type::ERROR);
+			return;
+		}
+
+		const MethodSignature* method = ResolveMethod(receiverType, node.GetCalleeName());
+		if (!method)
+		{
+			AddDiagnostic("Method is not declared: " + receiverType.ToString() + "." + node.GetCalleeName());
+			SetCurrentType(node, Type::ERROR);
+			return;
+		}
+
+		TypeCheckMethodCall(node, receiverType, *method, AnalyzeValues(node.GetArguments()));
+		return;
+	}
+
 	const SemanticSymbol* symbol = m_symbolTable.Resolve(node.GetCalleeName());
 	if (!symbol)
 	{
@@ -209,6 +238,48 @@ void SemanticAnalyzer::Visit(const CallExpressionASTNode& node)
 	}
 
 	TypeCheckFunctionCall(node, *symbol, argumentTypes);
+}
+
+void SemanticAnalyzer::TypeCheckMethodCall(
+	const CallExpressionASTNode& node,
+	const TypeDescriptor& receiverType,
+	const MethodSignature& method,
+	const std::vector<TypeDescriptor>& argumentTypes)
+{
+	bool hasError = false;
+	if (method.parameters.size() != argumentTypes.size())
+	{
+		AddDiagnostic("Method call argument count does not match method parameters: " + receiverType.ToString() + "." + node.GetCalleeName());
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+
+	for (std::size_t index = 0; index < argumentTypes.size(); ++index)
+	{
+		if (!ValidateValueExpression(argumentTypes[index], "method argument"))
+		{
+			hasError = true;
+			continue;
+		}
+		const ParameterSignature& parameter = method.parameters[index];
+		if (argumentTypes[index] != parameter.type)
+		{
+			AddDiagnostic("Method call argument type does not match parameter type: " + receiverType.ToString() + "." + node.GetCalleeName());
+			hasError = true;
+		}
+		if (parameter.isPointer)
+		{
+			AddDiagnostic("Pointer method parameter is not supported yet: " + receiverType.ToString() + "." + node.GetCalleeName());
+			hasError = true;
+		}
+		if (IsAddressOfExpression(*node.GetArguments()[index]))
+		{
+			AddDiagnostic("Method call expects value argument, not address argument: " + receiverType.ToString() + "." + node.GetCalleeName());
+			hasError = true;
+		}
+	}
+
+	SetCurrentType(node, hasError ? Type::ERROR : method.type);
 }
 
 // TODO to refactor
@@ -391,6 +462,30 @@ const FieldSignature* SemanticAnalyzer::ResolveField(const TypeDescriptor& objec
 	return nullptr;
 }
 
+const MethodSignature* SemanticAnalyzer::ResolveMethod(const TypeDescriptor& objectType, const std::string& methodName) const
+{
+	if (!objectType.IsNamed())
+	{
+		return nullptr;
+	}
+
+	const SemanticSymbol* symbol = m_symbolTable.Resolve(objectType.GetName());
+	if (!symbol || symbol->kind != SemanticSymbolKind::TYPE)
+	{
+		return nullptr;
+	}
+
+	for (const MethodSignature& method : symbol->methods)
+	{
+		if (method.name == methodName)
+		{
+			return &method;
+		}
+	}
+
+	return nullptr;
+}
+
 bool SemanticAnalyzer::ValidateUserDefinedName(const std::string& name, const char* declarationKind)
 {
 	const SemanticSymbol* existing = m_symbolTable.Resolve(name);
@@ -558,7 +653,7 @@ void SemanticAnalyzer::DefineShortVariables(const std::vector<std::string>& name
 			continue;
 		}
 
-		m_symbolTable.Define(SemanticSymbol{ names[index], valueTypes[index], SemanticSymbolKind::VARIABLE, {}, {} });
+		m_symbolTable.Define(SemanticSymbol{ names[index], valueTypes[index], SemanticSymbolKind::VARIABLE, {}, {}, {} });
 	}
 }
 
@@ -609,7 +704,7 @@ void SemanticAnalyzer::DefineVariables(
 			continue;
 		}
 
-		m_symbolTable.Define(SemanticSymbol{ names[index], symbolType, SemanticSymbolKind::VARIABLE, {}, {} });
+		m_symbolTable.Define(SemanticSymbol{ names[index], symbolType, SemanticSymbolKind::VARIABLE, {}, {}, {} });
 	}
 }
 
@@ -834,6 +929,32 @@ void SemanticAnalyzer::Visit(const FunctionDeclarationASTNode& node)
 	}
 	m_symbolTable.EnterScope();
 	bool hasParameterError = false;
+	if (const FunctionParameter* receiver = node.GetReceiver())
+	{
+		if (receiver->isPointer)
+		{
+			AddDiagnostic("Pointer method receiver is not implemented yet: " + node.GetQualifiedName());
+			hasParameterError = true;
+		}
+		if (!receiver->type.IsNamed() || !ValidateTypeReference(receiver->type, "method receiver"))
+		{
+			AddDiagnostic("Method receiver must use declared struct type: " + node.GetName());
+			hasParameterError = true;
+		}
+		if (m_symbolTable.ResolveInCurrentScope(receiver->name))
+		{
+			AddDiagnostic("Method receiver is already declared: " + receiver->name);
+			hasParameterError = true;
+		}
+		else if (!ValidateUserDefinedName(receiver->name, "Method receiver"))
+		{
+			hasParameterError = true;
+		}
+		else
+		{
+			m_symbolTable.Define(SemanticSymbol{ receiver->name, receiver->type, SemanticSymbolKind::VARIABLE, {}, {}, {} });
+		}
+	}
 	for (const FunctionParameter& parameter : node.GetParameters())
 	{
 		if (!ValidateTypeReference(parameter.type, "function parameter"))
@@ -853,7 +974,7 @@ void SemanticAnalyzer::Visit(const FunctionDeclarationASTNode& node)
 			continue;
 		}
 
-		m_symbolTable.Define(SemanticSymbol{ parameter.name, parameter.type, SemanticSymbolKind::VARIABLE, {}, {} });
+		m_symbolTable.Define(SemanticSymbol{ parameter.name, parameter.type, SemanticSymbolKind::VARIABLE, {}, {}, {} });
 	}
 	const TypeDescriptor bodyType = AnalyzeChild(node.GetBody());
 	m_symbolTable.ExitScope();
@@ -862,7 +983,7 @@ void SemanticAnalyzer::Visit(const FunctionDeclarationASTNode& node)
 	bool hasReturnError = false;
 	if (node.GetReturnType() != Type::VOID && !AlwaysReturns(node.GetBody()))
 	{
-		AddDiagnostic("Non-void function must return a value on all execution paths: " + node.GetName());
+		AddDiagnostic("Non-void function must return a value on all execution paths: " + node.GetQualifiedName());
 		hasReturnError = true;
 	}
 
@@ -975,35 +1096,65 @@ void SemanticAnalyzer::DefineBuiltinFunctions()
 		return;
 	}
 
-	m_symbolTable.Define(SemanticSymbol{ "printf", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, false } }, {} });
-	m_symbolTable.Define(SemanticSymbol{ "print", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, false } }, {} });
-	m_symbolTable.Define(SemanticSymbol{ "println", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, false } }, {} });
-	m_symbolTable.Define(SemanticSymbol{ "len", Type::INT, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::STRING, false } }, {} });
-	m_symbolTable.Define(SemanticSymbol{ "scan", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, true } }, {} });
+	m_symbolTable.Define(SemanticSymbol{ "printf", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, false } }, {}, {} });
+	m_symbolTable.Define(SemanticSymbol{ "print", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, false } }, {}, {} });
+	m_symbolTable.Define(SemanticSymbol{ "println", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, false } }, {}, {} });
+	m_symbolTable.Define(SemanticSymbol{ "len", Type::INT, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::STRING, false } }, {}, {} });
+	m_symbolTable.Define(SemanticSymbol{ "scan", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, true } }, {}, {} });
 }
 
 bool SemanticAnalyzer::DefineFunctionSymbol(const FunctionDeclarationASTNode& node)
 {
-	const SemanticSymbol* existing = m_symbolTable.ResolveInCurrentScope(node.GetName());
+	const std::string symbolName = node.GetQualifiedName();
+	const SemanticSymbol* existing = m_symbolTable.ResolveInCurrentScope(symbolName);
 	if (existing && existing->kind == SemanticSymbolKind::BUILTIN_FUNCTION)
 	{
-		return ValidateUserDefinedName(node.GetName(), "Function");
+		return ValidateUserDefinedName(symbolName, node.IsMethod() ? "Method" : "Function");
 	}
 	if (existing)
 	{
-		AddDiagnostic("Function is already declared in current scope: " + node.GetName());
+		AddDiagnostic(std::string(node.IsMethod() ? "Method" : "Function") + " is already declared in current scope: " + symbolName);
 		return false;
 	}
-	if (!ValidateUserDefinedName(node.GetName(), "Function"))
+	if (!node.IsMethod() && !ValidateUserDefinedName(node.GetName(), "Function"))
 	{
 		return false;
 	}
+	if (const FunctionParameter* receiver = node.GetReceiver())
+	{
+		if (receiver->isPointer || !receiver->type.IsNamed())
+		{
+			AddDiagnostic("Method receiver must use declared struct type: " + node.GetName());
+			return false;
+		}
+
+		SemanticSymbol* typeSymbol = m_symbolTable.ResolveMutableInCurrentScope(receiver->type.GetName());
+		if (!typeSymbol || typeSymbol->kind != SemanticSymbolKind::TYPE)
+		{
+			AddDiagnostic("Unknown method receiver type: " + receiver->type.ToString());
+			return false;
+		}
+		for (const MethodSignature& method : typeSymbol->methods)
+		{
+			if (method.name == node.GetName())
+			{
+				AddDiagnostic("Method is already declared for type: " + symbolName);
+				return false;
+			}
+		}
+		typeSymbol->methods.push_back(MethodSignature{
+			node.GetName(),
+			symbolName,
+			node.GetReturnType(),
+			BuildParameterSignatures(node) });
+	}
 
 	m_symbolTable.Define(SemanticSymbol{
-		node.GetName(),
+		symbolName,
 		node.GetReturnType(),
 		SemanticSymbolKind::FUNCTION,
-		BuildParameterSignatures(node),
+		BuildCallableParameterSignatures(node),
+		{},
 		{} });
 	return true;
 }
@@ -1026,7 +1177,8 @@ bool SemanticAnalyzer::DefineTypeSymbol(const StructDeclarationASTNode& node)
 		TypeDescriptor::Named(node.GetName()),
 		SemanticSymbolKind::TYPE,
 		{},
-		BuildFieldSignatures(node) });
+		BuildFieldSignatures(node),
+		{} });
 	return true;
 }
 
@@ -1034,6 +1186,21 @@ std::vector<ParameterSignature> SemanticAnalyzer::BuildParameterSignatures(const
 {
 	std::vector<ParameterSignature> parameterSignatures;
 	parameterSignatures.reserve(node.GetParameters().size());
+	for (const FunctionParameter& parameter : node.GetParameters())
+	{
+		parameterSignatures.push_back(ParameterSignature{ parameter.type, parameter.isPointer });
+	}
+	return parameterSignatures;
+}
+
+std::vector<ParameterSignature> SemanticAnalyzer::BuildCallableParameterSignatures(const FunctionDeclarationASTNode& node)
+{
+	std::vector<ParameterSignature> parameterSignatures;
+	parameterSignatures.reserve(node.GetParameters().size() + (node.GetReceiver() ? 1 : 0));
+	if (const FunctionParameter* receiver = node.GetReceiver())
+	{
+		parameterSignatures.push_back(ParameterSignature{ receiver->type, receiver->isPointer });
+	}
 	for (const FunctionParameter& parameter : node.GetParameters())
 	{
 		parameterSignatures.push_back(ParameterSignature{ parameter.type, parameter.isPointer });

@@ -73,7 +73,11 @@ void AstDumper::Visit(const IndexASTNode& expr)
 
 void AstDumper::Visit(const CallExpressionASTNode& expr)
 {
-	DumpLine("CallExpressionASTNode(" + expr.GetCalleeName() + ")");
+	DumpLine(std::string(expr.IsMethodCall() ? "MethodCallExpressionASTNode(" : "CallExpressionASTNode(") + expr.GetCalleeName() + ")");
+	if (const ASTNode* receiver = expr.GetReceiver())
+	{
+		DumpChild(*receiver);
+	}
 	for (const ASTNodePtr& argument : expr.GetArguments())
 	{
 		DumpChild(*argument);
@@ -185,7 +189,14 @@ void AstDumper::Visit(const ReturnASTNode& expr)
 
 void AstDumper::Visit(const FunctionDeclarationASTNode& expr)
 {
-	DumpLine("FunctionDeclarationASTNode(" + expr.GetName() + "(" + JoinParameters(expr.GetParameters()) + "))");
+	if (const FunctionParameter* receiver = expr.GetReceiver())
+	{
+		DumpLine("FunctionDeclarationASTNode((" + FormatParameter(*receiver) + ") " + expr.GetName() + "(" + JoinParameters(expr.GetParameters()) + "))");
+	}
+	else
+	{
+		DumpLine("FunctionDeclarationASTNode(" + expr.GetName() + "(" + JoinParameters(expr.GetParameters()) + "))");
+	}
 	DumpChild(expr.GetBody());
 }
 
@@ -235,13 +246,19 @@ std::string AstDumper::JoinParameters(const std::vector<FunctionParameter>& para
 		{
 			result += ", ";
 		}
-		result += parameters[index].name + " ";
-		if (parameters[index].isPointer)
-		{
-			result += "*";
-		}
-		result += ToString(parameters[index].type);
+		result += FormatParameter(parameters[index]);
 	}
+	return result;
+}
+
+std::string AstDumper::FormatParameter(const FunctionParameter& parameter)
+{
+	std::string result = parameter.name + " ";
+	if (parameter.isPointer)
+	{
+		result += "*";
+	}
+	result += ToString(parameter.type);
 	return result;
 }
 

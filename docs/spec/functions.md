@@ -7,6 +7,7 @@
 - [Возвращаемый тип](#возвращаемый-тип)
 - [Return](#return)
 - [Entry point](#entry-point)
+- [Методы](#методы)
 - [Вызовы](#вызовы)
 - [Связь с тестами](#связь-с-тестами)
 
@@ -154,6 +155,33 @@ func main() int {
     return 0;
 }
 ```
+
+## Методы
+
+Метод объявляется как функция с receiver перед именем:
+
+```cetus
+type Point struct {
+    x int;
+    y int;
+}
+
+func (p Point) Sum() int {
+    return p.x + p.y;
+}
+```
+
+Receiver доступен внутри тела метода как локальная переменная.
+
+Метод вызывается через dot syntax:
+
+```cetus
+p.Sum()
+```
+
+Semantic analyzer хранит методы в таблице методов соответствующего типа. Codegen генерирует метод как обычную функцию с qualified name, например `Point.Sum`, а method call передаёт receiver первым аргументом.
+
+Pointer/ref receiver пока не реализован. Для мутации receiver нужна отдельная фаза.
 
 ## Вызовы
 

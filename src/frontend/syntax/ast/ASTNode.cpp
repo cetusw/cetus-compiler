@@ -193,7 +193,15 @@ void IndexASTNode::Accept(ASTNodeVisitor& visitor) const
 }
 
 CallExpressionASTNode::CallExpressionASTNode(std::string calleeName, std::vector<ASTNodePtr> arguments)
-	: m_calleeName(std::move(calleeName))
+	: m_receiver(nullptr)
+	, m_calleeName(std::move(calleeName))
+	, m_arguments(std::move(arguments))
+{
+}
+
+CallExpressionASTNode::CallExpressionASTNode(ASTNodePtr receiver, std::string calleeName, std::vector<ASTNodePtr> arguments)
+	: m_receiver(std::move(receiver))
+	, m_calleeName(std::move(calleeName))
 	, m_arguments(std::move(arguments))
 {
 }
@@ -201,6 +209,16 @@ CallExpressionASTNode::CallExpressionASTNode(std::string calleeName, std::vector
 const std::string& CallExpressionASTNode::GetCalleeName() const
 {
 	return m_calleeName;
+}
+
+bool CallExpressionASTNode::IsMethodCall() const
+{
+	return m_receiver != nullptr;
+}
+
+const ASTNode* CallExpressionASTNode::GetReceiver() const
+{
+	return m_receiver.get();
 }
 
 const std::vector<ASTNodePtr>& CallExpressionASTNode::GetArguments() const
@@ -440,7 +458,22 @@ FunctionDeclarationASTNode::FunctionDeclarationASTNode(
 	std::vector<FunctionParameter> parameters,
 	const std::optional<TypeDescriptor>& returnType,
 	ASTNodePtr body)
-	: m_name(std::move(name))
+	: m_receiver(std::nullopt)
+	, m_name(std::move(name))
+	, m_parameters(std::move(parameters))
+	, m_returnType(returnType)
+	, m_body(std::move(body))
+{
+}
+
+FunctionDeclarationASTNode::FunctionDeclarationASTNode(
+	FunctionParameter receiver,
+	std::string name,
+	std::vector<FunctionParameter> parameters,
+	const std::optional<TypeDescriptor>& returnType,
+	ASTNodePtr body)
+	: m_receiver(std::move(receiver))
+	, m_name(std::move(name))
 	, m_parameters(std::move(parameters))
 	, m_returnType(returnType)
 	, m_body(std::move(body))
@@ -450,6 +483,26 @@ FunctionDeclarationASTNode::FunctionDeclarationASTNode(
 const std::string& FunctionDeclarationASTNode::GetName() const
 {
 	return m_name;
+}
+
+std::string FunctionDeclarationASTNode::GetQualifiedName() const
+{
+	if (!m_receiver.has_value())
+	{
+		return m_name;
+	}
+
+	return m_receiver->type.ToString() + "." + m_name;
+}
+
+bool FunctionDeclarationASTNode::IsMethod() const
+{
+	return m_receiver.has_value();
+}
+
+const FunctionParameter* FunctionDeclarationASTNode::GetReceiver() const
+{
+	return m_receiver ? &*m_receiver : nullptr;
 }
 
 const std::vector<FunctionParameter>& FunctionDeclarationASTNode::GetParameters() const

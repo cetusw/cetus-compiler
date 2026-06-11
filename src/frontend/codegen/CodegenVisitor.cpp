@@ -222,6 +222,38 @@ void CodegenVisitor::Visit(const CallExpressionASTNode& expr)
 		return;
 	}
 
+	if (expr.IsMethodCall())
+	{
+		const ASTNode* receiver = expr.GetReceiver();
+		if (!receiver || !receiver->GetInferredType().has_value())
+		{
+			Fail("Method call receiver type is missing during code generation.");
+			return;
+		}
+
+		const std::string targetName = receiver->GetInferredType()->ToString() + "." + expr.GetCalleeName();
+		CurrentEmitter().EmitGlobalLoad(targetName);
+		receiver->Accept(*this);
+		if (m_error.has_value())
+		{
+			return;
+		}
+
+		const std::vector<ASTNodePtr>& arguments = expr.GetArguments();
+		for (const ASTNodePtr& argument : arguments)
+		{
+			argument->Accept(*this);
+			if (m_error.has_value())
+			{
+				return;
+			}
+		}
+
+		CurrentEmitter().EmitOpcode(OP_CALL);
+		CurrentEmitter().EmitOperandByte(static_cast<int>(arguments.size() + 1));
+		return;
+	}
+
 	const std::string& calleeName = expr.GetCalleeName();
 	const std::string targetName = ResolveBuiltinRuntimeName(calleeName);
 	CurrentEmitter().EmitGlobalLoad(targetName);
@@ -579,11 +611,16 @@ void CodegenVisitor::Visit(const FunctionDeclarationASTNode& expr)
 	}
 
 	auto function = std::make_shared<ObjFunction>();
-	function->name = std::make_shared<ObjString>(expr.GetName());
-	function->arity = static_cast<int>(expr.GetParameters().size());
+	function->name = std::make_shared<ObjString>(expr.GetQualifiedName());
+	function->arity = static_cast<int>(expr.GetParameters().size() + (expr.GetReceiver() ? 1 : 0));
 
 	m_functionStack.emplace_back(function, m_error);
 	int parameterSlot = 1;
+	if (const FunctionParameter* receiver = expr.GetReceiver())
+	{
+		m_functionStack.back().RegisterParameter(receiver->name, parameterSlot);
+		++parameterSlot;
+	}
 	for (const FunctionParameter& parameter : expr.GetParameters())
 	{
 		m_functionStack.back().RegisterParameter(parameter.name, parameterSlot);

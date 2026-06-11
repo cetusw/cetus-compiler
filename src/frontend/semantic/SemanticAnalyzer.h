@@ -63,14 +63,17 @@ private:
 	void DefineBuiltinFunctions();
 	void TypeCheckBuiltinCall(const CallExpressionASTNode& node, const std::vector<TypeDescriptor>& argumentTypes);
 	void TypeCheckFunctionCall(const CallExpressionASTNode& node, const SemanticSymbol& symbol, const std::vector<TypeDescriptor>& argumentTypes);
+	void TypeCheckMethodCall(const CallExpressionASTNode& node, const TypeDescriptor& receiverType, const MethodSignature& method, const std::vector<TypeDescriptor>& argumentTypes);
 	[[nodiscard]] bool ValidateValueExpression(const TypeDescriptor& type, const char* context);
 	[[nodiscard]] bool ValidateTypeReference(const TypeDescriptor& type, const char* context);
 	[[nodiscard]] bool ValidateStructFields(const StructDeclarationASTNode& node);
 	[[nodiscard]] const FieldSignature* ResolveField(const TypeDescriptor& objectType, const std::string& fieldName) const;
+	[[nodiscard]] const MethodSignature* ResolveMethod(const TypeDescriptor& objectType, const std::string& methodName) const;
 	[[nodiscard]] bool ValidateUserDefinedName(const std::string& name, const char* declarationKind);
 	[[nodiscard]] bool DefineFunctionSymbol(const FunctionDeclarationASTNode& node);
 	[[nodiscard]] bool DefineTypeSymbol(const StructDeclarationASTNode& node);
 	[[nodiscard]] static std::vector<ParameterSignature> BuildParameterSignatures(const FunctionDeclarationASTNode& node);
+	[[nodiscard]] static std::vector<ParameterSignature> BuildCallableParameterSignatures(const FunctionDeclarationASTNode& node);
 	[[nodiscard]] static std::vector<FieldSignature> BuildFieldSignatures(const StructDeclarationASTNode& node);
 	[[nodiscard]] static bool AlwaysReturns(const ASTNode& node);
 	[[nodiscard]] static bool StatementListAlwaysReturns(const StatementListASTNode& node);

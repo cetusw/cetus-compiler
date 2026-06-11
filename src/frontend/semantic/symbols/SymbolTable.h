@@ -19,6 +19,7 @@ public:
 	void ExitScope();
 	[[nodiscard]] const SemanticSymbol* Resolve(const std::string& name) const;
 	[[nodiscard]] const SemanticSymbol* ResolveInCurrentScope(const std::string& name) const;
+	[[nodiscard]] SemanticSymbol* ResolveMutableInCurrentScope(const std::string& name);
 	[[nodiscard]] const Bindings& GetBindings() const;
 
 private:

@@ -46,6 +46,8 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildSingleParameterList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildCallNoArgs(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildCall(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildMethodCallNoArgs(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildMethodCall(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildMemberAccess(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildIndexAccess(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildAssignableList(std::vector<AstSemanticValue> values);
@@ -78,6 +80,10 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildReturnFunctionNoParams(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildVoidFunction(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildReturnFunction(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildVoidMethodNoParams(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildReturnMethodNoParams(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildVoidMethod(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildReturnMethod(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue PassNode(std::vector<AstSemanticValue> values, std::size_t index);
 	[[nodiscard]] static AstSemanticValue PassToken(std::vector<AstSemanticValue> values, std::size_t index);
 	[[nodiscard]] static ASTNodePtr TakeNode(std::vector<AstSemanticValue>& values, std::size_t index);

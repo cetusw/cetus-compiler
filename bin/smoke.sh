@@ -134,6 +134,7 @@ run_positive_output "${ROOT_DIR}/tests/smoke/positive/ref_parameter.cetus" "2"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/runtime_numbers.cetus" $'1\n1.5\n1\n3\n3.5'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_literal.cetus" "hello"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_operations.cetus" $'abc\ntrue\ntrue\n3'
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/method_basic.cetus" "5"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/struct_basic.cetus" "1"
 run_positive_output_stdin "${ROOT_DIR}/tests/smoke/positive/scan_input.cetus" $'cetus\n42\n2.5\ntrue\n' $'cetus\n42\n2.5\ntrue'
 run_typecheck_positive "${ROOT_DIR}/tests/smoke/typecheck/array_type.cetus"
@@ -144,5 +145,7 @@ run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/array_assignment_type.
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/struct_duplicate_field.cetus" "Struct field is already declared"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/struct_unknown_type.cetus" "Unknown type in variable declaration"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/struct_unknown_field.cetus" "Struct field is not declared"
+run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/method_unknown.cetus" "Method is not declared"
+run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/method_duplicate.cetus" "Method is already declared"
 
 echo "[smoke] ok"

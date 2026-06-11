@@ -41,6 +41,10 @@
 ~FunctionDecl~ -> FUNC IDENTIFIER LPAREN RPAREN ~Type~ ~Block~ @function_return_no_params
 ~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~Block~ @function_void
 ~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~Type~ ~Block~ @function_return
+~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN RPAREN ~Block~ @method_void_no_params
+~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN RPAREN ~Type~ ~Block~ @method_return_no_params
+~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN ~ParamList~ RPAREN ~Block~ @method_void
+~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN ~ParamList~ RPAREN ~Type~ ~Block~ @method_return
 
 ~StmtList~ -> ~StmtList~ ~Stmt~ @statement_list
 ~StmtList~ -> ~Stmt~ @statement_list_single
@@ -107,6 +111,8 @@
 ~Exp2~ -> LPAREN ~Con~ RPAREN @group
 ~Exp2~ -> IDENTIFIER LPAREN RPAREN @call_no_args
 ~Exp2~ -> IDENTIFIER LPAREN ~ExpressionList~ RPAREN @call
+~Exp2~ -> ~LargId~ DOT IDENTIFIER LPAREN RPAREN @method_call_no_args
+~Exp2~ -> ~LargId~ DOT IDENTIFIER LPAREN ~ExpressionList~ RPAREN @method_call
 ~Exp2~ -> MINUS ~Exp2~ @unary
 ~Exp2~ -> BIT_AND ~LargId~ @address_of
 ~Exp2~ -> ~LargId~ @pass_expr
