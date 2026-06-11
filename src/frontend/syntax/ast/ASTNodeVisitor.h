@@ -13,6 +13,7 @@ class IndexASTNode;
 class CallExpressionASTNode;
 class AssignmentASTNode;
 class IncrementASTNode;
+class DecrementASTNode;
 class ShortVariableDeclarationASTNode;
 class VariableDeclarationASTNode;
 class ExpressionStatementASTNode;
@@ -45,6 +46,7 @@ public:
 	virtual void Visit(const CallExpressionASTNode& expr) = 0;
 	virtual void Visit(const AssignmentASTNode& expr) = 0;
 	virtual void Visit(const IncrementASTNode& expr) = 0;
+	virtual void Visit(const DecrementASTNode& expr) = 0;
 	virtual void Visit(const ShortVariableDeclarationASTNode& expr) = 0;
 	virtual void Visit(const VariableDeclarationASTNode& expr) = 0;
 	virtual void Visit(const ExpressionStatementASTNode& expr) = 0;

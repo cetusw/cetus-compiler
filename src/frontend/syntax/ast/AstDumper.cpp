@@ -103,6 +103,12 @@ void AstDumper::Visit(const IncrementASTNode& expr)
 	DumpChild(expr.GetTarget());
 }
 
+void AstDumper::Visit(const DecrementASTNode& expr)
+{
+	DumpLine("DecrementASTNode");
+	DumpChild(expr.GetTarget());
+}
+
 void AstDumper::Visit(const ShortVariableDeclarationASTNode& expr)
 {
 	DumpLine("ShortVariableDeclarationASTNode(" + JoinNames(expr.GetNames()) + ")");

@@ -267,6 +267,21 @@ void IncrementASTNode::Accept(ASTNodeVisitor& visitor) const
 	visitor.Visit(*this);
 }
 
+DecrementASTNode::DecrementASTNode(ASTNodePtr target)
+	: m_target(std::move(target))
+{
+}
+
+const ASTNode& DecrementASTNode::GetTarget() const
+{
+	return *m_target;
+}
+
+void DecrementASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}
+
 ShortVariableDeclarationASTNode::ShortVariableDeclarationASTNode(std::vector<std::string> names, std::vector<ASTNodePtr> values)
 	: m_names(std::move(names))
 	, m_values(std::move(values))

@@ -240,6 +240,18 @@ private:
 	ASTNodePtr m_target;
 };
 
+class DecrementASTNode final : public StatementASTNode
+{
+public:
+	explicit DecrementASTNode(ASTNodePtr target);
+
+	[[nodiscard]] const ASTNode& GetTarget() const;
+	void Accept(ASTNodeVisitor& visitor) const override;
+
+private:
+	ASTNodePtr m_target;
+};
+
 class ShortVariableDeclarationASTNode final : public StatementASTNode
 {
 public:

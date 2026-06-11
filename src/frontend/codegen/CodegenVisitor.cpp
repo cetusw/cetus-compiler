@@ -357,6 +357,28 @@ void CodegenVisitor::Visit(const IncrementASTNode& expr)
 	CurrentEmitter().EmitOpcode(OP_POP);
 }
 
+void CodegenVisitor::Visit(const DecrementASTNode& expr)
+{
+	if (!EnsureTyped(expr))
+	{
+		return;
+	}
+
+	expr.GetTarget().Accept(*this);
+	if (m_error.has_value())
+	{
+		return;
+	}
+	CurrentEmitter().EmitConstant(Value(static_cast<RuntimeInt>(1)));
+	CurrentEmitter().EmitOpcode(OP_SUBTRACT);
+	EmitAssignmentTarget(expr.GetTarget());
+	if (m_error.has_value())
+	{
+		return;
+	}
+	CurrentEmitter().EmitOpcode(OP_POP);
+}
+
 void CodegenVisitor::Visit(const ShortVariableDeclarationASTNode& expr)
 {
 	if (!EnsureTyped(expr))

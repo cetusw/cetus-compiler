@@ -580,6 +580,24 @@ void SemanticAnalyzer::Visit(const IncrementASTNode& node)
 	SetCurrentType(node, Type::VOID);
 }
 
+void SemanticAnalyzer::Visit(const DecrementASTNode& node)
+{
+	const TypeDescriptor targetType = AnalyzeAssignmentTarget(node.GetTarget());
+	if (targetType == Type::ERROR)
+	{
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+	if (targetType != Type::INT)
+	{
+		AddDiagnostic("Decrement target must have int type.");
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+
+	SetCurrentType(node, Type::VOID);
+}
+
 void SemanticAnalyzer::Visit(const ShortVariableDeclarationASTNode& node)
 {
 	const std::size_t diagnosticCount = m_diagnostics.size();

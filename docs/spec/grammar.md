@@ -65,6 +65,7 @@
 ~SimpleStmt~ -> VAR ~IdentifierList~ ~Type~ EQUAL ~ExpressionList~ @var_typed_initialized_declaration
 ~SimpleStmt~ -> ~AssignableList~ EQUAL ~ExpressionList~ @assignment
 ~SimpleStmt~ -> ~LargId~ PLUS_PLUS @increment
+~SimpleStmt~ -> ~LargId~ MINUS_MINUS @decrement
 ~SimpleStmt~ -> ~Con~ @expression_statement
 
 ~Block~ -> LBRACE ~StmtList~ RBRACE @block

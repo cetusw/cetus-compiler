@@ -37,6 +37,7 @@ AST-узлы:
 - `BinaryASTNode`;
 - `AssignmentASTNode`;
 - `IncrementASTNode`;
+- `DecrementASTNode`;
 - `ShortVariableDeclarationASTNode`;
 - `VariableDeclarationASTNode`;
 - `ExpressionStatementASTNode`;
@@ -73,6 +74,7 @@ AST-узлы:
 | `@binary` | `BinaryASTNode` |
 | `@assignment` | `AssignmentASTNode` |
 | `@increment` | `IncrementASTNode` |
+| `@decrement` | `DecrementASTNode` |
 | `@short_var_declaration` | `ShortVariableDeclarationASTNode` |
 | `@var_inferred_declaration` | `VariableDeclarationASTNode` |
 | `@var_typed_declaration` | `VariableDeclarationASTNode` |
