@@ -56,6 +56,10 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildMemberAccess(std::move(values));
 	case SemanticTag::INDEX_ACCESS:
 		return BuildIndexAccess(std::move(values));
+	case SemanticTag::ASSIGNABLE_LIST:
+		return BuildAssignableList(std::move(values));
+	case SemanticTag::ASSIGNABLE_LIST_SINGLE:
+		return BuildSingleAssignableList(std::move(values));
 	case SemanticTag::ASSIGNMENT:
 		return BuildAssignment(std::move(values));
 	case SemanticTag::SHORT_VAR_DECLARATION:
@@ -308,12 +312,28 @@ AstSemanticValue AstReductionBuilder::BuildIndexAccess(std::vector<AstSemanticVa
 	return { std::make_unique<IndexASTNode>(TakeNode(values, 0), TakeNode(values, 2)), std::nullopt };
 }
 
+AstSemanticValue AstReductionBuilder::BuildAssignableList(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 3, "Assignable list reduction");
+	std::vector<ASTNodePtr> targets = TakeExpressionList(values, 0);
+	targets.push_back(TakeNode(values, 2));
+	return { nullptr, std::nullopt, {}, std::move(targets) };
+}
+
+AstSemanticValue AstReductionBuilder::BuildSingleAssignableList(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 1, "Single assignable list reduction");
+	std::vector<ASTNodePtr> targets;
+	targets.push_back(TakeNode(values, 0));
+	return { nullptr, std::nullopt, {}, std::move(targets) };
+}
+
 AstSemanticValue AstReductionBuilder::BuildAssignment(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "Assignment reduction");
 	return {
 		std::make_unique<AssignmentASTNode>(
-			TakeIdentifierList(values, 0),
+			TakeExpressionList(values, 0),
 			TakeExpressionList(values, 2)),
 		std::nullopt
 	};
@@ -324,7 +344,7 @@ AstSemanticValue AstReductionBuilder::BuildShortVariableDeclaration(std::vector<
 	RequireValueCount(values, 3, "Short variable declaration reduction");
 	return {
 		std::make_unique<ShortVariableDeclarationASTNode>(
-			TakeIdentifierList(values, 0),
+			TakeIdentifierNamesFromTargets(values, 0),
 			TakeExpressionList(values, 2)),
 		std::nullopt
 	};
@@ -609,6 +629,25 @@ std::vector<std::string> AstReductionBuilder::TakeIdentifierList(
 	}
 
 	return std::move(values[index].identifiers);
+}
+
+std::vector<std::string> AstReductionBuilder::TakeIdentifierNamesFromTargets(
+	std::vector<AstSemanticValue>& values,
+	const std::size_t index)
+{
+	std::vector<ASTNodePtr> targets = TakeExpressionList(values, index);
+	std::vector<std::string> names;
+	names.reserve(targets.size());
+	for (const ASTNodePtr& target : targets)
+	{
+		const auto* identifier = dynamic_cast<const IdentifierASTNode*>(target.get());
+		if (!identifier)
+		{
+			throw std::runtime_error("Short variable declaration target must be identifier.");
+		}
+		names.push_back(identifier->GetName());
+	}
+	return names;
 }
 
 std::vector<FunctionParameter> AstReductionBuilder::TakeParameterList(

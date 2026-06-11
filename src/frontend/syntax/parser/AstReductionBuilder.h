@@ -47,6 +47,8 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildCall(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildMemberAccess(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildIndexAccess(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildAssignableList(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildSingleAssignableList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildAssignment(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildShortVariableDeclaration(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildVarInferredDeclaration(std::vector<AstSemanticValue> values);
@@ -76,6 +78,7 @@ private:
 	[[nodiscard]] static ASTNodePtr TakeNode(std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static std::vector<ASTNodePtr> TakeExpressionList(std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static std::vector<std::string> TakeIdentifierList(std::vector<AstSemanticValue>& values, std::size_t index);
+	[[nodiscard]] static std::vector<std::string> TakeIdentifierNamesFromTargets(std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static std::vector<FunctionParameter> TakeParameterList(std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static TypeDescriptor TakeType(const std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static Token TakeToken(const std::vector<AstSemanticValue>& values, std::size_t index);

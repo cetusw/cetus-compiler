@@ -82,7 +82,11 @@ void AstDumper::Visit(const CallExpressionASTNode& expr)
 
 void AstDumper::Visit(const AssignmentASTNode& expr)
 {
-	DumpLine("AssignmentASTNode(" + JoinNames(expr.GetNames()) + ")");
+	DumpLine("AssignmentASTNode");
+	for (const ASTNodePtr& target : expr.GetTargets())
+	{
+		DumpChild(*target);
+	}
 	for (const ASTNodePtr& value : expr.GetValues())
 	{
 		DumpChild(*value);

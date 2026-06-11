@@ -109,6 +109,8 @@ int DisassembleInstruction(const Chunk& chunk, const int offset)
 		return ByteInstruction("OP_ARRAY", chunk, offset);
 	case OP_GET_INDEX:
 		return SimpleInstruction("OP_GET_INDEX", offset);
+	case OP_SET_INDEX:
+		return SimpleInstruction("OP_SET_INDEX", offset);
 	case OP_DEFINE_GLOBAL:
 		return ConstantInstruction("OP_DEFINE_GLOBAL", chunk, offset);
 	case OP_GET_GLOBAL:

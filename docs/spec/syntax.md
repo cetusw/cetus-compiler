@@ -74,12 +74,15 @@ func main() {
 ```
 
 ```text
-~SimpleStmt~ -> ~IdentifierList~ COLON_EQUAL ~ExpressionList~ @short_var_declaration
+~SimpleStmt~ -> ~AssignableList~ COLON_EQUAL ~ExpressionList~ @short_var_declaration
 ~SimpleStmt~ -> VAR ~IdentifierList~ EQUAL ~ExpressionList~ @var_inferred_declaration
 ~SimpleStmt~ -> VAR ~IdentifierList~ ~Type~ @var_typed_declaration
 ~SimpleStmt~ -> VAR ~IdentifierList~ ~Type~ EQUAL ~ExpressionList~ @var_typed_initialized_declaration
-~SimpleStmt~ -> ~IdentifierList~ EQUAL ~ExpressionList~ @assignment
+~SimpleStmt~ -> ~AssignableList~ EQUAL ~ExpressionList~ @assignment
 ~SimpleStmt~ -> ~Con~ @expression_statement
+
+~AssignableList~ -> ~AssignableList~ COMMA ~LargId~ @assignable_list
+~AssignableList~ -> ~LargId~ @assignable_list_single
 ```
 
 Параметры функции:

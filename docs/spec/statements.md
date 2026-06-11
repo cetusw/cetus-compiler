@@ -83,7 +83,7 @@ numbers[1] = 42;
 
 Для `array[index] = value` тип `value` должен быть совместим с типом элемента массива. Индекс должен иметь тип `int`.
 
-Assignment by index является целевым синтаксисом фазы 6. Текущая live grammar assignment пока принимает только plain identifiers.
+Assignment by index поддерживается для массивов.
 
 Присваивание является оператором и имеет тип `void`.
 

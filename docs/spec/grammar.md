@@ -47,11 +47,11 @@
 ~Stmt~ -> BREAK SEMICOLON @break
 ~Stmt~ -> CONTINUE SEMICOLON @continue
 
-~SimpleStmt~ -> ~IdentifierList~ COLON_EQUAL ~ExpressionList~ @short_var_declaration
+~SimpleStmt~ -> ~AssignableList~ COLON_EQUAL ~ExpressionList~ @short_var_declaration
 ~SimpleStmt~ -> VAR ~IdentifierList~ EQUAL ~ExpressionList~ @var_inferred_declaration
 ~SimpleStmt~ -> VAR ~IdentifierList~ ~Type~ @var_typed_declaration
 ~SimpleStmt~ -> VAR ~IdentifierList~ ~Type~ EQUAL ~ExpressionList~ @var_typed_initialized_declaration
-~SimpleStmt~ -> ~IdentifierList~ EQUAL ~ExpressionList~ @assignment
+~SimpleStmt~ -> ~AssignableList~ EQUAL ~ExpressionList~ @assignment
 ~SimpleStmt~ -> ~Con~ @expression_statement
 
 ~Block~ -> LBRACE ~StmtList~ RBRACE @block
@@ -62,6 +62,9 @@
 
 ~ExpressionList~ -> ~ExpressionList~ COMMA ~Con~ @expression_list
 ~ExpressionList~ -> ~Con~ @expression_list_single
+
+~AssignableList~ -> ~AssignableList~ COMMA ~LargId~ @assignable_list
+~AssignableList~ -> ~LargId~ @assignable_list_single
 
 ~Type~ -> IDENTIFIER @type_name
 ~Type~ -> LBRACKET INT_LIT RBRACKET ~Type~ @array_type
@@ -138,23 +141,23 @@ Live grammar сейчас поддерживает только index access:
 ~Type~ -> LBRACKET INT_LIT RBRACKET ~Type~ @array_type
 ```
 
-Для полной поддержки массивов grammar ещё должна быть расширена array literal и assignable targets:
+Live grammar поддерживает assignable targets для assignment:
 
 ```text
-~ArrayLiteral~ -> ~Type~ LBRACE ~ExpressionList~ RBRACE @array_literal
-~Exp2~ -> ~ArrayLiteral~ @pass_expr
-
-~Assignable~ -> IDENTIFIER @identifier
-~Assignable~ -> ~Assignable~ DOT IDENTIFIER @member_access
-~Assignable~ -> ~Assignable~ LBRACKET ~Exp~ RBRACKET @index_access
-
-~AssignableList~ -> ~AssignableList~ COMMA ~Assignable~ @assignable_list
-~AssignableList~ -> ~Assignable~ @assignable_list_single
+~AssignableList~ -> ~AssignableList~ COMMA ~LargId~ @assignable_list
+~AssignableList~ -> ~LargId~ @assignable_list_single
 
 ~SimpleStmt~ -> ~AssignableList~ EQUAL ~ExpressionList~ @assignment
 ```
 
-`~Type~` используется в return type функции, typed variable declaration и параметрах функции. Assignment пока принимает только plain identifiers; assignment by index будет добавлен через assignable expressions.
+Для полной поддержки массивов grammar ещё должна быть расширена array literal:
+
+```text
+~ArrayLiteral~ -> ~Type~ LBRACE ~ExpressionList~ RBRACE @array_literal
+~Exp2~ -> ~ArrayLiteral~ @pass_expr
+```
+
+`~Type~` используется в return type функции, typed variable declaration и параметрах функции. Assignment принимает plain identifiers и index access targets.
 
 `docs/cetus_grammar.txt` остаётся источником текущей parser table.
 

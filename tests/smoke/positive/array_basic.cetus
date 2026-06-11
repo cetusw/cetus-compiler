@@ -5,7 +5,10 @@ func first(row [3]int) int {
 func main() {
     var values [3]int;
     var matrix [2][3]int;
+    values[1] = 7;
+    matrix[0][1] = 5;
     println(values[0]);
+    println(values[1]);
     println(len(values));
     println(matrix[0][1]);
     println(first(values));

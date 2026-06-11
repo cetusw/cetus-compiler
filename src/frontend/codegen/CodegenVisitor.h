@@ -5,7 +5,6 @@
 #include "CodegenResult.h"
 #include "FunctionContext.h"
 #include "ProgramContext.h"
-#include "src/backend/vm/types/OpCode.h"
 #include "src/frontend/syntax/ast/ASTNode.h"
 #include <vector>
 
@@ -48,6 +47,7 @@ private:
 	void Fail(std::string message);
 	void EmitDefault(const TypeDescriptor& type);
 	void EmitScalarDefault(Type type);
+	void EmitAssignmentTarget(const ASTNode& target);
 	void EmitBinaryOperation(BinaryOperator op);
 	void EmitLogicalAnd(const BinaryASTNode& expr);
 	void EmitLogicalOr(const BinaryASTNode& expr);

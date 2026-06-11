@@ -98,6 +98,7 @@ add_library(cetus_backend_vm STATIC
         src/backend/vm/instructions/RefLocalInstruction.cpp
         src/backend/vm/instructions/ReturnInstruction.cpp
         src/backend/vm/instructions/SetGlobalInstruction.cpp
+        src/backend/vm/instructions/SetIndexInstruction.cpp
         src/backend/vm/instructions/SetLocalInstruction.cpp
         src/backend/vm/objects/ObjFunction.cpp
         src/backend/vm/objects/ObjNative.cpp

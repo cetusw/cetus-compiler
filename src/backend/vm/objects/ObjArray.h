@@ -11,6 +11,7 @@ public:
 
 	[[nodiscard]] int Length() const;
 	[[nodiscard]] const Value& Get(int index) const;
+	void Set(int index, const Value& value);
 
 private:
 	std::vector<Value> m_elements;

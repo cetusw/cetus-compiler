@@ -207,14 +207,14 @@ private:
 class AssignmentASTNode final : public StatementASTNode
 {
 public:
-	AssignmentASTNode(std::vector<std::string> names, std::vector<ASTNodePtr> values);
+	AssignmentASTNode(std::vector<ASTNodePtr> targets, std::vector<ASTNodePtr> values);
 
-	[[nodiscard]] const std::vector<std::string>& GetNames() const;
+	[[nodiscard]] const std::vector<ASTNodePtr>& GetTargets() const;
 	[[nodiscard]] const std::vector<ASTNodePtr>& GetValues() const;
 	void Accept(ASTNodeVisitor& visitor) const override;
 
 private:
-	std::vector<std::string> m_names;
+	std::vector<ASTNodePtr> m_targets;
 	std::vector<ASTNodePtr> m_values;
 };
 

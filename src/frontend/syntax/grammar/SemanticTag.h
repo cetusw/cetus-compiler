@@ -32,6 +32,8 @@ enum class SemanticTag
 	CALL,
 	MEMBER_ACCESS,
 	INDEX_ACCESS,
+	ASSIGNABLE_LIST,
+	ASSIGNABLE_LIST_SINGLE,
 	ASSIGNMENT,
 	SHORT_VAR_DECLARATION,
 	VAR_INFERRED_DECLARATION,
@@ -86,6 +88,8 @@ enum class SemanticTag
 	if (value == "call") return SemanticTag::CALL;
 	if (value == "member_access") return SemanticTag::MEMBER_ACCESS;
 	if (value == "index_access") return SemanticTag::INDEX_ACCESS;
+	if (value == "assignable_list") return SemanticTag::ASSIGNABLE_LIST;
+	if (value == "assignable_list_single") return SemanticTag::ASSIGNABLE_LIST_SINGLE;
 	if (value == "assignment") return SemanticTag::ASSIGNMENT;
 	if (value == "short_var_declaration") return SemanticTag::SHORT_VAR_DECLARATION;
 	if (value == "var_inferred_declaration") return SemanticTag::VAR_INFERRED_DECLARATION;

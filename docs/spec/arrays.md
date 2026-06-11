@@ -24,7 +24,9 @@
 
 Array type и semantic analysis для индексного чтения добавлены в фазе 6.2. Runtime `ObjArray`, default array creation, index reading, bounds check и `len(array)` добавлены в фазе 6.3.
 
-Array literal и assignment by index будут добавлены следующими задачами фазы 6. До их реализации соответствующие примеры ниже являются спецификацией поведения, а не гарантией текущего выполнения.
+Assignment by index и multidimensional index chains добавлены в фазе 6.4.
+
+Array literal будет добавлен следующими задачами фазы 6. До его реализации соответствующие примеры ниже являются спецификацией поведения, а не гарантией текущего выполнения.
 
 ## Тип массива
 
@@ -120,7 +122,7 @@ func main() {
 
 ## Присваивание по индексу
 
-Index expression является целевым lvalue-синтаксисом:
+Index expression может быть lvalue:
 
 ```cetus
 func main() {
@@ -134,7 +136,7 @@ func main() {
 
 Присваивание по индексу не меняет длину массива.
 
-На текущем runtime-этапе чтение `array[index]` реализовано, но запись `array[index] = value` ещё не реализована.
+На текущем runtime-этапе чтение `array[index]` и запись `array[index] = value` реализованы.
 
 ## Многомерные массивы
 
@@ -208,23 +210,23 @@ Live grammar поддерживает array type:
 ~Type~ -> LBRACKET INT_LIT RBRACKET ~Type~ @array_type
 ```
 
+Live grammar поддерживает assignable targets для assignment:
+
+```text
+~AssignableList~ -> ~AssignableList~ COMMA ~LargId~ @assignable_list
+~AssignableList~ -> ~LargId~ @assignable_list_single
+
+~SimpleStmt~ -> ~AssignableList~ EQUAL ~ExpressionList~ @assignment
+```
+
 Для полного синтаксиса массивов grammar должна быть расширена отдельной реализационной фазой. Целевая форма оставшихся правил:
 
 ```text
 ~ArrayLiteral~ -> ~Type~ LBRACE ~ExpressionList~ RBRACE @array_literal
 ~Exp2~ -> ~ArrayLiteral~ @pass_expr
-
-~Assignable~ -> IDENTIFIER @identifier
-~Assignable~ -> ~Assignable~ DOT IDENTIFIER @member_access
-~Assignable~ -> ~Assignable~ LBRACKET ~Exp~ RBRACKET @index_access
-
-~AssignableList~ -> ~AssignableList~ COMMA ~Assignable~ @assignable_list
-~AssignableList~ -> ~Assignable~ @assignable_list_single
-
-~SimpleStmt~ -> ~AssignableList~ EQUAL ~ExpressionList~ @assignment
 ```
 
 После добавления этих правил:
 
 - array literal сможет создавать значения массивов;
-- assignment должен принимать assignable expressions, а не только plain identifiers.
+- typed initialized declarations смогут принимать array literal.

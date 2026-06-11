@@ -249,7 +249,7 @@ void CodegenVisitor::Visit(const AssignmentASTNode& expr)
 		return;
 	}
 
-	const std::vector<std::string>& names = expr.GetNames();
+	const std::vector<ASTNodePtr>& targets = expr.GetTargets();
 	const std::vector<ASTNodePtr>& values = expr.GetValues();
 
 	for (const ASTNodePtr& value : values)
@@ -261,16 +261,12 @@ void CodegenVisitor::Visit(const AssignmentASTNode& expr)
 		}
 	}
 
-	for (std::size_t i = names.size(); i > 0; --i)
+	for (std::size_t i = targets.size(); i > 0; --i)
 	{
-		const std::string& name = names[i - 1];
-		if (const std::optional<int> localSlot = m_functionStack.back().ResolveLocal(name))
+		EmitAssignmentTarget(*targets[i - 1]);
+		if (m_error.has_value())
 		{
-			CurrentEmitter().EmitLocalSet(*localSlot);
-		}
-		else
-		{
-			CurrentEmitter().EmitGlobalSet(name);
+			return;
 		}
 		CurrentEmitter().EmitOpcode(OP_POP);
 	}
@@ -718,6 +714,41 @@ void CodegenVisitor::EmitScopeCleanup(const int scopeDepth)
 	{
 		CurrentEmitter().EmitOpcode(OP_POP);
 	}
+}
+
+void CodegenVisitor::EmitAssignmentTarget(const ASTNode& target)
+{
+	if (const auto* identifier = dynamic_cast<const IdentifierASTNode*>(&target))
+	{
+		const std::string& name = identifier->GetName();
+		if (const std::optional<int> localSlot = m_functionStack.back().ResolveLocal(name))
+		{
+			CurrentEmitter().EmitLocalSet(*localSlot);
+		}
+		else
+		{
+			CurrentEmitter().EmitGlobalSet(name);
+		}
+		return;
+	}
+
+	if (const auto* index = dynamic_cast<const IndexASTNode*>(&target))
+	{
+		index->GetObject().Accept(*this);
+		if (m_error.has_value())
+		{
+			return;
+		}
+		index->GetIndex().Accept(*this);
+		if (m_error.has_value())
+		{
+			return;
+		}
+		CurrentEmitter().EmitIndexSet();
+		return;
+	}
+
+	Fail("Unsupported assignment target during code generation.");
 }
 
 bool CodegenVisitor::EnsureTyped(const ASTNode& expr)

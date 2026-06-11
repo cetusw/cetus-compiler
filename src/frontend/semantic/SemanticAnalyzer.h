@@ -46,7 +46,8 @@ private:
 	[[nodiscard]] std::vector<TypeDescriptor> AnalyzeValues(const std::vector<ASTNodePtr>& values);
 	[[nodiscard]] static bool IsFalsey(TypeDescriptor type);
 	[[nodiscard]] static bool HasError(const std::vector<TypeDescriptor>& types);
-	void ValidateAssignment(const std::vector<std::string>& names, const std::vector<TypeDescriptor>& valueTypes);
+	void ValidateAssignment(const std::vector<ASTNodePtr>& targets, const std::vector<TypeDescriptor>& valueTypes);
+	[[nodiscard]] TypeDescriptor AnalyzeAssignmentTarget(const ASTNode& target);
 	void DefineShortVariables(const std::vector<std::string>& names, const std::vector<TypeDescriptor>& valueTypes);
 	void DefineVariables(
 		const std::vector<std::string>& names,

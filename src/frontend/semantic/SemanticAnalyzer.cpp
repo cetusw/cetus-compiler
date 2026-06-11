@@ -359,7 +359,7 @@ void SemanticAnalyzer::Visit(const AssignmentASTNode& node)
 {
 	const std::size_t diagnosticCount = m_diagnostics.size();
 	const std::vector<TypeDescriptor> valueTypes = AnalyzeValues(node.GetValues());
-	ValidateAssignment(node.GetNames(), valueTypes);
+	ValidateAssignment(node.GetTargets(), valueTypes);
 	SetCurrentType(node, HasError(valueTypes) || m_diagnostics.size() != diagnosticCount ? Type::ERROR : Type::VOID);
 }
 
@@ -385,37 +385,58 @@ void SemanticAnalyzer::Visit(const ExpressionStatementASTNode& node)
 	SetCurrentType(node, expressionType == Type::ERROR ? Type::ERROR : Type::VOID);
 }
 
-void SemanticAnalyzer::ValidateAssignment(const std::vector<std::string>& names, const std::vector<TypeDescriptor>& valueTypes)
+void SemanticAnalyzer::ValidateAssignment(const std::vector<ASTNodePtr>& targets, const std::vector<TypeDescriptor>& valueTypes)
 {
-	if (names.size() != valueTypes.size())
+	if (targets.size() != valueTypes.size())
 	{
 		AddDiagnostic("Assignment expects the same number of targets and values.");
 		return;
 	}
 
-	for (std::size_t index = 0; index < names.size(); ++index)
+	for (std::size_t index = 0; index < targets.size(); ++index)
 	{
 		if (!ValidateValueExpression(valueTypes[index], "assignment value"))
 		{
 			continue;
 		}
 
-		const SemanticSymbol* existing = m_symbolTable.Resolve(names[index]);
+		const TypeDescriptor targetType = AnalyzeAssignmentTarget(*targets[index]);
+		if (targetType == Type::ERROR)
+		{
+			continue;
+		}
+		if (targetType != valueTypes[index])
+		{
+			AddDiagnostic("Cannot assign value of different type to assignment target.");
+		}
+	}
+}
+
+TypeDescriptor SemanticAnalyzer::AnalyzeAssignmentTarget(const ASTNode& target)
+{
+	if (const auto* identifier = dynamic_cast<const IdentifierASTNode*>(&target))
+	{
+		const SemanticSymbol* existing = m_symbolTable.Resolve(identifier->GetName());
 		if (!existing)
 		{
-			AddDiagnostic("Cannot assign to undefined identifier: " + names[index]);
-			continue;
+			AddDiagnostic("Cannot assign to undefined identifier: " + identifier->GetName());
+			return Type::ERROR;
 		}
 		if (existing->kind != SemanticSymbolKind::VARIABLE)
 		{
-			AddDiagnostic("Cannot assign to non-variable identifier: " + names[index]);
-			continue;
+			AddDiagnostic("Cannot assign to non-variable identifier: " + identifier->GetName());
+			return Type::ERROR;
 		}
-		if (existing->type != valueTypes[index])
-		{
-			AddDiagnostic("Cannot assign value of different type to identifier: " + names[index]);
-		}
+		return existing->type;
 	}
+
+	if (dynamic_cast<const IndexASTNode*>(&target))
+	{
+		return AnalyzeChild(target);
+	}
+
+	AddDiagnostic("Invalid assignment target.");
+	return Type::ERROR;
 }
 
 void SemanticAnalyzer::DefineShortVariables(const std::vector<std::string>& names, const std::vector<TypeDescriptor>& valueTypes)

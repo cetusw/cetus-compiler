@@ -130,6 +130,11 @@ void BytecodeEmitter::EmitIndexLoad() const
 	EmitOpcode(OP_GET_INDEX);
 }
 
+void BytecodeEmitter::EmitIndexSet() const
+{
+	EmitOpcode(OP_SET_INDEX);
+}
+
 void BytecodeEmitter::Fail(std::string message) const
 {
 	if (!m_error.has_value())

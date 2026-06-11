@@ -19,6 +19,7 @@
 #include "RefLocalInstruction.h"
 #include "ReturnInstruction.h"
 #include "SetGlobalInstruction.h"
+#include "SetIndexInstruction.h"
 #include "SetLocalInstruction.h"
 #include <array>
 
@@ -59,6 +60,7 @@ public:
 		m_table[OP_CALL] = std::make_unique<CallInstruction>();
 		m_table[OP_ARRAY] = std::make_unique<ArrayInstruction>();
 		m_table[OP_GET_INDEX] = std::make_unique<GetIndexInstruction>();
+		m_table[OP_SET_INDEX] = std::make_unique<SetIndexInstruction>();
 
 		m_table[OP_RETURN] = std::make_unique<ReturnInstruction>();
 	}

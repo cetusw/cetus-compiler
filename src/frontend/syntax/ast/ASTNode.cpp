@@ -213,15 +213,15 @@ void CallExpressionASTNode::Accept(ASTNodeVisitor& visitor) const
 	visitor.Visit(*this);
 }
 
-AssignmentASTNode::AssignmentASTNode(std::vector<std::string> names, std::vector<ASTNodePtr> values)
-	: m_names(std::move(names))
+AssignmentASTNode::AssignmentASTNode(std::vector<ASTNodePtr> targets, std::vector<ASTNodePtr> values)
+	: m_targets(std::move(targets))
 	, m_values(std::move(values))
 {
 }
 
-const std::vector<std::string>& AssignmentASTNode::GetNames() const
+const std::vector<ASTNodePtr>& AssignmentASTNode::GetTargets() const
 {
-	return m_names;
+	return m_targets;
 }
 
 const std::vector<ASTNodePtr>& AssignmentASTNode::GetValues() const
