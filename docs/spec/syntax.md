@@ -68,16 +68,16 @@ func main() {
 
 ```text
 ~FunctionDecl~ -> FUNC IDENTIFIER LPAREN RPAREN ~Block~ @function_void_no_params
-~FunctionDecl~ -> FUNC IDENTIFIER LPAREN RPAREN ~TypeName~ ~Block~ @function_return_no_params
+~FunctionDecl~ -> FUNC IDENTIFIER LPAREN RPAREN ~Type~ ~Block~ @function_return_no_params
 ~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~Block~ @function_void
-~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~TypeName~ ~Block~ @function_return
+~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~Type~ ~Block~ @function_return
 ```
 
 ```text
 ~SimpleStmt~ -> ~IdentifierList~ COLON_EQUAL ~ExpressionList~ @short_var_declaration
 ~SimpleStmt~ -> VAR ~IdentifierList~ EQUAL ~ExpressionList~ @var_inferred_declaration
-~SimpleStmt~ -> VAR ~IdentifierList~ ~TypeName~ @var_typed_declaration
-~SimpleStmt~ -> VAR ~IdentifierList~ ~TypeName~ EQUAL ~ExpressionList~ @var_typed_initialized_declaration
+~SimpleStmt~ -> VAR ~IdentifierList~ ~Type~ @var_typed_declaration
+~SimpleStmt~ -> VAR ~IdentifierList~ ~Type~ EQUAL ~ExpressionList~ @var_typed_initialized_declaration
 ~SimpleStmt~ -> ~IdentifierList~ EQUAL ~ExpressionList~ @assignment
 ~SimpleStmt~ -> ~Con~ @expression_statement
 ```
@@ -88,7 +88,7 @@ func main() {
 ~ParamList~ -> ~ParamList~ COMMA ~Param~ @param_list
 ~ParamList~ -> ~Param~ @param_list_single
 
-~Param~ -> IDENTIFIER ~TypeName~ @param
+~Param~ -> IDENTIFIER ~Type~ @param
 ```
 
 ## Блоки
@@ -102,10 +102,11 @@ func main() {
 
 ## Типы
 
-Текущая live grammar описывает type name через identifier:
+Текущая live grammar описывает scalar type name и array type:
 
 ```text
-~TypeName~ -> IDENTIFIER @type_name
+~Type~ -> IDENTIFIER @type_name
+~Type~ -> LBRACKET INT_LIT RBRACKET ~Type~ @array_type
 ```
 
 Целевой синтаксис массивов расширяет type grammar формой `[N]T`:
@@ -114,7 +115,7 @@ func main() {
 var a [2][3]int;
 ```
 
-Полная спецификация массивов описана в [Arrays](./arrays.md). Live parser будет принимать array type после добавления grammar/reduction support в фазе 6.
+Полная спецификация массивов описана в [Arrays](./arrays.md).
 
 ## Выражения
 

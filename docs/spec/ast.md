@@ -43,7 +43,8 @@ AST-узлы:
 - `MemberAccessASTNode`;
 - `IndexASTNode`;
 - `CallExpressionASTNode`;
-- будущие array nodes: `ArrayType`/`ArrayLiteralASTNode` будут добавлены вместе с реализацией фазы 6;
+- `TypeDescriptor` описывает scalar и array types для declared/inferred types;
+- будущий `ArrayLiteralASTNode` будет добавлен вместе с реализацией array literals;
 - `IfASTNode`;
 - `ReturnASTNode`;
 - `FunctionDeclarationASTNode`.

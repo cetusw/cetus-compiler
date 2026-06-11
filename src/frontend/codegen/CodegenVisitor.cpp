@@ -294,10 +294,15 @@ void CodegenVisitor::Visit(const VariableDeclarationASTNode& expr)
 
 	if (values.empty())
 	{
-		const Type defaultType = expr.GetDeclaredType().value_or(Type::ERROR);
+		const TypeDescriptor defaultType = expr.GetDeclaredType().value_or(Type::ERROR);
+		if (defaultType.IsArray())
+		{
+			Fail("Array code generation is not implemented yet.");
+			return;
+		}
 		for (const std::string& name : names)
 		{
-			EmitDefault(defaultType);
+			EmitDefault(defaultType.GetScalarType());
 			m_functionStack.back().DeclareLocal(name);
 		}
 		return;

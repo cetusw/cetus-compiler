@@ -78,6 +78,33 @@ run_negative() {
     fi
 }
 
+run_typecheck_positive() {
+    local file="$1"
+    echo "[smoke] typecheck positive: ${file#${ROOT_DIR}/}"
+    "${CETUS_BIN}" --typecheck "$file" >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"
+}
+
+run_typecheck_negative() {
+    local file="$1"
+    local expected="$2"
+    echo "[smoke] typecheck negative: ${file#${ROOT_DIR}/}"
+    if "${CETUS_BIN}" --typecheck "$file" >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"; then
+        echo "Expected typecheck failure, but command succeeded: $file" >&2
+        cat "${SMOKE_STDOUT}" >&2
+        cat "${SMOKE_STDERR}" >&2
+        exit 1
+    fi
+
+    if ! grep -q "$expected" "${SMOKE_STDERR}" "${SMOKE_STDOUT}"; then
+        echo "Expected diagnostic not found: $expected" >&2
+        echo "stdout:" >&2
+        cat "${SMOKE_STDOUT}" >&2
+        echo "stderr:" >&2
+        cat "${SMOKE_STDERR}" >&2
+        exit 1
+    fi
+}
+
 for file in "${ROOT_DIR}"/tests/smoke/positive/*.cetus; do
     run_positive "$file"
 done
@@ -100,5 +127,7 @@ run_positive_output "${ROOT_DIR}/tests/smoke/positive/runtime_numbers.cetus" $'1
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_literal.cetus" "hello"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_operations.cetus" $'abc\ntrue\ntrue\n3'
 run_positive_output_stdin "${ROOT_DIR}/tests/smoke/positive/scan_input.cetus" $'cetus\n42\n2.5\ntrue\n' $'cetus\n42\n2.5\ntrue'
+run_typecheck_positive "${ROOT_DIR}/tests/smoke/typecheck/array_type.cetus"
+run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/array_index_non_int.cetus" "Array index must have int type"
 
 echo "[smoke] ok"

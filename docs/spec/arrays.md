@@ -22,7 +22,7 @@
 ~LargId~ -> ~LargId~ LBRACKET ~Exp~ RBRACKET @index_access
 ```
 
-Array type, array literal, semantic analysis, codegen и runtime будут добавлены следующими задачами фазы 6. До их реализации примеры ниже являются спецификацией поведения, а не гарантией текущего выполнения.
+Array type и semantic analysis для индексного чтения добавляются в фазе 6.2. Array literal, assignment by index, codegen и runtime будут добавлены следующими задачами фазы 6. До их реализации соответствующие примеры ниже являются спецификацией поведения, а не гарантией текущего выполнения.
 
 ## Тип массива
 
@@ -197,12 +197,16 @@ Semantic analyzer должен проверять:
 ~LargId~ -> ~LargId~ LBRACKET ~Exp~ RBRACKET @index_access
 ```
 
-Для полного синтаксиса массивов grammar должна быть расширена отдельной реализационной фазой. Целевая форма правил:
+Live grammar поддерживает array type:
 
 ```text
-~Type~ -> ~TypeName~ @type_name
+~Type~ -> IDENTIFIER @type_name
 ~Type~ -> LBRACKET INT_LIT RBRACKET ~Type~ @array_type
+```
 
+Для полного синтаксиса массивов grammar должна быть расширена отдельной реализационной фазой. Целевая форма оставшихся правил:
+
+```text
 ~ArrayLiteral~ -> ~Type~ LBRACE ~ExpressionList~ RBRACE @array_literal
 ~Exp2~ -> ~ArrayLiteral~ @pass_expr
 
@@ -218,5 +222,5 @@ Semantic analyzer должен проверять:
 
 После добавления этих правил:
 
-- все места, где сейчас используется `~TypeName~`, должны принимать `~Type~`: return type функции, typed variable declaration и параметры функции;
+- array literal сможет создавать значения массивов;
 - assignment должен принимать assignable expressions, а не только plain identifiers.

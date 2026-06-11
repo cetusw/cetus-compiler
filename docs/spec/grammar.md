@@ -30,9 +30,9 @@
 ~TopLevelDecl~ -> ~FunctionDecl~ @pass_expr
 
 ~FunctionDecl~ -> FUNC IDENTIFIER LPAREN RPAREN ~Block~ @function_void_no_params
-~FunctionDecl~ -> FUNC IDENTIFIER LPAREN RPAREN ~TypeName~ ~Block~ @function_return_no_params
+~FunctionDecl~ -> FUNC IDENTIFIER LPAREN RPAREN ~Type~ ~Block~ @function_return_no_params
 ~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~Block~ @function_void
-~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~TypeName~ ~Block~ @function_return
+~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~Type~ ~Block~ @function_return
 
 ~StmtList~ -> ~StmtList~ ~Stmt~ @statement_list
 ~StmtList~ -> ~Stmt~ @statement_list_single
@@ -49,8 +49,8 @@
 
 ~SimpleStmt~ -> ~IdentifierList~ COLON_EQUAL ~ExpressionList~ @short_var_declaration
 ~SimpleStmt~ -> VAR ~IdentifierList~ EQUAL ~ExpressionList~ @var_inferred_declaration
-~SimpleStmt~ -> VAR ~IdentifierList~ ~TypeName~ @var_typed_declaration
-~SimpleStmt~ -> VAR ~IdentifierList~ ~TypeName~ EQUAL ~ExpressionList~ @var_typed_initialized_declaration
+~SimpleStmt~ -> VAR ~IdentifierList~ ~Type~ @var_typed_declaration
+~SimpleStmt~ -> VAR ~IdentifierList~ ~Type~ EQUAL ~ExpressionList~ @var_typed_initialized_declaration
 ~SimpleStmt~ -> ~IdentifierList~ EQUAL ~ExpressionList~ @assignment
 ~SimpleStmt~ -> ~Con~ @expression_statement
 
@@ -63,13 +63,14 @@
 ~ExpressionList~ -> ~ExpressionList~ COMMA ~Con~ @expression_list
 ~ExpressionList~ -> ~Con~ @expression_list_single
 
-~TypeName~ -> IDENTIFIER @type_name
+~Type~ -> IDENTIFIER @type_name
+~Type~ -> LBRACKET INT_LIT RBRACKET ~Type~ @array_type
 
 ~ParamList~ -> ~ParamList~ COMMA ~Param~ @param_list
 ~ParamList~ -> ~Param~ @param_list_single
 
-~Param~ -> IDENTIFIER ~TypeName~ @param
-~Param~ -> IDENTIFIER STAR ~TypeName~ @pointer_param
+~Param~ -> IDENTIFIER ~Type~ @param
+~Param~ -> IDENTIFIER STAR ~Type~ @pointer_param
 
 ~Con~ -> ~Con~ OR_OR ~Con1~ @binary
 ~Con~ -> ~Con1~ @pass_expr
@@ -130,12 +131,16 @@ Live grammar сейчас поддерживает только index access:
 ~LargId~ -> ~LargId~ LBRACKET ~Exp~ RBRACKET @index_access
 ```
 
-Целевой синтаксис массивов описан в [Arrays](./arrays.md). Для полной поддержки массивов grammar должна быть расширена так, чтобы typed contexts принимали не только `~TypeName~`, но и array type:
+Целевой синтаксис массивов описан в [Arrays](./arrays.md). Live grammar уже поддерживает array type:
 
 ```text
-~Type~ -> ~TypeName~ @type_name
+~Type~ -> IDENTIFIER @type_name
 ~Type~ -> LBRACKET INT_LIT RBRACKET ~Type~ @array_type
+```
 
+Для полной поддержки массивов grammar ещё должна быть расширена array literal и assignable targets:
+
+```text
 ~ArrayLiteral~ -> ~Type~ LBRACE ~ExpressionList~ RBRACE @array_literal
 ~Exp2~ -> ~ArrayLiteral~ @pass_expr
 
@@ -149,9 +154,9 @@ Live grammar сейчас поддерживает только index access:
 ~SimpleStmt~ -> ~AssignableList~ EQUAL ~ExpressionList~ @assignment
 ```
 
-После этого `~Type~` должен использоваться в return type функции, typed variable declaration и параметрах функции. Assignment должен принимать assignable expressions, а не только plain identifiers.
+`~Type~` используется в return type функции, typed variable declaration и параметрах функции. Assignment пока принимает только plain identifiers; assignment by index будет добавлен через assignable expressions.
 
-`docs/cetus_grammar.txt` остаётся источником текущей parser table. Его нельзя расширять этими правилами до реализации AST/reduction/semantic/codegen support.
+`docs/cetus_grammar.txt` остаётся источником текущей parser table.
 
 ## Ассоциативность и приоритет
 
