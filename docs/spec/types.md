@@ -177,6 +177,8 @@ Slice имеет тип элемента, но не содержит длину 
 
 `[]int` и `[3]int` являются разными типами. `TypeDescriptor` представляет fixed array как `Array(length, elementType)`, а slice как `Slice(elementType)`.
 
+Общее поведение fixed array и slice выражается через sequence-предикат: оба типа имеют element type и поддерживают index access. Для `len` используется indexable-предикат: fixed array, slice и string.
+
 Многомерный массив задаётся как массив массивов:
 
 ```cetus

@@ -165,7 +165,7 @@ void SemanticAnalyzer::Visit(const IndexASTNode& node)
 	{
 		hasError = true;
 	}
-	else if (!objectType.IsArray() && !objectType.IsSlice())
+	else if (!objectType.IsSequence())
 	{
 		AddDiagnostic("Index access expects array or slice value.");
 		hasError = true;
@@ -348,7 +348,7 @@ void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, c
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
-		if (argumentTypes.front() != Type::STRING && !argumentTypes.front().IsArray() && !argumentTypes.front().IsSlice())
+		if (!argumentTypes.front().IsIndexable())
 		{
 			AddDiagnostic("len expects string, array or slice argument.");
 			SetCurrentType(node, Type::ERROR);
@@ -408,7 +408,7 @@ bool SemanticAnalyzer::ValidateTypeReference(const TypeDescriptor& type, const c
 	{
 		return false;
 	}
-	if (type.IsArray() || type.IsSlice())
+	if (type.IsSequence())
 	{
 		return ValidateTypeReference(type.GetElementType(), context);
 	}

@@ -63,6 +63,16 @@ bool TypeDescriptor::IsSlice() const
 	return m_kind == Kind::SLICE;
 }
 
+bool TypeDescriptor::IsSequence() const
+{
+	return IsArray() || IsSlice();
+}
+
+bool TypeDescriptor::IsIndexable() const
+{
+	return IsSequence() || *this == Type::STRING;
+}
+
 bool TypeDescriptor::IsNamed() const
 {
 	return m_kind == Kind::NAMED;
@@ -79,7 +89,7 @@ int TypeDescriptor::GetArrayLength() const
 
 const TypeDescriptor& TypeDescriptor::GetElementType() const
 {
-	if (!IsArray() && !IsSlice())
+	if (!IsSequence())
 	{
 		throw std::logic_error("Scalar type does not have element type.");
 	}

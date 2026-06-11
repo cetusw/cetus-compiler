@@ -27,6 +27,8 @@ public:
 	[[nodiscard]] Type GetScalarType() const;
 	[[nodiscard]] bool IsArray() const;
 	[[nodiscard]] bool IsSlice() const;
+	[[nodiscard]] bool IsSequence() const;
+	[[nodiscard]] bool IsIndexable() const;
 	[[nodiscard]] bool IsNamed() const;
 	[[nodiscard]] int GetArrayLength() const;
 	[[nodiscard]] const TypeDescriptor& GetElementType() const;
