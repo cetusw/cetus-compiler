@@ -43,6 +43,7 @@ AST-узлы:
 - `MemberAccessASTNode`;
 - `IndexASTNode`;
 - `CallExpressionASTNode`;
+- будущие array nodes: `ArrayType`/`ArrayLiteralASTNode` будут добавлены вместе с реализацией фазы 6;
 - `IfASTNode`;
 - `ReturnASTNode`;
 - `FunctionDeclarationASTNode`.

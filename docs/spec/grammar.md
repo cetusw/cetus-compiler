@@ -5,6 +5,7 @@
 - [Нотация](#нотация)
 - [Grammar](#grammar)
 - [Semantic actions](#semantic-actions)
+- [Массивы](#массивы)
 - [Ассоциативность и приоритет](#ассоциативность-и-приоритет)
 - [Подготовленная таблица](#подготовленная-таблица)
 
@@ -120,6 +121,37 @@
 ## Semantic actions
 
 Semantic actions выполняются во время parsing и строят AST напрямую.
+
+## Массивы
+
+Live grammar сейчас поддерживает только index access:
+
+```text
+~LargId~ -> ~LargId~ LBRACKET ~Exp~ RBRACKET @index_access
+```
+
+Целевой синтаксис массивов описан в [Arrays](./arrays.md). Для полной поддержки массивов grammar должна быть расширена так, чтобы typed contexts принимали не только `~TypeName~`, но и array type:
+
+```text
+~Type~ -> ~TypeName~ @type_name
+~Type~ -> LBRACKET INT_LIT RBRACKET ~Type~ @array_type
+
+~ArrayLiteral~ -> ~Type~ LBRACE ~ExpressionList~ RBRACE @array_literal
+~Exp2~ -> ~ArrayLiteral~ @pass_expr
+
+~Assignable~ -> IDENTIFIER @identifier
+~Assignable~ -> ~Assignable~ DOT IDENTIFIER @member_access
+~Assignable~ -> ~Assignable~ LBRACKET ~Exp~ RBRACKET @index_access
+
+~AssignableList~ -> ~AssignableList~ COMMA ~Assignable~ @assignable_list
+~AssignableList~ -> ~Assignable~ @assignable_list_single
+
+~SimpleStmt~ -> ~AssignableList~ EQUAL ~ExpressionList~ @assignment
+```
+
+После этого `~Type~` должен использоваться в return type функции, typed variable declaration и параметрах функции. Assignment должен принимать assignable expressions, а не только plain identifiers.
+
+`docs/cetus_grammar.txt` остаётся источником текущей parser table. Его нельзя расширять этими правилами до реализации AST/reduction/semantic/codegen support.
 
 ## Ассоциативность и приоритет
 
