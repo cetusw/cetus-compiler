@@ -232,8 +232,28 @@ void CodegenVisitor::Visit(const CallExpressionASTNode& expr)
 		}
 
 		const std::string targetName = receiver->GetInferredType()->ToString() + "." + expr.GetCalleeName();
+		const MethodSignature* method = ResolveMethod(*receiver->GetInferredType(), expr.GetCalleeName());
+		if (!method)
+		{
+			Fail("Method symbol is missing during code generation: " + targetName);
+			return;
+		}
+
 		CurrentEmitter().EmitGlobalLoad(targetName);
-		receiver->Accept(*this);
+		if (method->receiverIsPointer)
+		{
+			const auto* identifier = dynamic_cast<const IdentifierASTNode*>(receiver);
+			if (!identifier)
+			{
+				Fail("Pointer method receiver code generation expects identifier receiver.");
+				return;
+			}
+			EmitIdentifierRef(*identifier);
+		}
+		else
+		{
+			receiver->Accept(*this);
+		}
 		if (m_error.has_value())
 		{
 			return;
@@ -863,6 +883,30 @@ void CodegenVisitor::EmitIdentifierRef(const IdentifierASTNode& expr)
 	}
 
 	CurrentEmitter().EmitGlobalRef(expr.GetName());
+}
+
+const MethodSignature* CodegenVisitor::ResolveMethod(const TypeDescriptor& receiverType, const std::string& methodName) const
+{
+	if (!receiverType.IsNamed())
+	{
+		return nullptr;
+	}
+
+	const SemanticSymbol* typeSymbol = m_symbols.Resolve(receiverType.GetName());
+	if (!typeSymbol || typeSymbol->kind != SemanticSymbolKind::TYPE)
+	{
+		return nullptr;
+	}
+
+	for (const MethodSignature& method : typeSymbol->methods)
+	{
+		if (method.name == methodName)
+		{
+			return &method;
+		}
+	}
+
+	return nullptr;
 }
 
 bool CodegenVisitor::ShouldPassArgumentByPointer(const std::string& calleeName, const std::size_t argumentIndex) const

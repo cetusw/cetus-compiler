@@ -181,7 +181,28 @@ p.Sum()
 
 Semantic analyzer хранит методы в таблице методов соответствующего типа. Codegen генерирует метод как обычную функцию с qualified name, например `Point.Sum`, а method call передаёт receiver первым аргументом.
 
-Pointer/ref receiver пока не реализован. Для мутации receiver нужна отдельная фаза.
+Receiver по ссылке объявляется через `*T`:
+
+```cetus
+func (p *Point) Move(dx int) {
+    p.x = p.x + dx;
+}
+```
+
+Вызов остаётся Go-like:
+
+```cetus
+p.Move(4);
+```
+
+`&p` на стороне вызова не пишется. Semantic analyzer видит pointer receiver в method table, а codegen автоматически передаёт receiver как runtime reference.
+
+На текущем этапе pointer receiver требует assignable identifier receiver:
+
+```cetus
+p.Move();          // ok
+points[0].Move();  // semantic error
+```
 
 ## Вызовы
 

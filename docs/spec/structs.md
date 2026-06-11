@@ -11,34 +11,6 @@
 - [Методы](#методы)
 - [Связь с grammar](#связь-с-grammar)
 
-## Статус
-
-Фаза 7.1 добавила syntax и AST для struct type declarations.
-
-Фаза 7.2 добавила semantic symbol для пользовательских типов:
-
-- struct declaration создаёт символ вида `TYPE`;
-- имя struct можно использовать как тип переменной, параметра функции, return type и элемента массива;
-- semantic analyzer проверяет дубли полей;
-- semantic analyzer проверяет, что типы полей разрешаются.
-
-Фаза 7.3 добавляет runtime instance representation и member access:
-
-- `ObjStruct` хранит имя типа и значения полей;
-- default declaration `var p Point;` создаёт instance со значениями полей по умолчанию;
-- `p.x` читает поле;
-- `p.x = value;` записывает поле;
-- semantic analyzer проверяет, что поле существует.
-
-Фаза 7.4 добавляет методы с value receiver:
-
-- `func (p Point) Sum() int { ... }`;
-- semantic analyzer хранит method table per type;
-- method call `p.Sum()` проверяется по типу receiver;
-- codegen вызывает method как обычную функцию с receiver первым аргументом.
-
-Pointer/ref receiver добавляется отдельной фазой.
-
 ## Объявление типа
 
 Struct type объявляется на верхнем уровне программы:
@@ -198,6 +170,34 @@ func main() {
 
 ```text
 5
+```
+
+Pointer receiver используется для мутации исходного значения:
+
+```cetus
+func (p *Point) Move(dx int) {
+    p.x = p.x + dx;
+}
+
+func main() {
+    var p Point;
+    p.x = 1;
+    p.Move(4);
+    printf(p.x);
+}
+```
+
+Ожидаемый вывод:
+
+```text
+5
+```
+
+Для pointer receiver receiver должен быть assignable identifier:
+
+```cetus
+p.Move();          // ok
+points[0].Move();  // semantic error на текущем этапе
 ```
 
 ## Связь с grammar

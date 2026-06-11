@@ -75,9 +75,12 @@ Method call:
 
 ```cetus
 p.Sum()
+p.Move(4)
 ```
 
 разрешается по типу receiver `p`. Codegen вызывает method как обычную функцию с receiver первым аргументом.
+
+Для pointer receiver codegen автоматически передаёт receiver как reference. На текущем этапе такой receiver должен быть identifier.
 
 ## Доступ к члену и индексация
 

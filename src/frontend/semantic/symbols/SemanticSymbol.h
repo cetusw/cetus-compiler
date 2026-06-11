@@ -22,6 +22,7 @@ struct MethodSignature
 	std::string name;
 	std::string qualifiedName;
 	TypeDescriptor type = Type::ERROR;
+	bool receiverIsPointer = false;
 	std::vector<ParameterSignature> parameters;
 };
 

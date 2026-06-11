@@ -247,6 +247,15 @@ void SemanticAnalyzer::TypeCheckMethodCall(
 	const std::vector<TypeDescriptor>& argumentTypes)
 {
 	bool hasError = false;
+	if (method.receiverIsPointer)
+	{
+		const ASTNode* receiver = node.GetReceiver();
+		if (!receiver || dynamic_cast<const IdentifierASTNode*>(receiver) == nullptr)
+		{
+			AddDiagnostic("Pointer method receiver expects assignable identifier receiver: " + receiverType.ToString() + "." + node.GetCalleeName());
+			hasError = true;
+		}
+	}
 	if (method.parameters.size() != argumentTypes.size())
 	{
 		AddDiagnostic("Method call argument count does not match method parameters: " + receiverType.ToString() + "." + node.GetCalleeName());
@@ -931,11 +940,6 @@ void SemanticAnalyzer::Visit(const FunctionDeclarationASTNode& node)
 	bool hasParameterError = false;
 	if (const FunctionParameter* receiver = node.GetReceiver())
 	{
-		if (receiver->isPointer)
-		{
-			AddDiagnostic("Pointer method receiver is not implemented yet: " + node.GetQualifiedName());
-			hasParameterError = true;
-		}
 		if (!receiver->type.IsNamed() || !ValidateTypeReference(receiver->type, "method receiver"))
 		{
 			AddDiagnostic("Method receiver must use declared struct type: " + node.GetName());
@@ -1122,7 +1126,7 @@ bool SemanticAnalyzer::DefineFunctionSymbol(const FunctionDeclarationASTNode& no
 	}
 	if (const FunctionParameter* receiver = node.GetReceiver())
 	{
-		if (receiver->isPointer || !receiver->type.IsNamed())
+		if (!receiver->type.IsNamed())
 		{
 			AddDiagnostic("Method receiver must use declared struct type: " + node.GetName());
 			return false;
@@ -1146,6 +1150,7 @@ bool SemanticAnalyzer::DefineFunctionSymbol(const FunctionDeclarationASTNode& no
 			node.GetName(),
 			symbolName,
 			node.GetReturnType(),
+			receiver->isPointer,
 			BuildParameterSignatures(node) });
 	}
 

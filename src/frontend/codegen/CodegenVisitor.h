@@ -55,6 +55,7 @@ private:
 	void EmitLogicalOr(const BinaryASTNode& expr);
 	void EmitScopeCleanup(int scopeDepth);
 	void EmitIdentifierRef(const IdentifierASTNode& expr);
+	[[nodiscard]] const MethodSignature* ResolveMethod(const TypeDescriptor& receiverType, const std::string& methodName) const;
 	[[nodiscard]] bool ShouldPassArgumentByPointer(const std::string& calleeName, std::size_t argumentIndex) const;
 	[[nodiscard]] bool EnsureTyped(const ASTNode& expr);
 

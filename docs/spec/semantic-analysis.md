@@ -149,6 +149,15 @@ Point.Sum
 
 Method call `p.Sum()` разрешается через тип receiver `p`, а codegen передаёт receiver первым аргументом в callable `Point.Sum`.
 
+Если метод объявлен с pointer receiver:
+
+```cetus
+func (p *Point) Move() {
+}
+```
+
+то method call `p.Move()` требует assignable identifier receiver. Codegen передаёт receiver как runtime reference, чтобы метод мог менять исходное значение.
+
 Вызов функции проверяется по символу функции. Имя должно разрешаться в `FUNCTION` или `BUILTIN_FUNCTION`.
 
 Для пользовательской функции количество аргументов должно совпадать с количеством параметров, тип каждого аргумента должен совпадать с типом соответствующего параметра.
