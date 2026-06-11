@@ -8,6 +8,7 @@
 - [Операции](#операции)
 - [Неявное приведение числовых типов](#неявное-приведение-числовых-типов)
 - [Массивы](#массивы)
+- [Пользовательские типы](#пользовательские-типы)
 - [Совместимость](#совместимость)
 - [Будущие типы](#будущие-типы)
 
@@ -174,6 +175,28 @@ func main() {
 ```
 
 На текущем этапе parser и semantic analyzer понимают array type в typed declarations, function parameters и return types. Runtime поддерживает default array creation, index reading, bounds check и `len(array)`. Array literals и assignment by index добавляются отдельными задачами.
+
+## Пользовательские Типы
+
+Struct declaration создаёт пользовательский named type:
+
+```cetus
+type Point struct {
+    x int;
+    y int;
+}
+```
+
+`Point` можно использовать как тип переменной, параметра функции, возвращаемого значения и элемента массива:
+
+```cetus
+var point Point;
+var points [2]Point;
+```
+
+`TypeDescriptor` представляет такой тип как named type. Semantic analyzer разрешает имя через symbol table и требует, чтобы оно указывало на символ вида `TYPE`.
+
+Runtime-представление struct instance и member access описываются отдельной фазой.
 
 ## Совместимость
 

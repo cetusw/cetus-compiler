@@ -1,6 +1,7 @@
 #include "Type.h"
 
 #include <stdexcept>
+#include <utility>
 
 TypeDescriptor::TypeDescriptor() = default;
 
@@ -14,6 +15,7 @@ TypeDescriptor& TypeDescriptor::operator=(const Type scalarType)
 	m_scalarType = scalarType;
 	m_arrayLength = 0;
 	m_elementType.reset();
+	m_name.clear();
 	return *this;
 }
 
@@ -26,6 +28,13 @@ TypeDescriptor TypeDescriptor::Array(const int length, TypeDescriptor elementTyp
 	return result;
 }
 
+TypeDescriptor TypeDescriptor::Named(std::string name)
+{
+	TypeDescriptor result;
+	result.m_name = std::move(name);
+	return result;
+}
+
 Type TypeDescriptor::GetScalarType() const
 {
 	return m_scalarType;
@@ -34,6 +43,11 @@ Type TypeDescriptor::GetScalarType() const
 bool TypeDescriptor::IsArray() const
 {
 	return m_elementType != nullptr;
+}
+
+bool TypeDescriptor::IsNamed() const
+{
+	return !m_name.empty();
 }
 
 int TypeDescriptor::GetArrayLength() const
@@ -54,11 +68,24 @@ const TypeDescriptor& TypeDescriptor::GetElementType() const
 	return *m_elementType;
 }
 
+const std::string& TypeDescriptor::GetName() const
+{
+	if (!IsNamed())
+	{
+		throw std::logic_error("Type is not a named type.");
+	}
+	return m_name;
+}
+
 std::string TypeDescriptor::ToString() const
 {
 	if (IsArray())
 	{
 		return "[" + std::to_string(m_arrayLength) + "]" + m_elementType->ToString();
+	}
+	if (IsNamed())
+	{
+		return m_name;
 	}
 
 	switch (m_scalarType)
@@ -80,8 +107,16 @@ bool operator==(const TypeDescriptor& left, const TypeDescriptor& right)
 	{
 		return false;
 	}
+	if (left.IsNamed() != right.IsNamed())
+	{
+		return false;
+	}
 	if (!left.IsArray())
 	{
+		if (left.IsNamed())
+		{
+			return left.m_name == right.m_name;
+		}
 		return left.m_scalarType == right.m_scalarType;
 	}
 	return left.m_arrayLength == right.m_arrayLength && left.GetElementType() == right.GetElementType();
@@ -94,7 +129,7 @@ bool operator!=(const TypeDescriptor& left, const TypeDescriptor& right)
 
 bool operator==(const TypeDescriptor& left, const Type right)
 {
-	return !left.IsArray() && left.m_scalarType == right;
+	return !left.IsArray() && !left.IsNamed() && left.m_scalarType == right;
 }
 
 bool operator!=(const TypeDescriptor& left, const Type right)

@@ -238,7 +238,7 @@ AstSemanticValue AstReductionBuilder::BuildTypeName(const std::vector<AstSemanti
 		return { nullptr, std::nullopt, {}, {}, {}, Type::STRING };
 	}
 
-	throw std::runtime_error("Unsupported type name: " + typeName);
+	return { nullptr, std::nullopt, {}, {}, {}, TypeDescriptor::Named(typeName) };
 }
 
 AstSemanticValue AstReductionBuilder::BuildArrayType(const std::vector<AstSemanticValue>& values)

@@ -1,0 +1,7 @@
+type Point struct {
+    x int;
+    x int;
+}
+
+func main() {
+}

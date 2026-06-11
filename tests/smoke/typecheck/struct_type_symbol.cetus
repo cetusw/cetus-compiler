@@ -1,0 +1,14 @@
+type Point struct {
+    x int;
+    y int;
+}
+
+func identity(point Point) Point {
+    return point;
+}
+
+func main() {
+    var point Point;
+    var points [2]Point;
+    identity(point);
+}

@@ -57,14 +57,20 @@ private:
 	void PredeclareTopLevelFunctions(const ASTNode& node);
 	void PredeclareTopLevelFunctions(const StatementListASTNode& node);
 	void PredeclareFunction(const FunctionDeclarationASTNode& node);
+	void PredeclareTopLevelTypes(const ASTNode& node);
+	void PredeclareTopLevelTypes(const StatementListASTNode& node);
 	void ValidateEntryPoint();
 	void DefineBuiltinFunctions();
 	void TypeCheckBuiltinCall(const CallExpressionASTNode& node, const std::vector<TypeDescriptor>& argumentTypes);
 	void TypeCheckFunctionCall(const CallExpressionASTNode& node, const SemanticSymbol& symbol, const std::vector<TypeDescriptor>& argumentTypes);
 	[[nodiscard]] bool ValidateValueExpression(const TypeDescriptor& type, const char* context);
+	[[nodiscard]] bool ValidateTypeReference(const TypeDescriptor& type, const char* context);
+	[[nodiscard]] bool ValidateStructFields(const StructDeclarationASTNode& node);
 	[[nodiscard]] bool ValidateUserDefinedName(const std::string& name, const char* declarationKind);
 	[[nodiscard]] bool DefineFunctionSymbol(const FunctionDeclarationASTNode& node);
+	[[nodiscard]] bool DefineTypeSymbol(const StructDeclarationASTNode& node);
 	[[nodiscard]] static std::vector<ParameterSignature> BuildParameterSignatures(const FunctionDeclarationASTNode& node);
+	[[nodiscard]] static std::vector<FieldSignature> BuildFieldSignatures(const StructDeclarationASTNode& node);
 	[[nodiscard]] static bool AlwaysReturns(const ASTNode& node);
 	[[nodiscard]] static bool StatementListAlwaysReturns(const StatementListASTNode& node);
 	[[nodiscard]] static bool IfAlwaysReturns(const IfASTNode& node);
@@ -79,5 +85,6 @@ private:
 	TypeDescriptor m_currentType = Type::ERROR;
 	std::vector<SemanticDiagnostic> m_diagnostics;
 	std::unordered_set<const FunctionDeclarationASTNode*> m_predeclaredFunctions;
+	std::unordered_set<const StructDeclarationASTNode*> m_predeclaredTypes;
 	int m_loopDepth = 0;
 };

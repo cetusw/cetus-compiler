@@ -137,7 +137,10 @@ run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_operations.cetus" $
 run_positive_output_stdin "${ROOT_DIR}/tests/smoke/positive/scan_input.cetus" $'cetus\n42\n2.5\ntrue\n' $'cetus\n42\n2.5\ntrue'
 run_typecheck_positive "${ROOT_DIR}/tests/smoke/typecheck/array_type.cetus"
 run_parse_positive "${ROOT_DIR}/tests/smoke/typecheck/struct_declaration.cetus"
+run_typecheck_positive "${ROOT_DIR}/tests/smoke/typecheck/struct_type_symbol.cetus"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/array_index_non_int.cetus" "Array index must have int type"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/array_assignment_type.cetus" "Cannot assign value of different type to assignment target"
+run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/struct_duplicate_field.cetus" "Struct field is already declared"
+run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/struct_unknown_type.cetus" "Unknown type in variable declaration"
 
 echo "[smoke] ok"

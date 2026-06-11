@@ -32,6 +32,7 @@ TypeCheckResult SemanticAnalyzer::Analyze(const ASTNode& node)
 	m_currentType = Type::ERROR;
 	m_diagnostics.clear();
 	m_predeclaredFunctions.clear();
+	m_predeclaredTypes.clear();
 	DefineBuiltinFunctions();
 	node.Accept(*this);
 	if (!m_diagnostics.empty())
@@ -75,6 +76,12 @@ void SemanticAnalyzer::Visit(const IdentifierASTNode& node)
 	if (symbol->kind == SemanticSymbolKind::FUNCTION || symbol->kind == SemanticSymbolKind::BUILTIN_FUNCTION)
 	{
 		AddDiagnostic("Function identifier cannot be used as value: " + node.GetName());
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+	if (symbol->kind == SemanticSymbolKind::TYPE)
+	{
+		AddDiagnostic("Type identifier cannot be used as value: " + node.GetName());
 		SetCurrentType(node, Type::ERROR);
 		return;
 	}
@@ -301,12 +308,62 @@ bool SemanticAnalyzer::ValidateValueExpression(const TypeDescriptor& type, const
 	return true;
 }
 
+bool SemanticAnalyzer::ValidateTypeReference(const TypeDescriptor& type, const char* context)
+{
+	if (type == Type::ERROR)
+	{
+		return false;
+	}
+	if (type.IsArray())
+	{
+		return ValidateTypeReference(type.GetElementType(), context);
+	}
+	if (!type.IsNamed())
+	{
+		return true;
+	}
+
+	const SemanticSymbol* symbol = m_symbolTable.Resolve(type.GetName());
+	if (!symbol || symbol->kind != SemanticSymbolKind::TYPE)
+	{
+		AddDiagnostic(std::string("Unknown type in ") + context + ": " + type.GetName());
+		return false;
+	}
+
+	return true;
+}
+
+bool SemanticAnalyzer::ValidateStructFields(const StructDeclarationASTNode& node)
+{
+	bool hasError = false;
+	std::unordered_set<std::string> fieldNames;
+	for (const StructField& field : node.GetFields())
+	{
+		if (!fieldNames.insert(field.name).second)
+		{
+			AddDiagnostic("Struct field is already declared: " + node.GetName() + "." + field.name);
+			hasError = true;
+		}
+		if (!ValidateTypeReference(field.type, "struct field"))
+		{
+			hasError = true;
+		}
+	}
+
+	return !hasError;
+}
+
 bool SemanticAnalyzer::ValidateUserDefinedName(const std::string& name, const char* declarationKind)
 {
 	const SemanticSymbol* existing = m_symbolTable.Resolve(name);
 	if (existing && IsCallableKind(existing->kind))
 	{
 		AddDiagnostic(std::string(declarationKind) + " cannot use reserved callable identifier: " + name);
+		return false;
+	}
+	if (existing && existing->kind == SemanticSymbolKind::TYPE)
+	{
+		AddDiagnostic(std::string(declarationKind) + " cannot use reserved type identifier: " + name);
 		return false;
 	}
 
@@ -463,7 +520,7 @@ void SemanticAnalyzer::DefineShortVariables(const std::vector<std::string>& name
 			continue;
 		}
 
-		m_symbolTable.Define(SemanticSymbol{ names[index], valueTypes[index], SemanticSymbolKind::VARIABLE, {} });
+		m_symbolTable.Define(SemanticSymbol{ names[index], valueTypes[index], SemanticSymbolKind::VARIABLE, {}, {} });
 	}
 }
 
@@ -494,6 +551,10 @@ void SemanticAnalyzer::DefineVariables(
 		{
 			continue;
 		}
+		if (declaredType.has_value() && !ValidateTypeReference(*declaredType, "variable declaration"))
+		{
+			continue;
+		}
 
 		if (!valueTypes.empty() && !ValidateValueExpression(valueTypes[index], "variable initializer"))
 		{
@@ -510,12 +571,13 @@ void SemanticAnalyzer::DefineVariables(
 			continue;
 		}
 
-		m_symbolTable.Define(SemanticSymbol{ names[index], symbolType, SemanticSymbolKind::VARIABLE, {} });
+		m_symbolTable.Define(SemanticSymbol{ names[index], symbolType, SemanticSymbolKind::VARIABLE, {}, {} });
 	}
 }
 
 void SemanticAnalyzer::Visit(const ProgramASTNode& node)
 {
+	PredeclareTopLevelTypes(node.GetStatements());
 	PredeclareTopLevelFunctions(node.GetStatements());
 	const std::size_t diagnosticCount = m_diagnostics.size();
 	ValidateEntryPoint();
@@ -727,10 +789,20 @@ void SemanticAnalyzer::Visit(const FunctionDeclarationASTNode& node)
 
 	const std::optional<TypeDescriptor> previousReturnType = m_currentFunctionReturnType;
 	m_currentFunctionReturnType = node.GetReturnType();
+	bool hasSignatureError = false;
+	if (!ValidateTypeReference(node.GetReturnType(), "function return type"))
+	{
+		hasSignatureError = true;
+	}
 	m_symbolTable.EnterScope();
 	bool hasParameterError = false;
 	for (const FunctionParameter& parameter : node.GetParameters())
 	{
+		if (!ValidateTypeReference(parameter.type, "function parameter"))
+		{
+			hasParameterError = true;
+			continue;
+		}
 		if (m_symbolTable.ResolveInCurrentScope(parameter.name))
 		{
 			AddDiagnostic("Function parameter is already declared: " + parameter.name);
@@ -743,7 +815,7 @@ void SemanticAnalyzer::Visit(const FunctionDeclarationASTNode& node)
 			continue;
 		}
 
-		m_symbolTable.Define(SemanticSymbol{ parameter.name, parameter.type, SemanticSymbolKind::VARIABLE, {} });
+		m_symbolTable.Define(SemanticSymbol{ parameter.name, parameter.type, SemanticSymbolKind::VARIABLE, {}, {} });
 	}
 	const TypeDescriptor bodyType = AnalyzeChild(node.GetBody());
 	m_symbolTable.ExitScope();
@@ -756,13 +828,50 @@ void SemanticAnalyzer::Visit(const FunctionDeclarationASTNode& node)
 		hasReturnError = true;
 	}
 
-	SetCurrentType(node, hasParameterError || hasReturnError || bodyType == Type::ERROR ? Type::ERROR : Type::VOID);
+	SetCurrentType(node, hasSignatureError || hasParameterError || hasReturnError || bodyType == Type::ERROR ? Type::ERROR : Type::VOID);
 }
 
 void SemanticAnalyzer::Visit(const StructDeclarationASTNode& node)
 {
-	(void)node;
-	SetCurrentType(node, Type::VOID);
+	bool hasError = false;
+	if (!m_predeclaredTypes.contains(&node) && !DefineTypeSymbol(node))
+	{
+		hasError = true;
+	}
+	if (!ValidateStructFields(node))
+	{
+		hasError = true;
+	}
+
+	SetCurrentType(node, hasError ? Type::ERROR : Type::VOID);
+}
+
+void SemanticAnalyzer::PredeclareTopLevelTypes(const ASTNode& node)
+{
+	const auto* statementList = dynamic_cast<const StatementListASTNode*>(&node);
+	if (!statementList)
+	{
+		return;
+	}
+
+	PredeclareTopLevelTypes(*statementList);
+}
+
+void SemanticAnalyzer::PredeclareTopLevelTypes(const StatementListASTNode& node)
+{
+	for (const ASTNodePtr& child : node.GetStatements())
+	{
+		// TODO переделать без dynamic_cast
+		const auto* typeDeclaration = dynamic_cast<const StructDeclarationASTNode*>(child.get());
+		if (!typeDeclaration)
+		{
+			continue;
+		}
+
+		m_predeclaredTypes.insert(typeDeclaration);
+		const bool wasDefined = DefineTypeSymbol(*typeDeclaration);
+		(void)wasDefined;
+	}
 }
 
 void SemanticAnalyzer::PredeclareTopLevelFunctions(const ASTNode& node)
@@ -828,11 +937,11 @@ void SemanticAnalyzer::DefineBuiltinFunctions()
 		return;
 	}
 
-	m_symbolTable.Define(SemanticSymbol{ "printf", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, false } } });
-	m_symbolTable.Define(SemanticSymbol{ "print", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, false } } });
-	m_symbolTable.Define(SemanticSymbol{ "println", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, false } } });
-	m_symbolTable.Define(SemanticSymbol{ "len", Type::INT, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::STRING, false } } });
-	m_symbolTable.Define(SemanticSymbol{ "scan", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, true } } });
+	m_symbolTable.Define(SemanticSymbol{ "printf", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, false } }, {} });
+	m_symbolTable.Define(SemanticSymbol{ "print", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, false } }, {} });
+	m_symbolTable.Define(SemanticSymbol{ "println", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, false } }, {} });
+	m_symbolTable.Define(SemanticSymbol{ "len", Type::INT, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::STRING, false } }, {} });
+	m_symbolTable.Define(SemanticSymbol{ "scan", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, true } }, {} });
 }
 
 bool SemanticAnalyzer::DefineFunctionSymbol(const FunctionDeclarationASTNode& node)
@@ -856,7 +965,30 @@ bool SemanticAnalyzer::DefineFunctionSymbol(const FunctionDeclarationASTNode& no
 		node.GetName(),
 		node.GetReturnType(),
 		SemanticSymbolKind::FUNCTION,
-		BuildParameterSignatures(node) });
+		BuildParameterSignatures(node),
+		{} });
+	return true;
+}
+
+bool SemanticAnalyzer::DefineTypeSymbol(const StructDeclarationASTNode& node)
+{
+	const SemanticSymbol* existing = m_symbolTable.ResolveInCurrentScope(node.GetName());
+	if (existing)
+	{
+		AddDiagnostic("Type is already declared in current scope: " + node.GetName());
+		return false;
+	}
+	if (!ValidateUserDefinedName(node.GetName(), "Type"))
+	{
+		return false;
+	}
+
+	m_symbolTable.Define(SemanticSymbol{
+		node.GetName(),
+		TypeDescriptor::Named(node.GetName()),
+		SemanticSymbolKind::TYPE,
+		{},
+		BuildFieldSignatures(node) });
 	return true;
 }
 
@@ -869,6 +1001,17 @@ std::vector<ParameterSignature> SemanticAnalyzer::BuildParameterSignatures(const
 		parameterSignatures.push_back(ParameterSignature{ parameter.type, parameter.isPointer });
 	}
 	return parameterSignatures;
+}
+
+std::vector<FieldSignature> SemanticAnalyzer::BuildFieldSignatures(const StructDeclarationASTNode& node)
+{
+	std::vector<FieldSignature> fieldSignatures;
+	fieldSignatures.reserve(node.GetFields().size());
+	for (const StructField& field : node.GetFields())
+	{
+		fieldSignatures.push_back(FieldSignature{ field.name, field.type });
+	}
+	return fieldSignatures;
 }
 
 // TODO избавиться от dynamic_cast
