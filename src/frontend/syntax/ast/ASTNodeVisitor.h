@@ -24,6 +24,7 @@ class BreakASTNode;
 class ContinueASTNode;
 class ReturnASTNode;
 class FunctionDeclarationASTNode;
+class StructDeclarationASTNode;
 
 class ASTNodeVisitor
 {
@@ -54,4 +55,5 @@ public:
 	virtual void Visit(const ContinueASTNode& expr) = 0;
 	virtual void Visit(const ReturnASTNode& expr) = 0;
 	virtual void Visit(const FunctionDeclarationASTNode& expr) = 0;
+	virtual void Visit(const StructDeclarationASTNode& expr) = 0;
 };

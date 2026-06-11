@@ -6,6 +6,7 @@ const std::unordered_map<std::string_view, TokenType> LexicalAnalyzer::m_keyword
 	{ "package", TokenType::PACKAGE },
 	{ "import", TokenType::IMPORT },
 	{ "func", TokenType::FUNC },
+	{ "type", TokenType::TYPE },
 	{ "struct", TokenType::STRUCT },
 	{ "var", TokenType::VAR },
 	{ "const", TokenType::CONST },

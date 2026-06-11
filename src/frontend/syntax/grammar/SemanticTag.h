@@ -35,6 +35,10 @@ enum class SemanticTag
 	ASSIGNABLE_LIST,
 	ASSIGNABLE_LIST_SINGLE,
 	ASSIGNMENT,
+	STRUCT_FIELD,
+	STRUCT_FIELD_LIST,
+	STRUCT_FIELD_LIST_SINGLE,
+	STRUCT_DECLARATION,
 	SHORT_VAR_DECLARATION,
 	VAR_INFERRED_DECLARATION,
 	VAR_TYPED_DECLARATION,
@@ -91,6 +95,10 @@ enum class SemanticTag
 	if (value == "assignable_list") return SemanticTag::ASSIGNABLE_LIST;
 	if (value == "assignable_list_single") return SemanticTag::ASSIGNABLE_LIST_SINGLE;
 	if (value == "assignment") return SemanticTag::ASSIGNMENT;
+	if (value == "struct_field") return SemanticTag::STRUCT_FIELD;
+	if (value == "struct_field_list") return SemanticTag::STRUCT_FIELD_LIST;
+	if (value == "struct_field_list_single") return SemanticTag::STRUCT_FIELD_LIST_SINGLE;
+	if (value == "struct_declaration") return SemanticTag::STRUCT_DECLARATION;
 	if (value == "short_var_declaration") return SemanticTag::SHORT_VAR_DECLARATION;
 	if (value == "var_inferred_declaration") return SemanticTag::VAR_INFERRED_DECLARATION;
 	if (value == "var_typed_declaration") return SemanticTag::VAR_TYPED_DECLARATION;

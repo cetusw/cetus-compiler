@@ -31,6 +31,7 @@ public:
 	void Visit(const ContinueASTNode& expr) override;
 	void Visit(const ReturnASTNode& expr) override;
 	void Visit(const FunctionDeclarationASTNode& expr) override;
+	void Visit(const StructDeclarationASTNode& expr) override;
 
 private:
 	explicit AstDumper(std::ostream& output);
@@ -39,6 +40,7 @@ private:
 	void DumpLine(const std::string& text) const;
 	static std::string JoinNames(const std::vector<std::string>& names);
 	static std::string JoinParameters(const std::vector<FunctionParameter>& parameters);
+	static std::string FormatField(const StructField& field);
 	static std::string ToString(const TypeDescriptor& type);
 	static const char* ToString(UnaryOperator op);
 	static const char* ToString(BinaryOperator op);

@@ -595,6 +595,10 @@ void CodegenVisitor::Visit(const FunctionDeclarationASTNode& expr)
 	m_programContext.AddFunction(std::move(function));
 }
 
+void CodegenVisitor::Visit(const StructDeclarationASTNode&)
+{
+}
+
 BytecodeEmitter& CodegenVisitor::CurrentEmitter()
 {
 	return m_functionStack.back().Emitter();

@@ -40,6 +40,7 @@ public:
 	void Visit(const ContinueASTNode& node) override;
 	void Visit(const ReturnASTNode& node) override;
 	void Visit(const FunctionDeclarationASTNode& node) override;
+	void Visit(const StructDeclarationASTNode& node) override;
 
 private:
 	[[nodiscard]] TypeDescriptor AnalyzeChild(const ASTNode& node);

@@ -52,6 +52,7 @@ enum class TokenType
     PACKAGE,            // package
     IMPORT,             // import
     FUNC,               // func
+    TYPE,               // type
     STRUCT,             // struct
     VAR,                // var
     CONST,              // const

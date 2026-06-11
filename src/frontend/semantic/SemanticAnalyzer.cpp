@@ -759,6 +759,12 @@ void SemanticAnalyzer::Visit(const FunctionDeclarationASTNode& node)
 	SetCurrentType(node, hasParameterError || hasReturnError || bodyType == Type::ERROR ? Type::ERROR : Type::VOID);
 }
 
+void SemanticAnalyzer::Visit(const StructDeclarationASTNode& node)
+{
+	(void)node;
+	SetCurrentType(node, Type::VOID);
+}
+
 void SemanticAnalyzer::PredeclareTopLevelFunctions(const ASTNode& node)
 {
 	const auto* statementList = dynamic_cast<const StatementListASTNode*>(&node);

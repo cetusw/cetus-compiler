@@ -15,6 +15,7 @@ struct AstSemanticValue
 	std::vector<ASTNodePtr> expressions = {};
 	std::vector<FunctionParameter> parameters = {};
 	std::optional<TypeDescriptor> type = std::nullopt;
+	std::vector<StructField> fields = {};
 };
 
 // TODO отрефакторить. слишком много методов
@@ -50,6 +51,10 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildAssignableList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildSingleAssignableList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildAssignment(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildStructField(const std::vector<AstSemanticValue>& values);
+	[[nodiscard]] static AstSemanticValue BuildStructFieldList(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildSingleStructFieldList(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildStructDeclaration(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildShortVariableDeclaration(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildVarInferredDeclaration(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildVarTypedDeclaration(std::vector<AstSemanticValue> values);
@@ -80,6 +85,7 @@ private:
 	[[nodiscard]] static std::vector<std::string> TakeIdentifierList(std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static std::vector<std::string> TakeIdentifierNamesFromTargets(std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static std::vector<FunctionParameter> TakeParameterList(std::vector<AstSemanticValue>& values, std::size_t index);
+	[[nodiscard]] static std::vector<StructField> TakeStructFieldList(std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static TypeDescriptor TakeType(const std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static Token TakeToken(const std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static BinaryOperator ToBinaryOperator(TokenType type);

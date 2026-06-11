@@ -84,6 +84,12 @@ run_typecheck_positive() {
     "${CETUS_BIN}" --typecheck "$file" >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"
 }
 
+run_parse_positive() {
+    local file="$1"
+    echo "[smoke] parse positive: ${file#${ROOT_DIR}/}"
+    "${CETUS_BIN}" --parse-ast "$file" >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"
+}
+
 run_typecheck_negative() {
     local file="$1"
     local expected="$2"
@@ -130,6 +136,7 @@ run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_literal.cetus" "hel
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_operations.cetus" $'abc\ntrue\ntrue\n3'
 run_positive_output_stdin "${ROOT_DIR}/tests/smoke/positive/scan_input.cetus" $'cetus\n42\n2.5\ntrue\n' $'cetus\n42\n2.5\ntrue'
 run_typecheck_positive "${ROOT_DIR}/tests/smoke/typecheck/array_type.cetus"
+run_parse_positive "${ROOT_DIR}/tests/smoke/typecheck/struct_declaration.cetus"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/array_index_non_int.cetus" "Array index must have int type"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/array_assignment_type.cetus" "Cannot assign value of different type to assignment target"
 

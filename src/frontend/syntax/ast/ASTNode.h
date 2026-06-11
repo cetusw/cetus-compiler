@@ -52,6 +52,12 @@ struct FunctionParameter
 	bool isPointer = false;
 };
 
+struct StructField
+{
+	std::string name;
+	TypeDescriptor type = Type::ERROR;
+};
+
 class StatementASTNode : public ASTNode
 {
 };
@@ -378,4 +384,18 @@ private:
 	std::vector<FunctionParameter> m_parameters;
 	std::optional<TypeDescriptor> m_returnType;
 	ASTNodePtr m_body;
+};
+
+class StructDeclarationASTNode final : public StatementASTNode
+{
+public:
+	StructDeclarationASTNode(std::string name, std::vector<StructField> fields);
+
+	[[nodiscard]] const std::string& GetName() const;
+	[[nodiscard]] const std::vector<StructField>& GetFields() const;
+	void Accept(ASTNodeVisitor& visitor) const override;
+
+private:
+	std::string m_name;
+	std::vector<StructField> m_fields;
 };

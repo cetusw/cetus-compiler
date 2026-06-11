@@ -471,3 +471,24 @@ void FunctionDeclarationASTNode::Accept(ASTNodeVisitor& visitor) const
 {
 	visitor.Visit(*this);
 }
+
+StructDeclarationASTNode::StructDeclarationASTNode(std::string name, std::vector<StructField> fields)
+	: m_name(std::move(name))
+	, m_fields(std::move(fields))
+{
+}
+
+const std::string& StructDeclarationASTNode::GetName() const
+{
+	return m_name;
+}
+
+const std::vector<StructField>& StructDeclarationASTNode::GetFields() const
+{
+	return m_fields;
+}
+
+void StructDeclarationASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}

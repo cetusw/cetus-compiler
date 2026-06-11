@@ -9,6 +9,7 @@ CETUS — TDD-ориентированный язык программирова
 - [Syntax](./spec/syntax.md)
 - [Types](./spec/types.md)
 - [Arrays](./spec/arrays.md)
+- [Structs](./spec/structs.md)
 - [Semantic Analysis](./spec/semantic-analysis.md)
 - [Statements](./spec/statements.md)
 - [Expressions](./spec/expressions.md)

@@ -5,6 +5,14 @@
 ~TopLevelDeclList~ -> ~TopLevelDecl~ @statement_list_single
 
 ~TopLevelDecl~ -> ~FunctionDecl~ @pass_expr
+~TopLevelDecl~ -> ~TypeDecl~ @pass_expr
+
+~TypeDecl~ -> TYPE IDENTIFIER STRUCT LBRACE ~StructFieldList~ RBRACE @struct_declaration
+
+~StructFieldList~ -> ~StructFieldList~ ~StructField~ @struct_field_list
+~StructFieldList~ -> ~StructField~ @struct_field_list_single
+
+~StructField~ -> IDENTIFIER ~Type~ SEMICOLON @struct_field
 
 ~FunctionDecl~ -> FUNC IDENTIFIER LPAREN RPAREN ~Block~ @function_void_no_params
 ~FunctionDecl~ -> FUNC IDENTIFIER LPAREN RPAREN ~Type~ ~Block~ @function_return_no_params

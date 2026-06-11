@@ -32,6 +32,7 @@
 ~TopLevelDeclList~ -> ~TopLevelDecl~ @statement_list_single
 
 ~TopLevelDecl~ -> ~FunctionDecl~ @pass_expr
+~TopLevelDecl~ -> ~TypeDecl~ @pass_expr
 ```
 
 Исполняемые операторы верхнего уровня являются синтаксической ошибкой.
@@ -71,6 +72,17 @@ func main() {
 ~FunctionDecl~ -> FUNC IDENTIFIER LPAREN RPAREN ~Type~ ~Block~ @function_return_no_params
 ~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~Block~ @function_void
 ~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~Type~ ~Block~ @function_return
+```
+
+Объявления struct type также являются объявлениями верхнего уровня:
+
+```text
+~TypeDecl~ -> TYPE IDENTIFIER STRUCT LBRACE ~StructFieldList~ RBRACE @struct_declaration
+
+~StructFieldList~ -> ~StructFieldList~ ~StructField~ @struct_field_list
+~StructFieldList~ -> ~StructField~ @struct_field_list_single
+
+~StructField~ -> IDENTIFIER ~Type~ SEMICOLON @struct_field
 ```
 
 ```text

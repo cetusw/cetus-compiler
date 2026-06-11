@@ -189,6 +189,17 @@ void AstDumper::Visit(const FunctionDeclarationASTNode& expr)
 	DumpChild(expr.GetBody());
 }
 
+void AstDumper::Visit(const StructDeclarationASTNode& expr)
+{
+	DumpLine("StructDeclarationASTNode(" + expr.GetName() + ")");
+	for (const StructField& field : expr.GetFields())
+	{
+		m_indent += 2;
+		DumpLine("StructField(" + FormatField(field) + ")");
+		m_indent -= 2;
+	}
+}
+
 void AstDumper::DumpChild(const ASTNode& expr)
 {
 	m_indent += 2;
@@ -232,6 +243,11 @@ std::string AstDumper::JoinParameters(const std::vector<FunctionParameter>& para
 		result += ToString(parameters[index].type);
 	}
 	return result;
+}
+
+std::string AstDumper::FormatField(const StructField& field)
+{
+	return field.name + " " + ToString(field.type);
 }
 
 std::string AstDumper::ToString(const TypeDescriptor& type)

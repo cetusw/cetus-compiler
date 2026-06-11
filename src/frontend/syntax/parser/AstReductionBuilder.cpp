@@ -62,6 +62,14 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildSingleAssignableList(std::move(values));
 	case SemanticTag::ASSIGNMENT:
 		return BuildAssignment(std::move(values));
+	case SemanticTag::STRUCT_FIELD:
+		return BuildStructField(values);
+	case SemanticTag::STRUCT_FIELD_LIST:
+		return BuildStructFieldList(std::move(values));
+	case SemanticTag::STRUCT_FIELD_LIST_SINGLE:
+		return BuildSingleStructFieldList(std::move(values));
+	case SemanticTag::STRUCT_DECLARATION:
+		return BuildStructDeclaration(std::move(values));
 	case SemanticTag::SHORT_VAR_DECLARATION:
 		return BuildShortVariableDeclaration(std::move(values));
 	case SemanticTag::VAR_INFERRED_DECLARATION:
@@ -335,6 +343,38 @@ AstSemanticValue AstReductionBuilder::BuildAssignment(std::vector<AstSemanticVal
 		std::make_unique<AssignmentASTNode>(
 			TakeExpressionList(values, 0),
 			TakeExpressionList(values, 2)),
+		std::nullopt
+	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildStructField(const std::vector<AstSemanticValue>& values)
+{
+	RequireValueCount(values, 3, "Struct field reduction");
+	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, { StructField{ TakeToken(values, 0).lexeme, TakeType(values, 1) } } };
+}
+
+AstSemanticValue AstReductionBuilder::BuildStructFieldList(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 2, "Struct field list reduction");
+	std::vector<StructField> fields = TakeStructFieldList(values, 0);
+	std::vector<StructField> nextField = TakeStructFieldList(values, 1);
+	fields.push_back(std::move(nextField.front()));
+	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, std::move(fields) };
+}
+
+AstSemanticValue AstReductionBuilder::BuildSingleStructFieldList(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 1, "Single struct field list reduction");
+	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, TakeStructFieldList(values, 0) };
+}
+
+AstSemanticValue AstReductionBuilder::BuildStructDeclaration(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 6, "Struct declaration reduction");
+	return {
+		std::make_unique<StructDeclarationASTNode>(
+			TakeToken(values, 1).lexeme,
+			TakeStructFieldList(values, 4)),
 		std::nullopt
 	};
 }
@@ -660,6 +700,18 @@ std::vector<FunctionParameter> AstReductionBuilder::TakeParameterList(
 	}
 
 	return std::move(values[index].parameters);
+}
+
+std::vector<StructField> AstReductionBuilder::TakeStructFieldList(
+	std::vector<AstSemanticValue>& values,
+	const std::size_t index)
+{
+	if (values[index].fields.empty())
+	{
+		throw std::runtime_error("Expected struct field list semantic value.");
+	}
+
+	return std::move(values[index].fields);
 }
 
 TypeDescriptor AstReductionBuilder::TakeType(const std::vector<AstSemanticValue>& values, const std::size_t index)

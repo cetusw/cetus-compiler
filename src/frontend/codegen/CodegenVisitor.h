@@ -41,6 +41,7 @@ public:
 	void Visit(const ContinueASTNode& expr) override;
 	void Visit(const ReturnASTNode& expr) override;
 	void Visit(const FunctionDeclarationASTNode& expr) override;
+	void Visit(const StructDeclarationASTNode& expr) override;
 
 private:
 	[[nodiscard]] BytecodeEmitter& CurrentEmitter();

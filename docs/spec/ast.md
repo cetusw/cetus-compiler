@@ -48,6 +48,7 @@ AST-узлы:
 - `IfASTNode`;
 - `ReturnASTNode`;
 - `FunctionDeclarationASTNode`.
+- `StructDeclarationASTNode`.
 
 ## Statement и Expression
 
@@ -91,6 +92,8 @@ AST-узлы:
 | `@function_return_no_params` | `FunctionDeclarationASTNode` без параметров с возвращаемым значением |
 | `@function_void` | `FunctionDeclarationASTNode` с параметрами без возвращаемого значения |
 | `@function_return` | `FunctionDeclarationASTNode` с параметрами и возвращаемым значением |
+| `@struct_declaration` | `StructDeclarationASTNode` |
+| `@struct_field` | `StructField` |
 
 ## Аннотации типов
 
