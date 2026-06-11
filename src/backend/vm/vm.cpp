@@ -49,7 +49,7 @@ InterpretResult VM::InterpretProgram(const Program& program)
 	return InterpretFunction(program.entryPoint);
 }
 
-inline uint8_t VM::ReadByte()
+uint8_t VM::ReadByte()
 {
 	return *GetCurrentFrame().ip++;
 }
