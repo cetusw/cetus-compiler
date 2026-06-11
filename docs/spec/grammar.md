@@ -82,6 +82,7 @@
 
 ~Type~ -> IDENTIFIER @type_name
 ~Type~ -> LBRACKET INT_LIT RBRACKET ~Type~ @array_type
+~Type~ -> LBRACKET RBRACKET ~Type~ @slice_type
 
 ~ParamList~ -> ~ParamList~ COMMA ~Param~ @param_list
 ~ParamList~ -> ~Param~ @param_list_single
@@ -155,6 +156,7 @@ Live grammar сейчас поддерживает только index access:
 ```text
 ~Type~ -> IDENTIFIER @type_name
 ~Type~ -> LBRACKET INT_LIT RBRACKET ~Type~ @array_type
+~Type~ -> LBRACKET RBRACKET ~Type~ @slice_type
 ```
 
 Live grammar поддерживает assignable targets для assignment:

@@ -12,6 +12,7 @@ TypeDescriptor::TypeDescriptor(const Type scalarType)
 
 TypeDescriptor& TypeDescriptor::operator=(const Type scalarType)
 {
+	m_kind = Kind::SCALAR;
 	m_scalarType = scalarType;
 	m_arrayLength = 0;
 	m_elementType.reset();
@@ -22,8 +23,18 @@ TypeDescriptor& TypeDescriptor::operator=(const Type scalarType)
 TypeDescriptor TypeDescriptor::Array(const int length, TypeDescriptor elementType)
 {
 	TypeDescriptor result;
+	result.m_kind = Kind::ARRAY;
 	result.m_scalarType = Type::ERROR;
 	result.m_arrayLength = length;
+	result.m_elementType = std::make_shared<TypeDescriptor>(std::move(elementType));
+	return result;
+}
+
+TypeDescriptor TypeDescriptor::Slice(TypeDescriptor elementType)
+{
+	TypeDescriptor result;
+	result.m_kind = Kind::SLICE;
+	result.m_scalarType = Type::ERROR;
 	result.m_elementType = std::make_shared<TypeDescriptor>(std::move(elementType));
 	return result;
 }
@@ -31,6 +42,8 @@ TypeDescriptor TypeDescriptor::Array(const int length, TypeDescriptor elementTyp
 TypeDescriptor TypeDescriptor::Named(std::string name)
 {
 	TypeDescriptor result;
+	result.m_kind = Kind::NAMED;
+	result.m_scalarType = Type::ERROR;
 	result.m_name = std::move(name);
 	return result;
 }
@@ -42,12 +55,17 @@ Type TypeDescriptor::GetScalarType() const
 
 bool TypeDescriptor::IsArray() const
 {
-	return m_elementType != nullptr;
+	return m_kind == Kind::ARRAY;
+}
+
+bool TypeDescriptor::IsSlice() const
+{
+	return m_kind == Kind::SLICE;
 }
 
 bool TypeDescriptor::IsNamed() const
 {
-	return !m_name.empty();
+	return m_kind == Kind::NAMED;
 }
 
 int TypeDescriptor::GetArrayLength() const
@@ -61,7 +79,7 @@ int TypeDescriptor::GetArrayLength() const
 
 const TypeDescriptor& TypeDescriptor::GetElementType() const
 {
-	if (!IsArray())
+	if (!IsArray() && !IsSlice())
 	{
 		throw std::logic_error("Scalar type does not have element type.");
 	}
@@ -83,6 +101,10 @@ std::string TypeDescriptor::ToString() const
 	{
 		return "[" + std::to_string(m_arrayLength) + "]" + m_elementType->ToString();
 	}
+	if (IsSlice())
+	{
+		return "[]" + m_elementType->ToString();
+	}
 	if (IsNamed())
 	{
 		return m_name;
@@ -103,23 +125,24 @@ std::string TypeDescriptor::ToString() const
 
 bool operator==(const TypeDescriptor& left, const TypeDescriptor& right)
 {
-	if (left.IsArray() != right.IsArray())
+	if (left.m_kind != right.m_kind)
 	{
 		return false;
 	}
-	if (left.IsNamed() != right.IsNamed())
+
+	switch (left.m_kind)
 	{
-		return false;
-	}
-	if (!left.IsArray())
-	{
-		if (left.IsNamed())
-		{
-			return left.m_name == right.m_name;
-		}
+	case TypeDescriptor::Kind::SCALAR:
 		return left.m_scalarType == right.m_scalarType;
+	case TypeDescriptor::Kind::ARRAY:
+		return left.m_arrayLength == right.m_arrayLength && left.GetElementType() == right.GetElementType();
+	case TypeDescriptor::Kind::SLICE:
+		return left.GetElementType() == right.GetElementType();
+	case TypeDescriptor::Kind::NAMED:
+		return left.m_name == right.m_name;
 	}
-	return left.m_arrayLength == right.m_arrayLength && left.GetElementType() == right.GetElementType();
+
+	return false;
 }
 
 bool operator!=(const TypeDescriptor& left, const TypeDescriptor& right)
@@ -129,7 +152,7 @@ bool operator!=(const TypeDescriptor& left, const TypeDescriptor& right)
 
 bool operator==(const TypeDescriptor& left, const Type right)
 {
-	return !left.IsArray() && !left.IsNamed() && left.m_scalarType == right;
+	return left.m_kind == TypeDescriptor::Kind::SCALAR && left.m_scalarType == right;
 }
 
 bool operator!=(const TypeDescriptor& left, const Type right)

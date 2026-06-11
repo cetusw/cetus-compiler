@@ -142,6 +142,7 @@ run_positive_output "${ROOT_DIR}/tests/smoke/positive/method_ref_receiver.cetus"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/struct_basic.cetus" "1"
 run_positive_output_stdin "${ROOT_DIR}/tests/smoke/positive/scan_input.cetus" $'cetus\n42\n2.5\ntrue\n' $'cetus\n42\n2.5\ntrue'
 run_typecheck_positive "${ROOT_DIR}/tests/smoke/typecheck/array_type.cetus"
+run_typecheck_positive "${ROOT_DIR}/tests/smoke/typecheck/slice_type.cetus"
 run_parse_positive "${ROOT_DIR}/tests/smoke/typecheck/struct_declaration.cetus"
 run_typecheck_positive "${ROOT_DIR}/tests/smoke/typecheck/struct_type_symbol.cetus"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/array_index_non_int.cetus" "Array index must have int type"

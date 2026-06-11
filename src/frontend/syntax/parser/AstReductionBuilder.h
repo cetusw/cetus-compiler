@@ -40,6 +40,7 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildSingleExpressionList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildTypeName(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildArrayType(const std::vector<AstSemanticValue>& values);
+	[[nodiscard]] static AstSemanticValue BuildSliceType(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildParameter(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildPointerParameter(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildParameterList(std::vector<AstSemanticValue> values);

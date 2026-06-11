@@ -128,6 +128,7 @@ func main() {
 ```text
 ~Type~ -> IDENTIFIER @type_name
 ~Type~ -> LBRACKET INT_LIT RBRACKET ~Type~ @array_type
+~Type~ -> LBRACKET RBRACKET ~Type~ @slice_type
 ```
 
 Целевой синтаксис массивов расширяет type grammar формой `[N]T`:

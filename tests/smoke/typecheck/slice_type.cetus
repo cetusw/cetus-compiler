@@ -1,0 +1,11 @@
+func first(values []int) int {
+    return values[0];
+}
+
+func count(values []int) int {
+    return len(values);
+}
+
+func main() {
+    var local []int;
+}

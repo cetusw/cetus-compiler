@@ -40,6 +40,8 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildTypeName(values);
 	case SemanticTag::ARRAY_TYPE:
 		return BuildArrayType(values);
+	case SemanticTag::SLICE_TYPE:
+		return BuildSliceType(values);
 	case SemanticTag::PARAM:
 		return BuildParameter(values);
 	case SemanticTag::POINTER_PARAM:
@@ -266,6 +268,12 @@ AstSemanticValue AstReductionBuilder::BuildArrayType(const std::vector<AstSemant
 		throw std::runtime_error("Array length must be positive.");
 	}
 	return { nullptr, std::nullopt, {}, {}, {}, TypeDescriptor::Array(length, TakeType(values, 3)) };
+}
+
+AstSemanticValue AstReductionBuilder::BuildSliceType(const std::vector<AstSemanticValue>& values)
+{
+	RequireValueCount(values, 3, "Slice type reduction");
+	return { nullptr, std::nullopt, {}, {}, {}, TypeDescriptor::Slice(TakeType(values, 2)) };
 }
 
 AstSemanticValue AstReductionBuilder::BuildParameter(const std::vector<AstSemanticValue>& values)

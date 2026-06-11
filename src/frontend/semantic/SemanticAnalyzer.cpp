@@ -165,9 +165,9 @@ void SemanticAnalyzer::Visit(const IndexASTNode& node)
 	{
 		hasError = true;
 	}
-	else if (!objectType.IsArray())
+	else if (!objectType.IsArray() && !objectType.IsSlice())
 	{
-		AddDiagnostic("Index access expects array value.");
+		AddDiagnostic("Index access expects array or slice value.");
 		hasError = true;
 	}
 
@@ -348,9 +348,9 @@ void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, c
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
-		if (argumentTypes.front() != Type::STRING && !argumentTypes.front().IsArray())
+		if (argumentTypes.front() != Type::STRING && !argumentTypes.front().IsArray() && !argumentTypes.front().IsSlice())
 		{
-			AddDiagnostic("len expects string or array argument.");
+			AddDiagnostic("len expects string, array or slice argument.");
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
@@ -408,7 +408,7 @@ bool SemanticAnalyzer::ValidateTypeReference(const TypeDescriptor& type, const c
 	{
 		return false;
 	}
-	if (type.IsArray())
+	if (type.IsArray() || type.IsSlice())
 	{
 		return ValidateTypeReference(type.GetElementType(), context);
 	}

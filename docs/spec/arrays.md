@@ -208,6 +208,7 @@ Live grammar поддерживает array type:
 ```text
 ~Type~ -> IDENTIFIER @type_name
 ~Type~ -> LBRACKET INT_LIT RBRACKET ~Type~ @array_type
+~Type~ -> LBRACKET RBRACKET ~Type~ @slice_type
 ```
 
 Live grammar поддерживает assignable targets для assignment:

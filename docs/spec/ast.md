@@ -45,7 +45,7 @@ AST-узлы:
 - `MemberAccessASTNode`;
 - `IndexASTNode`;
 - `CallExpressionASTNode`;
-- `TypeDescriptor` описывает scalar, array и named types для declared/inferred types;
+- `TypeDescriptor` описывает scalar, fixed array, slice и named types для declared/inferred types;
 - будущий `ArrayLiteralASTNode` будет добавлен вместе с реализацией array literals;
 - `IfASTNode`;
 - `ReturnASTNode`;

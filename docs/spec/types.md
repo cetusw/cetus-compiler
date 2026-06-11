@@ -168,13 +168,22 @@ func main() {
 
 Длина является частью типа. Поэтому `[3]int` и `[4]int` являются разными типами.
 
+Slice имеет тип элемента, но не содержит длину в типе:
+
+```cetus
+[]int
+[][]float
+```
+
+`[]int` и `[3]int` являются разными типами. `TypeDescriptor` представляет fixed array как `Array(length, elementType)`, а slice как `Slice(elementType)`.
+
 Многомерный массив задаётся как массив массивов:
 
 ```cetus
 [2][3]int
 ```
 
-На текущем этапе parser и semantic analyzer понимают array type в typed declarations, function parameters и return types. Runtime поддерживает default array creation, index reading, bounds check и `len(array)`. Array literals и assignment by index добавляются отдельными задачами.
+На текущем этапе parser и semantic analyzer понимают fixed array type и slice type в typed declarations, function parameters и return types. Runtime поддерживает default fixed array creation, fixed array index reading, bounds check и `len(array)`. Runtime slice values, slice literals и assignment by index добавляются отдельными задачами.
 
 ## Пользовательские Типы
 

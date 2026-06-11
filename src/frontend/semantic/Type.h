@@ -21,10 +21,12 @@ public:
 	TypeDescriptor& operator=(Type scalarType);
 
 	[[nodiscard]] static TypeDescriptor Array(int length, TypeDescriptor elementType);
+	[[nodiscard]] static TypeDescriptor Slice(TypeDescriptor elementType);
 	[[nodiscard]] static TypeDescriptor Named(std::string name);
 
 	[[nodiscard]] Type GetScalarType() const;
 	[[nodiscard]] bool IsArray() const;
+	[[nodiscard]] bool IsSlice() const;
 	[[nodiscard]] bool IsNamed() const;
 	[[nodiscard]] int GetArrayLength() const;
 	[[nodiscard]] const TypeDescriptor& GetElementType() const;
@@ -39,6 +41,15 @@ public:
 	friend bool operator!=(Type left, const TypeDescriptor& right);
 
 private:
+	enum class Kind
+	{
+		SCALAR,
+		ARRAY,
+		SLICE,
+		NAMED
+	};
+
+	Kind m_kind = Kind::SCALAR;
 	Type m_scalarType = Type::ERROR;
 	int m_arrayLength = 0;
 	std::shared_ptr<TypeDescriptor> m_elementType;
