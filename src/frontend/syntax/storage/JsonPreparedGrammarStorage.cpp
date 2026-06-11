@@ -133,6 +133,7 @@ std::string JsonPreparedGrammarStorage::SerializeSemanticTag(const SemanticTag t
 	case SemanticTag::ASSIGNABLE_LIST: return "assignable_list";
 	case SemanticTag::ASSIGNABLE_LIST_SINGLE: return "assignable_list_single";
 	case SemanticTag::ASSIGNMENT: return "assignment";
+	case SemanticTag::INCREMENT: return "increment";
 	case SemanticTag::STRUCT_FIELD: return "struct_field";
 	case SemanticTag::STRUCT_FIELD_LIST: return "struct_field_list";
 	case SemanticTag::STRUCT_FIELD_LIST_SINGLE: return "struct_field_list_single";

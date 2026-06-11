@@ -28,9 +28,12 @@ a := 2;
 var b = 3;
 printf(a);
 a + 1;
+i++;
 ```
 
 Выражение, записанное как простой оператор, представляется как `ExpressionStatementASTNode` и имеет тип `void`.
+
+Postfix increment `i++` представляется как `IncrementASTNode`. Это statement, а не expression: значение `i++` нельзя использовать внутри другого выражения. Target должен быть assignable `int`; codegen выполняет его как `i = i + 1`.
 
 ## Объявления переменных
 

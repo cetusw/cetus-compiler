@@ -37,6 +37,7 @@ enum class SemanticTag
 	ASSIGNABLE_LIST,
 	ASSIGNABLE_LIST_SINGLE,
 	ASSIGNMENT,
+	INCREMENT,
 	STRUCT_FIELD,
 	STRUCT_FIELD_LIST,
 	STRUCT_FIELD_LIST_SINGLE,
@@ -103,6 +104,7 @@ enum class SemanticTag
 	if (value == "assignable_list") return SemanticTag::ASSIGNABLE_LIST;
 	if (value == "assignable_list_single") return SemanticTag::ASSIGNABLE_LIST_SINGLE;
 	if (value == "assignment") return SemanticTag::ASSIGNMENT;
+	if (value == "increment") return SemanticTag::INCREMENT;
 	if (value == "struct_field") return SemanticTag::STRUCT_FIELD;
 	if (value == "struct_field_list") return SemanticTag::STRUCT_FIELD_LIST;
 	if (value == "struct_field_list_single") return SemanticTag::STRUCT_FIELD_LIST_SINGLE;

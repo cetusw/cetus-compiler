@@ -562,6 +562,24 @@ void SemanticAnalyzer::Visit(const AssignmentASTNode& node)
 	SetCurrentType(node, HasError(valueTypes) || m_diagnostics.size() != diagnosticCount ? Type::ERROR : Type::VOID);
 }
 
+void SemanticAnalyzer::Visit(const IncrementASTNode& node)
+{
+	const TypeDescriptor targetType = AnalyzeAssignmentTarget(node.GetTarget());
+	if (targetType == Type::ERROR)
+	{
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+	if (targetType != Type::INT)
+	{
+		AddDiagnostic("Increment target must have int type.");
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+
+	SetCurrentType(node, Type::VOID);
+}
+
 void SemanticAnalyzer::Visit(const ShortVariableDeclarationASTNode& node)
 {
 	const std::size_t diagnosticCount = m_diagnostics.size();
@@ -626,6 +644,7 @@ TypeDescriptor SemanticAnalyzer::AnalyzeAssignmentTarget(const ASTNode& target)
 			AddDiagnostic("Cannot assign to non-variable identifier: " + identifier->GetName());
 			return Type::ERROR;
 		}
+		target.SetInferredType(existing->type);
 		return existing->type;
 	}
 

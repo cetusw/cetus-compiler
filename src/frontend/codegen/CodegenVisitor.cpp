@@ -335,6 +335,28 @@ void CodegenVisitor::Visit(const AssignmentASTNode& expr)
 	}
 }
 
+void CodegenVisitor::Visit(const IncrementASTNode& expr)
+{
+	if (!EnsureTyped(expr))
+	{
+		return;
+	}
+
+	expr.GetTarget().Accept(*this);
+	if (m_error.has_value())
+	{
+		return;
+	}
+	CurrentEmitter().EmitConstant(Value(static_cast<RuntimeInt>(1)));
+	CurrentEmitter().EmitOpcode(OP_ADD);
+	EmitAssignmentTarget(expr.GetTarget());
+	if (m_error.has_value())
+	{
+		return;
+	}
+	CurrentEmitter().EmitOpcode(OP_POP);
+}
+
 void CodegenVisitor::Visit(const ShortVariableDeclarationASTNode& expr)
 {
 	if (!EnsureTyped(expr))

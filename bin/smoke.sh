@@ -127,6 +127,7 @@ run_negative "${ROOT_DIR}/tests/smoke/negative/array_bounds.cetus" "VM execution
 
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/array_basic.cetus" $'0\n7\n3\n5\n0'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/if_nested_empty.cetus" $'1\n2'
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/increment.cetus" "3"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/for_condition.cetus" $'0\n1\n2'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/for_classic.cetus" $'0\n1\n2'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/for_break_continue.cetus" $'0\n2\n3'
@@ -144,6 +145,7 @@ run_parse_positive "${ROOT_DIR}/tests/smoke/typecheck/struct_declaration.cetus"
 run_typecheck_positive "${ROOT_DIR}/tests/smoke/typecheck/struct_type_symbol.cetus"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/array_index_non_int.cetus" "Array index must have int type"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/array_assignment_type.cetus" "Cannot assign value of different type to assignment target"
+run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/increment_non_int.cetus" "Increment target must have int type"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/struct_duplicate_field.cetus" "Struct field is already declared"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/struct_unknown_type.cetus" "Unknown type in variable declaration"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/struct_unknown_field.cetus" "Struct field is not declared"

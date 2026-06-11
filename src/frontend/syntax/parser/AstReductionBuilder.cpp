@@ -66,6 +66,8 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildSingleAssignableList(std::move(values));
 	case SemanticTag::ASSIGNMENT:
 		return BuildAssignment(std::move(values));
+	case SemanticTag::INCREMENT:
+		return BuildIncrement(std::move(values));
 	case SemanticTag::STRUCT_FIELD:
 		return BuildStructField(values);
 	case SemanticTag::STRUCT_FIELD_LIST:
@@ -381,6 +383,12 @@ AstSemanticValue AstReductionBuilder::BuildAssignment(std::vector<AstSemanticVal
 			TakeExpressionList(values, 2)),
 		std::nullopt
 	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildIncrement(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 2, "Increment reduction");
+	return { std::make_unique<IncrementASTNode>(TakeNode(values, 0)), std::nullopt };
 }
 
 AstSemanticValue AstReductionBuilder::BuildStructField(const std::vector<AstSemanticValue>& values)

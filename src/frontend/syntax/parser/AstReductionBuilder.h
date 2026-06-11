@@ -53,6 +53,7 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildAssignableList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildSingleAssignableList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildAssignment(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildIncrement(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildStructField(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildStructFieldList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildSingleStructFieldList(std::vector<AstSemanticValue> values);

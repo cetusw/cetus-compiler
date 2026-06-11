@@ -28,6 +28,7 @@ public:
 	void Visit(const IndexASTNode& node) override;
 	void Visit(const CallExpressionASTNode& node) override;
 	void Visit(const AssignmentASTNode& node) override;
+	void Visit(const IncrementASTNode& node) override;
 	void Visit(const ShortVariableDeclarationASTNode& node) override;
 	void Visit(const VariableDeclarationASTNode& node) override;
 	void Visit(const ExpressionStatementASTNode& node) override;

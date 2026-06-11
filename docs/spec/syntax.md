@@ -95,6 +95,7 @@ func main() {
 ~SimpleStmt~ -> VAR ~IdentifierList~ ~Type~ @var_typed_declaration
 ~SimpleStmt~ -> VAR ~IdentifierList~ ~Type~ EQUAL ~ExpressionList~ @var_typed_initialized_declaration
 ~SimpleStmt~ -> ~AssignableList~ EQUAL ~ExpressionList~ @assignment
+~SimpleStmt~ -> ~LargId~ PLUS_PLUS @increment
 ~SimpleStmt~ -> ~Con~ @expression_statement
 
 ~AssignableList~ -> ~AssignableList~ COMMA ~LargId~ @assignable_list

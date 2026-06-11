@@ -228,6 +228,18 @@ private:
 	std::vector<ASTNodePtr> m_values;
 };
 
+class IncrementASTNode final : public StatementASTNode
+{
+public:
+	explicit IncrementASTNode(ASTNodePtr target);
+
+	[[nodiscard]] const ASTNode& GetTarget() const;
+	void Accept(ASTNodeVisitor& visitor) const override;
+
+private:
+	ASTNodePtr m_target;
+};
+
 class ShortVariableDeclarationASTNode final : public StatementASTNode
 {
 public:
