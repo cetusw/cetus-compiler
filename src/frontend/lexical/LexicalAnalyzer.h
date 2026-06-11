@@ -25,6 +25,8 @@ private:
 	int m_start = 0;
 	int m_current = 0;
 	int m_line = 1;
+	int m_parenDepth = 0;
+	int m_bracketDepth = 0;
 
 	static const std::unordered_map<std::string_view, TokenType> m_keywords;
 
@@ -41,6 +43,9 @@ private:
 	bool HandlePunctuation(char c);
 	bool HandleOperator(char c);
 
+	void HandleNewline();
+	[[nodiscard]] bool ShouldInsertSemicolon() const;
+	[[nodiscard]] static bool IsSemicolonTerminator(TokenType type);
 	[[nodiscard]] int GetEofLine() const;
 	void AddToken(TokenType type, std::string lexeme);
 	void AddToken(TokenType type, std::string lexeme, int line);

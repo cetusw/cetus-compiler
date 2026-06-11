@@ -212,7 +212,7 @@ bool LexicalAnalyzer::HandleWhitespace(const char c)
 	case '\t':
 		return true;
 	case '\n':
-		m_line++;
+		HandleNewline();
 		return true;
 	case '/':
 		return HandleComment();
@@ -227,9 +227,14 @@ bool LexicalAnalyzer::HandlePunctuation(const char c)
 	{
 	case '(':
 		AddToken(TokenType::LPAREN, "(");
+		++m_parenDepth;
 		return true;
 	case ')':
 		AddToken(TokenType::RPAREN, ")");
+		if (m_parenDepth > 0)
+		{
+			--m_parenDepth;
+		}
 		return true;
 	case '{':
 		AddToken(TokenType::LBRACE, "{");
@@ -239,9 +244,14 @@ bool LexicalAnalyzer::HandlePunctuation(const char c)
 		return true;
 	case '[':
 		AddToken(TokenType::LBRACKET, "[");
+		++m_bracketDepth;
 		return true;
 	case ']':
 		AddToken(TokenType::RBRACKET, "]");
+		if (m_bracketDepth > 0)
+		{
+			--m_bracketDepth;
+		}
 		return true;
 	case ',':
 		AddToken(TokenType::COMMA, ",");
@@ -401,6 +411,50 @@ bool LexicalAnalyzer::HandleOperator(const char c)
 		return MatchToken('-', TokenType::MINUS_MINUS, TokenType::MINUS);
 	case '|':
 		return MatchToken('|', TokenType::OR_OR, TokenType::BIT_OR);
+	default:
+		return false;
+	}
+}
+
+void LexicalAnalyzer::HandleNewline()
+{
+	const int newlineLine = m_line;
+	if (ShouldInsertSemicolon())
+	{
+		AddToken(TokenType::SEMICOLON, ";", newlineLine);
+	}
+	++m_line;
+}
+
+bool LexicalAnalyzer::ShouldInsertSemicolon() const
+{
+	if (m_tokens.empty() || m_parenDepth > 0 || m_bracketDepth > 0)
+	{
+		return false;
+	}
+
+	return IsSemicolonTerminator(m_tokens.back().type);
+}
+
+bool LexicalAnalyzer::IsSemicolonTerminator(const TokenType type)
+{
+	switch (type)
+	{
+	case TokenType::IDENTIFIER:
+	case TokenType::STRING:
+	case TokenType::INT_LIT:
+	case TokenType::FLOAT_LIT:
+	case TokenType::TRUE:
+	case TokenType::FALSE:
+	case TokenType::NIL:
+	case TokenType::RPAREN:
+	case TokenType::RBRACKET:
+	case TokenType::BREAK:
+	case TokenType::CONTINUE:
+	case TokenType::RETURN:
+	case TokenType::PLUS_PLUS:
+	case TokenType::MINUS_MINUS:
+		return true;
 	default:
 		return false;
 	}

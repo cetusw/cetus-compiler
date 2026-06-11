@@ -132,6 +132,7 @@ run_positive_output "${ROOT_DIR}/tests/smoke/positive/for_classic.cetus" $'0\n1\
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/for_break_continue.cetus" $'0\n2\n3'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/ref_parameter.cetus" "2"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/runtime_numbers.cetus" $'1\n1.5\n1\n3\n3.5'
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/semicolon_insertion.cetus" "3"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_literal.cetus" "hello"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_operations.cetus" $'abc\ntrue\ntrue\n3'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/method_basic.cetus" "5"
