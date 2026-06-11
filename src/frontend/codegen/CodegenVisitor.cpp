@@ -183,9 +183,25 @@ void CodegenVisitor::Visit(const MemberAccessASTNode&)
 	Fail("Member access code generation is not implemented yet.");
 }
 
-void CodegenVisitor::Visit(const IndexASTNode&)
+void CodegenVisitor::Visit(const IndexASTNode& expr)
 {
-	Fail("Index access code generation is not implemented yet.");
+	if (!EnsureTyped(expr))
+	{
+		return;
+	}
+
+	expr.GetObject().Accept(*this);
+	if (m_error.has_value())
+	{
+		return;
+	}
+	expr.GetIndex().Accept(*this);
+	if (m_error.has_value())
+	{
+		return;
+	}
+
+	CurrentEmitter().EmitIndexLoad();
 }
 
 void CodegenVisitor::Visit(const CallExpressionASTNode& expr)
@@ -295,14 +311,9 @@ void CodegenVisitor::Visit(const VariableDeclarationASTNode& expr)
 	if (values.empty())
 	{
 		const TypeDescriptor defaultType = expr.GetDeclaredType().value_or(Type::ERROR);
-		if (defaultType.IsArray())
-		{
-			Fail("Array code generation is not implemented yet.");
-			return;
-		}
 		for (const std::string& name : names)
 		{
-			EmitDefault(defaultType.GetScalarType());
+			EmitDefault(defaultType);
 			m_functionStack.back().DeclareLocal(name);
 		}
 		return;
@@ -601,7 +612,27 @@ void CodegenVisitor::Fail(std::string message)
 	}
 }
 
-void CodegenVisitor::EmitDefault(const Type type)
+void CodegenVisitor::EmitDefault(const TypeDescriptor& type)
+{
+	if (type.IsArray())
+	{
+		const int length = type.GetArrayLength();
+		for (int index = 0; index < length; ++index)
+		{
+			EmitDefault(type.GetElementType());
+			if (m_error.has_value())
+			{
+				return;
+			}
+		}
+		CurrentEmitter().EmitArray(length);
+		return;
+	}
+
+	EmitScalarDefault(type.GetScalarType());
+}
+
+void CodegenVisitor::EmitScalarDefault(const Type type)
 {
 	switch (type)
 	{

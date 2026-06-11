@@ -1,5 +1,6 @@
 #pragma once
 
+#include "objects/ObjArray.h"
 #include "objects/ObjRef.h"
 #include "objects/ObjString.h"
 #include "types/Value.h"
@@ -26,11 +27,19 @@ inline Value NativePrintln(int argc, Value* args)
 
 inline Value NativeLen(int argc, Value* args)
 {
-	if (argc != 1 || !args[0].IsString())
+	if (argc != 1)
 	{
 		return {};
 	}
-	return Value(static_cast<RuntimeInt>(args[0].AsString().length()));
+	if (args[0].IsString())
+	{
+		return Value(static_cast<RuntimeInt>(args[0].AsString().length()));
+	}
+	if (args[0].IsArray())
+	{
+		return Value(static_cast<RuntimeInt>(args[0].AsArray()->Length()));
+	}
+	return {};
 }
 
 inline Value NativeScan(int argc, Value* args)

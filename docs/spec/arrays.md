@@ -22,7 +22,9 @@
 ~LargId~ -> ~LargId~ LBRACKET ~Exp~ RBRACKET @index_access
 ```
 
-Array type и semantic analysis для индексного чтения добавляются в фазе 6.2. Array literal, assignment by index, codegen и runtime будут добавлены следующими задачами фазы 6. До их реализации соответствующие примеры ниже являются спецификацией поведения, а не гарантией текущего выполнения.
+Array type и semantic analysis для индексного чтения добавлены в фазе 6.2. Runtime `ObjArray`, default array creation, index reading, bounds check и `len(array)` добавлены в фазе 6.3.
+
+Array literal и assignment by index будут добавлены следующими задачами фазы 6. До их реализации соответствующие примеры ниже являются спецификацией поведения, а не гарантией текущего выполнения.
 
 ## Тип массива
 
@@ -118,7 +120,7 @@ func main() {
 
 ## Присваивание по индексу
 
-Index expression может быть lvalue:
+Index expression является целевым lvalue-синтаксисом:
 
 ```cetus
 func main() {
@@ -131,6 +133,8 @@ func main() {
 Тип правой части должен быть совместим с типом элемента массива.
 
 Присваивание по индексу не меняет длину массива.
+
+На текущем runtime-этапе чтение `array[index]` реализовано, но запись `array[index] = value` ещё не реализована.
 
 ## Многомерные массивы
 

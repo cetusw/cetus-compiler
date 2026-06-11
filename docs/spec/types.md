@@ -173,7 +173,7 @@ func main() {
 [2][3]int
 ```
 
-На текущем этапе parser и semantic analyzer понимают array type в typed declarations, function parameters и return types. Runtime-представление, array literals, assignment by index и codegen добавляются отдельными задачами.
+На текущем этапе parser и semantic analyzer понимают array type в typed declarations, function parameters и return types. Runtime поддерживает default array creation, index reading, bounds check и `len(array)`. Array literals и assignment by index добавляются отдельными задачами.
 
 ## Совместимость
 

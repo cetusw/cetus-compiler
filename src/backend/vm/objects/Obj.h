@@ -7,6 +7,7 @@ enum class ObjType
 	FUNCTION,
 	NATIVE,
 	REF,
+	ARRAY,
 };
 
 class Obj

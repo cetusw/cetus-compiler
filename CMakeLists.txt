@@ -76,14 +76,17 @@ add_library(cetus_backend_vm STATIC
         src/backend/vm/types/Chunk.cpp
         src/backend/vm/types/Value.cpp
         src/backend/vm/objects/Obj.cpp
+        src/backend/vm/objects/ObjArray.cpp
         src/backend/vm/objects/ObjRef.cpp
         src/backend/vm/objects/ObjString.cpp
         src/backend/vm/disassembler/Disassembler.cpp
         src/backend/vm/parser/BytecodeParser.cpp
+        src/backend/vm/instructions/ArrayInstruction.cpp
         src/backend/vm/instructions/CallInstruction.cpp
         src/backend/vm/instructions/ConstantInstruction.cpp
         src/backend/vm/instructions/DefineGlobalInstruction.cpp
         src/backend/vm/instructions/GetGlobalInstruction.cpp
+        src/backend/vm/instructions/GetIndexInstruction.cpp
         src/backend/vm/instructions/GetLocalInstruction.cpp
         src/backend/vm/instructions/JumpIfFalseInstruction.cpp
         src/backend/vm/instructions/JumpInstruction.cpp

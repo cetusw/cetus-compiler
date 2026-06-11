@@ -27,6 +27,8 @@ public:
 	void EmitGlobalDefine(const std::string& name) const;
 	void EmitGlobalSet(const std::string& name) const;
 	void EmitGlobalRef(const std::string& name) const;
+	void EmitArray(int length) const;
+	void EmitIndexLoad() const;
 
 private:
 	static constexpr int DEFAULT_LINE = 1;

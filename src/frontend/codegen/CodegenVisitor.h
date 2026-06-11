@@ -46,7 +46,8 @@ public:
 private:
 	[[nodiscard]] BytecodeEmitter& CurrentEmitter();
 	void Fail(std::string message);
-	void EmitDefault(Type type);
+	void EmitDefault(const TypeDescriptor& type);
+	void EmitScalarDefault(Type type);
 	void EmitBinaryOperation(BinaryOperator op);
 	void EmitLogicalAnd(const BinaryASTNode& expr);
 	void EmitLogicalOr(const BinaryASTNode& expr);

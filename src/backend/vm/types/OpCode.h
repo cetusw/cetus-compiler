@@ -33,6 +33,8 @@ enum OpCode : uint8_t
 	OP_LOOP,
 
 	OP_CALL,
+	OP_ARRAY,
+	OP_GET_INDEX,
 
 	OP_RETURN,
 };

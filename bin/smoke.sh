@@ -117,7 +117,9 @@ run_negative "${ROOT_DIR}/tests/smoke/negative/continue_outside_loop.cetus" "Con
 run_negative "${ROOT_DIR}/tests/smoke/negative/for_post_declaration.cetus" "For post statement cannot declare variables"
 run_negative "${ROOT_DIR}/tests/smoke/negative/ref_temporary.cetus" "Pointer parameter expects address of assignable identifier argument"
 run_negative "${ROOT_DIR}/tests/smoke/negative/function_arity.cetus" "Function call argument count does not match function parameters"
+run_negative "${ROOT_DIR}/tests/smoke/negative/array_bounds.cetus" "VM execution failed"
 
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/array_basic.cetus" $'0\n3\n0\n0'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/if_nested_empty.cetus" $'1\n2'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/for_condition.cetus" $'0\n1\n2'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/for_classic.cetus" $'0\n1\n2'

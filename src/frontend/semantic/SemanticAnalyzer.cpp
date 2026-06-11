@@ -247,9 +247,9 @@ void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, c
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
-		if (argumentTypes.front() != Type::STRING)
+		if (argumentTypes.front() != Type::STRING && !argumentTypes.front().IsArray())
 		{
-			AddDiagnostic("len expects string argument.");
+			AddDiagnostic("len expects string or array argument.");
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}

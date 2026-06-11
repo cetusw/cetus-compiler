@@ -119,6 +119,17 @@ void BytecodeEmitter::EmitGlobalRef(const std::string& name) const
 	EmitOperandByte(constantIndex);
 }
 
+void BytecodeEmitter::EmitArray(const int length) const
+{
+	EmitOpcode(OP_ARRAY);
+	EmitOperandByte(length);
+}
+
+void BytecodeEmitter::EmitIndexLoad() const
+{
+	EmitOpcode(OP_GET_INDEX);
+}
+
 void BytecodeEmitter::Fail(std::string message) const
 {
 	if (!m_error.has_value())

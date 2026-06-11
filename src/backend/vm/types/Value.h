@@ -9,6 +9,7 @@
 class ObjFunction;
 class ObjNative;
 class ObjRef;
+class ObjArray;
 
 class Value
 {
@@ -29,6 +30,7 @@ public:
 	[[nodiscard]] bool IsFunction() const;
 	[[nodiscard]] bool IsNative() const;
 	[[nodiscard]] bool IsRef() const;
+	[[nodiscard]] bool IsArray() const;
 
 	[[nodiscard]] RuntimeInt AsInt() const;
 	[[nodiscard]] RuntimeFloat AsFloat() const;
@@ -38,6 +40,7 @@ public:
 	[[nodiscard]] std::shared_ptr<ObjFunction> AsFunction() const;
 	[[nodiscard]] std::shared_ptr<ObjNative> AsNative() const;
 	[[nodiscard]] std::shared_ptr<ObjRef> AsRef() const;
+	[[nodiscard]] std::shared_ptr<ObjArray> AsArray() const;
 	[[nodiscard]] Value Dereference() const;
 
 	void Print() const;
