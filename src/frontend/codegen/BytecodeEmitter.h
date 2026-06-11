@@ -2,9 +2,9 @@
 
 #include "src/backend/vm/types/OpCode.h"
 #include "src/backend/vm/types/Value.h"
-#include <cstdint>
 #include <optional>
 #include <string>
+#include <vector>
 
 class Chunk;
 
@@ -30,6 +30,9 @@ public:
 	void EmitArray(int length) const;
 	void EmitIndexLoad() const;
 	void EmitIndexSet() const;
+	void EmitStruct(const std::string& typeName, const std::vector<std::string>& fieldNames) const;
+	void EmitMemberLoad(const std::string& fieldName) const;
+	void EmitMemberSet(const std::string& fieldName) const;
 
 private:
 	static constexpr int DEFAULT_LINE = 1;

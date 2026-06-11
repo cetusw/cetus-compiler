@@ -137,8 +137,22 @@ void SemanticAnalyzer::Visit(const BinaryASTNode& node)
 
 void SemanticAnalyzer::Visit(const MemberAccessASTNode& node)
 {
-	AddDiagnostic("Member access type checking is not implemented yet.");
-	SetCurrentType(node, Type::ERROR);
+	const TypeDescriptor objectType = AnalyzeChild(node.GetObject());
+	if (!ValidateValueExpression(objectType, "member access object"))
+	{
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+
+	const FieldSignature* field = ResolveField(objectType, node.GetMember());
+	if (!field)
+	{
+		AddDiagnostic("Struct field is not declared: " + objectType.ToString() + "." + node.GetMember());
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+
+	SetCurrentType(node, field->type);
 }
 
 void SemanticAnalyzer::Visit(const IndexASTNode& node)
@@ -353,6 +367,30 @@ bool SemanticAnalyzer::ValidateStructFields(const StructDeclarationASTNode& node
 	return !hasError;
 }
 
+const FieldSignature* SemanticAnalyzer::ResolveField(const TypeDescriptor& objectType, const std::string& fieldName) const
+{
+	if (!objectType.IsNamed())
+	{
+		return nullptr;
+	}
+
+	const SemanticSymbol* symbol = m_symbolTable.Resolve(objectType.GetName());
+	if (!symbol || symbol->kind != SemanticSymbolKind::TYPE)
+	{
+		return nullptr;
+	}
+
+	for (const FieldSignature& field : symbol->fields)
+	{
+		if (field.name == fieldName)
+		{
+			return &field;
+		}
+	}
+
+	return nullptr;
+}
+
 bool SemanticAnalyzer::ValidateUserDefinedName(const std::string& name, const char* declarationKind)
 {
 	const SemanticSymbol* existing = m_symbolTable.Resolve(name);
@@ -487,7 +525,7 @@ TypeDescriptor SemanticAnalyzer::AnalyzeAssignmentTarget(const ASTNode& target)
 		return existing->type;
 	}
 
-	if (dynamic_cast<const IndexASTNode*>(&target))
+	if (dynamic_cast<const IndexASTNode*>(&target) || dynamic_cast<const MemberAccessASTNode*>(&target))
 	{
 		return AnalyzeChild(target);
 	}

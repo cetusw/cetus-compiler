@@ -45,6 +45,8 @@ static const std::unordered_map<std::string, OpCodeInfo> INSTRUCTIONS = {
 	{ "array", { OP_ARRAY, OperandType::BYTE } },
 	{ "get_index", { OP_GET_INDEX, OperandType::NONE } },
 	{ "set_index", { OP_SET_INDEX, OperandType::NONE } },
+	{ "get_member", { OP_GET_MEMBER, OperandType::BYTE } },
+	{ "set_member", { OP_SET_MEMBER, OperandType::BYTE } },
 
 	{ "jump", { OP_JUMP, OperandType::SHORT } },
 	{ "jump_if_false", { OP_JUMP_IF_FALSE, OperandType::SHORT } },

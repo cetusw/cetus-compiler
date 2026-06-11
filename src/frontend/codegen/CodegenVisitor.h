@@ -47,6 +47,7 @@ private:
 	[[nodiscard]] BytecodeEmitter& CurrentEmitter();
 	void Fail(std::string message);
 	void EmitDefault(const TypeDescriptor& type);
+	void EmitStructDefault(const TypeDescriptor& type);
 	void EmitScalarDefault(Type type);
 	void EmitAssignmentTarget(const ASTNode& target);
 	void EmitBinaryOperation(BinaryOperator op);

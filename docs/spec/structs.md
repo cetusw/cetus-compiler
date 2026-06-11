@@ -5,20 +5,31 @@
 - [Статус](#статус)
 - [Объявление типа](#объявление-типа)
 - [Поля](#поля)
+- [Использование как тип](#использование-как-тип)
+- [Runtime Instance](#runtime-instance)
+- [Member Access](#member-access)
 - [Связь с grammar](#связь-с-grammar)
 
 ## Статус
 
 Фаза 7.1 добавила syntax и AST для struct type declarations.
 
-Фаза 7.2 добавляет semantic symbol для пользовательских типов:
+Фаза 7.2 добавила semantic symbol для пользовательских типов:
 
 - struct declaration создаёт символ вида `TYPE`;
 - имя struct можно использовать как тип переменной, параметра функции, return type и элемента массива;
 - semantic analyzer проверяет дубли полей;
 - semantic analyzer проверяет, что типы полей разрешаются.
 
-Создание runtime instance, member access и методы добавляются следующими фазами 7.x.
+Фаза 7.3 добавляет runtime instance representation и member access:
+
+- `ObjStruct` хранит имя типа и значения полей;
+- default declaration `var p Point;` создаёт instance со значениями полей по умолчанию;
+- `p.x` читает поле;
+- `p.x = value;` записывает поле;
+- semantic analyzer проверяет, что поле существует.
+
+Методы добавляются следующими фазами 7.x.
 
 ## Объявление типа
 
@@ -76,7 +87,66 @@ func main() {
 }
 ```
 
-На этапе 7.2 это только semantic-level тип. Default runtime representation для struct instance и доступ к полям ещё не реализованы.
+## Runtime Instance
+
+Объявление переменной struct-типа без initializer создаёт runtime instance со значениями по умолчанию:
+
+```cetus
+type Point struct {
+    x int;
+    y int;
+}
+
+func main() {
+    var p Point; // x = 0, y = 0
+}
+```
+
+Default value строится рекурсивно:
+
+- `int` -> `0`;
+- `float` -> `0.0`;
+- `bool` -> `false`;
+- `string` -> `""`;
+- array -> массив default values;
+- struct -> `ObjStruct` с default values всех полей.
+
+## Member Access
+
+Поле struct читается через dot syntax:
+
+```cetus
+printf(p.x);
+```
+
+Запись в поле:
+
+```cetus
+p.x = 1;
+```
+
+Semantic analyzer требует, чтобы левая часть dot expression имела named struct type и чтобы поле было объявлено в layout типа.
+
+Пример:
+
+```cetus
+type Point struct {
+    x int;
+    y int;
+}
+
+func main() {
+    var p Point;
+    p.x = 1;
+    printf(p.x);
+}
+```
+
+Ожидаемый вывод:
+
+```text
+1
+```
 
 ## Связь с grammar
 

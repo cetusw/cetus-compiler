@@ -4,6 +4,7 @@
 
 - [Назначение runtime](#назначение-runtime)
 - [Состав runtime](#состав-runtime)
+- [Runtime Objects](#runtime-objects)
 - [Встроенные операции](#встроенные-операции)
 - [Ошибки выполнения](#ошибки-выполнения)
 
@@ -18,6 +19,31 @@ Runtime включает VM backend, значения времени выпол�
 > TODO
 >
 > Требуется связать полный frontend AST с генерацией байткода для VM.
+
+## Runtime Objects
+
+Heap objects используются для значений, которые не помещаются в scalar `Value` напрямую.
+
+Текущие runtime objects:
+
+- `ObjString`;
+- `ObjFunction`;
+- `ObjNative`;
+- `ObjRef`;
+- `ObjArray`;
+- `ObjStruct`.
+
+`ObjStruct` хранит имя struct-типа и значения полей. Layout полей приходит из semantic symbol типа, а instance создаётся codegen/VM при default declaration:
+
+```cetus
+var p Point;
+```
+
+Member access выполняется bytecode-инструкциями:
+
+- `OP_GET_MEMBER` читает поле из `ObjStruct`;
+- `OP_SET_MEMBER` записывает поле в `ObjStruct`;
+- `OP_STRUCT` создаёт новый `ObjStruct` из значений полей на стеке.
 
 ## Встроенные операции
 

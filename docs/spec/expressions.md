@@ -86,4 +86,16 @@ AST-узлы существуют:
 
 Индексация массива описана в [Arrays](./arrays.md). Индекс должен иметь тип `int`, а результат `array[index]` имеет тип элемента массива.
 
-Семантическая проверка member access будет определена вместе со struct support.
+Member access применяется к struct values:
+
+```cetus
+p.x
+```
+
+Левая часть должна иметь named struct type. Имя справа от `.` должно быть объявленным полем этого struct. Тип результата равен типу поля.
+
+Member access может быть assignment target:
+
+```cetus
+p.x = 1;
+```

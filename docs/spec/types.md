@@ -196,7 +196,7 @@ var points [2]Point;
 
 `TypeDescriptor` представляет такой тип как named type. Semantic analyzer разрешает имя через symbol table и требует, чтобы оно указывало на символ вида `TYPE`.
 
-Runtime-представление struct instance и member access описываются отдельной фазой.
+Runtime-представление struct instance хранится в `ObjStruct`. Default value для struct создаёт instance со значениями полей по умолчанию. Member access возвращает тип соответствующего поля.
 
 ## Совместимость
 

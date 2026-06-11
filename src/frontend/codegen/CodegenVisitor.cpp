@@ -178,9 +178,20 @@ void CodegenVisitor::Visit(const BinaryASTNode& expr)
 	EmitBinaryOperation(expr.GetOperator());
 }
 
-void CodegenVisitor::Visit(const MemberAccessASTNode&)
+void CodegenVisitor::Visit(const MemberAccessASTNode& expr)
 {
-	Fail("Member access code generation is not implemented yet.");
+	if (!EnsureTyped(expr))
+	{
+		return;
+	}
+
+	expr.GetObject().Accept(*this);
+	if (m_error.has_value())
+	{
+		return;
+	}
+
+	CurrentEmitter().EmitMemberLoad(expr.GetMember());
 }
 
 void CodegenVisitor::Visit(const IndexASTNode& expr)
@@ -628,8 +639,37 @@ void CodegenVisitor::EmitDefault(const TypeDescriptor& type)
 		CurrentEmitter().EmitArray(length);
 		return;
 	}
+	if (type.IsNamed())
+	{
+		EmitStructDefault(type);
+		return;
+	}
 
 	EmitScalarDefault(type.GetScalarType());
+}
+
+void CodegenVisitor::EmitStructDefault(const TypeDescriptor& type)
+{
+	const SemanticSymbol* symbol = m_symbols.Resolve(type.GetName());
+	if (!symbol || symbol->kind != SemanticSymbolKind::TYPE)
+	{
+		Fail("Unknown struct type during code generation: " + type.GetName());
+		return;
+	}
+
+	std::vector<std::string> fieldNames;
+	fieldNames.reserve(symbol->fields.size());
+	for (const FieldSignature& field : symbol->fields)
+	{
+		EmitDefault(field.type);
+		if (m_error.has_value())
+		{
+			return;
+		}
+		fieldNames.push_back(field.name);
+	}
+
+	CurrentEmitter().EmitStruct(type.GetName(), fieldNames);
 }
 
 void CodegenVisitor::EmitScalarDefault(const Type type)
@@ -749,6 +789,17 @@ void CodegenVisitor::EmitAssignmentTarget(const ASTNode& target)
 			return;
 		}
 		CurrentEmitter().EmitIndexSet();
+		return;
+	}
+
+	if (const auto* member = dynamic_cast<const MemberAccessASTNode*>(&target))
+	{
+		member->GetObject().Accept(*this);
+		if (m_error.has_value())
+		{
+			return;
+		}
+		CurrentEmitter().EmitMemberSet(member->GetMember());
 		return;
 	}
 

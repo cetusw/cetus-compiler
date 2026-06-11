@@ -30,6 +30,15 @@ static int ByteInstruction(const std::string& name, const Chunk& chunk, const in
 	return offset + 2;
 }
 
+static int StructInstruction(const Chunk& chunk, const int offset)
+{
+	const auto& code = chunk.GetCode();
+	const uint8_t typeNameIndex = code[offset + 1];
+	const uint8_t fieldCount = code[offset + 2];
+	std::printf("%-16s %4d fields:%d\n", "OP_STRUCT", typeNameIndex, fieldCount);
+	return offset + 3 + fieldCount;
+}
+
 static int JumpInstruction(const std::string& name, const int sign, const Chunk& chunk, const int offset)
 {
 	auto jump = static_cast<uint16_t>(chunk.GetCode()[offset + 1] << 8);
@@ -111,6 +120,12 @@ int DisassembleInstruction(const Chunk& chunk, const int offset)
 		return SimpleInstruction("OP_GET_INDEX", offset);
 	case OP_SET_INDEX:
 		return SimpleInstruction("OP_SET_INDEX", offset);
+	case OP_STRUCT:
+		return StructInstruction(chunk, offset);
+	case OP_GET_MEMBER:
+		return ConstantInstruction("OP_GET_MEMBER", chunk, offset);
+	case OP_SET_MEMBER:
+		return ConstantInstruction("OP_SET_MEMBER", chunk, offset);
 	case OP_DEFINE_GLOBAL:
 		return ConstantInstruction("OP_DEFINE_GLOBAL", chunk, offset);
 	case OP_GET_GLOBAL:

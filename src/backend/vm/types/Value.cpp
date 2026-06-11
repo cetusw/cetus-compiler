@@ -3,6 +3,7 @@
 #include "../objects/ObjFunction.h"
 #include "../objects/ObjRef.h"
 #include "../objects/ObjString.h"
+#include "../objects/ObjStruct.h"
 #include "src/backend/vm/objects/ObjNative.h"
 
 #include <cassert>
@@ -102,6 +103,11 @@ bool Value::IsArray() const
 	return std::holds_alternative<HeapObject>(m_data) && std::get<HeapObject>(m_data)->GetType() == ObjType::ARRAY;
 }
 
+bool Value::IsStruct() const
+{
+	return std::holds_alternative<HeapObject>(m_data) && std::get<HeapObject>(m_data)->GetType() == ObjType::STRUCT;
+}
+
 RuntimeInt Value::AsInt() const
 {
 	return std::get<RuntimeInt>(m_data);
@@ -156,6 +162,12 @@ std::shared_ptr<ObjArray> Value::AsArray() const
 	return std::static_pointer_cast<ObjArray>(obj);
 }
 
+std::shared_ptr<ObjStruct> Value::AsStruct() const
+{
+	const auto obj = std::get<HeapObject>(m_data);
+	return std::static_pointer_cast<ObjStruct>(obj);
+}
+
 Value Value::Dereference() const
 {
 	if (IsRef())
@@ -207,6 +219,11 @@ void Value::Print() const
 			else if (arg->GetType() == ObjType::ARRAY)
 			{
 				std::printf("<array>");
+			}
+			else if (arg->GetType() == ObjType::STRUCT)
+			{
+				const auto obj = std::static_pointer_cast<ObjStruct>(arg);
+				std::printf("<%s>", obj->GetTypeName().c_str());
 			}
 		}
 	},

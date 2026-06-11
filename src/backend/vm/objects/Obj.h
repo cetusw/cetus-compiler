@@ -8,6 +8,7 @@ enum class ObjType
 	NATIVE,
 	REF,
 	ARRAY,
+	STRUCT,
 };
 
 class Obj

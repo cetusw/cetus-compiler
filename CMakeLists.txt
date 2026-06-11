@@ -79,6 +79,7 @@ add_library(cetus_backend_vm STATIC
         src/backend/vm/objects/ObjArray.cpp
         src/backend/vm/objects/ObjRef.cpp
         src/backend/vm/objects/ObjString.cpp
+        src/backend/vm/objects/ObjStruct.cpp
         src/backend/vm/disassembler/Disassembler.cpp
         src/backend/vm/parser/BytecodeParser.cpp
         src/backend/vm/instructions/ArrayInstruction.cpp
@@ -88,6 +89,7 @@ add_library(cetus_backend_vm STATIC
         src/backend/vm/instructions/GetGlobalInstruction.cpp
         src/backend/vm/instructions/GetIndexInstruction.cpp
         src/backend/vm/instructions/GetLocalInstruction.cpp
+        src/backend/vm/instructions/GetMemberInstruction.cpp
         src/backend/vm/instructions/JumpIfFalseInstruction.cpp
         src/backend/vm/instructions/JumpInstruction.cpp
         src/backend/vm/instructions/LoopInstruction.cpp
@@ -100,6 +102,8 @@ add_library(cetus_backend_vm STATIC
         src/backend/vm/instructions/SetGlobalInstruction.cpp
         src/backend/vm/instructions/SetIndexInstruction.cpp
         src/backend/vm/instructions/SetLocalInstruction.cpp
+        src/backend/vm/instructions/SetMemberInstruction.cpp
+        src/backend/vm/instructions/StructInstruction.cpp
         src/backend/vm/objects/ObjFunction.cpp
         src/backend/vm/objects/ObjNative.cpp
         ${CETUS_BACKEND_VM_HEADERS}

@@ -135,6 +135,33 @@ void BytecodeEmitter::EmitIndexSet() const
 	EmitOpcode(OP_SET_INDEX);
 }
 
+void BytecodeEmitter::EmitStruct(const std::string& typeName, const std::vector<std::string>& fieldNames) const
+{
+	EmitOpcode(OP_STRUCT);
+	const int typeNameIndex = m_chunk.AddConstant(Value(std::make_shared<ObjString>(typeName)));
+	EmitOperandByte(typeNameIndex);
+	EmitOperandByte(static_cast<int>(fieldNames.size()));
+	for (const std::string& fieldName : fieldNames)
+	{
+		const int fieldNameIndex = m_chunk.AddConstant(Value(std::make_shared<ObjString>(fieldName)));
+		EmitOperandByte(fieldNameIndex);
+	}
+}
+
+void BytecodeEmitter::EmitMemberLoad(const std::string& fieldName) const
+{
+	EmitOpcode(OP_GET_MEMBER);
+	const int constantIndex = m_chunk.AddConstant(Value(std::make_shared<ObjString>(fieldName)));
+	EmitOperandByte(constantIndex);
+}
+
+void BytecodeEmitter::EmitMemberSet(const std::string& fieldName) const
+{
+	EmitOpcode(OP_SET_MEMBER);
+	const int constantIndex = m_chunk.AddConstant(Value(std::make_shared<ObjString>(fieldName)));
+	EmitOperandByte(constantIndex);
+}
+
 void BytecodeEmitter::Fail(std::string message) const
 {
 	if (!m_error.has_value())

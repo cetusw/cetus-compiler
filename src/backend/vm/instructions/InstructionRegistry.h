@@ -8,6 +8,7 @@
 #include "GetGlobalInstruction.h"
 #include "GetIndexInstruction.h"
 #include "GetLocalInstruction.h"
+#include "GetMemberInstruction.h"
 #include "Instruction.h"
 #include "JumpIfFalseInstruction.h"
 #include "JumpInstruction.h"
@@ -21,6 +22,8 @@
 #include "SetGlobalInstruction.h"
 #include "SetIndexInstruction.h"
 #include "SetLocalInstruction.h"
+#include "SetMemberInstruction.h"
+#include "StructInstruction.h"
 #include <array>
 
 class InstructionRegistry
@@ -61,6 +64,9 @@ public:
 		m_table[OP_ARRAY] = std::make_unique<ArrayInstruction>();
 		m_table[OP_GET_INDEX] = std::make_unique<GetIndexInstruction>();
 		m_table[OP_SET_INDEX] = std::make_unique<SetIndexInstruction>();
+		m_table[OP_STRUCT] = std::make_unique<StructInstruction>();
+		m_table[OP_GET_MEMBER] = std::make_unique<GetMemberInstruction>();
+		m_table[OP_SET_MEMBER] = std::make_unique<SetMemberInstruction>();
 
 		m_table[OP_RETURN] = std::make_unique<ReturnInstruction>();
 	}

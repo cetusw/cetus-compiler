@@ -66,6 +66,7 @@ private:
 	[[nodiscard]] bool ValidateValueExpression(const TypeDescriptor& type, const char* context);
 	[[nodiscard]] bool ValidateTypeReference(const TypeDescriptor& type, const char* context);
 	[[nodiscard]] bool ValidateStructFields(const StructDeclarationASTNode& node);
+	[[nodiscard]] const FieldSignature* ResolveField(const TypeDescriptor& objectType, const std::string& fieldName) const;
 	[[nodiscard]] bool ValidateUserDefinedName(const std::string& name, const char* declarationKind);
 	[[nodiscard]] bool DefineFunctionSymbol(const FunctionDeclarationASTNode& node);
 	[[nodiscard]] bool DefineTypeSymbol(const StructDeclarationASTNode& node);
