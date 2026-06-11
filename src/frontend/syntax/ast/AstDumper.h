@@ -39,7 +39,7 @@ private:
 	void DumpLine(const std::string& text) const;
 	static std::string JoinNames(const std::vector<std::string>& names);
 	static std::string JoinParameters(const std::vector<FunctionParameter>& parameters);
-	static const char* ToString(Type type);
+	static std::string ToString(const TypeDescriptor& type);
 	static const char* ToString(UnaryOperator op);
 	static const char* ToString(BinaryOperator op);
 

@@ -38,6 +38,8 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildSingleExpressionList(std::move(values));
 	case SemanticTag::TYPE_NAME:
 		return BuildTypeName(values);
+	case SemanticTag::ARRAY_TYPE:
+		return BuildArrayType(values);
 	case SemanticTag::PARAM:
 		return BuildParameter(values);
 	case SemanticTag::POINTER_PARAM:
@@ -225,6 +227,17 @@ AstSemanticValue AstReductionBuilder::BuildTypeName(const std::vector<AstSemanti
 	}
 
 	throw std::runtime_error("Unsupported type name: " + typeName);
+}
+
+AstSemanticValue AstReductionBuilder::BuildArrayType(const std::vector<AstSemanticValue>& values)
+{
+	RequireValueCount(values, 4, "Array type reduction");
+	const int length = std::stoi(TakeToken(values, 1).lexeme);
+	if (length <= 0)
+	{
+		throw std::runtime_error("Array length must be positive.");
+	}
+	return { nullptr, std::nullopt, {}, {}, {}, TypeDescriptor::Array(length, TakeType(values, 3)) };
 }
 
 AstSemanticValue AstReductionBuilder::BuildParameter(const std::vector<AstSemanticValue>& values)
@@ -610,7 +623,7 @@ std::vector<FunctionParameter> AstReductionBuilder::TakeParameterList(
 	return std::move(values[index].parameters);
 }
 
-Type AstReductionBuilder::TakeType(const std::vector<AstSemanticValue>& values, const std::size_t index)
+TypeDescriptor AstReductionBuilder::TakeType(const std::vector<AstSemanticValue>& values, const std::size_t index)
 {
 	if (!values[index].type.has_value())
 	{

@@ -1,6 +1,6 @@
 #include "TypeRules.h"
 
-TypeCheckResult TypeRules::CheckUnaryOperator(const UnaryOperator op, const Type operandType)
+TypeCheckResult TypeRules::CheckUnaryOperator(const UnaryOperator op, const TypeDescriptor& operandType)
 {
 	switch (op)
 	{
@@ -25,8 +25,8 @@ TypeCheckResult TypeRules::CheckUnaryOperator(const UnaryOperator op, const Type
 
 TypeCheckResult TypeRules::CheckBinaryOperator(
 	const BinaryOperator op,
-	const Type leftType,
-	const Type rightType)
+	const TypeDescriptor& leftType,
+	const TypeDescriptor& rightType)
 {
 	switch (op)
 	{
@@ -59,22 +59,12 @@ TypeCheckResult TypeRules::CheckBinaryOperator(
 	return MakeError("Unsupported binary operator.");
 }
 
-const char* TypeRules::ToString(const Type type)
+std::string TypeRules::ToString(const TypeDescriptor& type)
 {
-	switch (type)
-	{
-	case Type::INT: return "int";
-	case Type::FLOAT: return "float";
-	case Type::BOOL: return "bool";
-	case Type::STRING: return "string";
-	case Type::VOID: return "void";
-	case Type::ERROR: return "error";
-	}
-
-	return "unknown";
+	return type.ToString();
 }
 
-TypeCheckResult TypeRules::CheckLogicalOperator(const Type leftType, const Type rightType)
+TypeCheckResult TypeRules::CheckLogicalOperator(const TypeDescriptor& leftType, const TypeDescriptor& rightType)
 {
 	if (!IsFalsey(leftType) || !IsFalsey(rightType))
 	{
@@ -84,7 +74,7 @@ TypeCheckResult TypeRules::CheckLogicalOperator(const Type leftType, const Type 
 	return TypeCheckResult::Success(Type::BOOL);
 }
 
-TypeCheckResult TypeRules::CheckArithmeticOperator(const Type leftType, const Type rightType)
+TypeCheckResult TypeRules::CheckArithmeticOperator(const TypeDescriptor& leftType, const TypeDescriptor& rightType)
 {
 	if (!IsNumeric(leftType) || !IsNumeric(rightType))
 	{
@@ -94,7 +84,7 @@ TypeCheckResult TypeRules::CheckArithmeticOperator(const Type leftType, const Ty
 	return TypeCheckResult::Success(MergeNumeric(leftType, rightType));
 }
 
-TypeCheckResult TypeRules::CheckModuloOperator(const Type leftType, const Type rightType)
+TypeCheckResult TypeRules::CheckModuloOperator(const TypeDescriptor& leftType, const TypeDescriptor& rightType)
 {
 	if (leftType != Type::INT || rightType != Type::INT)
 	{
@@ -104,7 +94,7 @@ TypeCheckResult TypeRules::CheckModuloOperator(const Type leftType, const Type r
 	return TypeCheckResult::Success(Type::INT);
 }
 
-TypeCheckResult TypeRules::CheckComparisonOperator(const Type leftType, const Type rightType)
+TypeCheckResult TypeRules::CheckComparisonOperator(const TypeDescriptor& leftType, const TypeDescriptor& rightType)
 {
 	if (!IsFalsey(leftType) || !IsFalsey(rightType))
 	{
@@ -114,7 +104,7 @@ TypeCheckResult TypeRules::CheckComparisonOperator(const Type leftType, const Ty
 	return TypeCheckResult::Success(Type::BOOL);
 }
 
-TypeCheckResult TypeRules::CheckEqualityOperator(const Type leftType, const Type rightType)
+TypeCheckResult TypeRules::CheckEqualityOperator(const TypeDescriptor& leftType, const TypeDescriptor& rightType)
 {
 	if (!AreComparable(leftType, rightType))
 	{
@@ -129,17 +119,17 @@ TypeCheckResult TypeRules::MakeError(std::string message)
 	return TypeCheckResult::Error(std::move(message));
 }
 
-bool TypeRules::IsNumeric(const Type type)
+bool TypeRules::IsNumeric(const TypeDescriptor& type)
 {
 	return type == Type::INT || type == Type::FLOAT;
 }
 
-bool TypeRules::IsFalsey(const Type type)
+bool TypeRules::IsFalsey(const TypeDescriptor& type)
 {
 	return type == Type::BOOL || IsNumeric(type);
 }
 
-bool TypeRules::AreComparable(const Type left, const Type right)
+bool TypeRules::AreComparable(const TypeDescriptor& left, const TypeDescriptor& right)
 {
 	if (left == right)
 	{
@@ -149,7 +139,7 @@ bool TypeRules::AreComparable(const Type left, const Type right)
 	return IsFalsey(left) && IsFalsey(right);
 }
 
-Type TypeRules::MergeNumeric(const Type left, const Type right)
+TypeDescriptor TypeRules::MergeNumeric(const TypeDescriptor& left, const TypeDescriptor& right)
 {
 	if (left == Type::FLOAT || right == Type::FLOAT)
 	{

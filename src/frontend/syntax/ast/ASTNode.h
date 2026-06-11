@@ -36,11 +36,11 @@ public:
 	virtual ~ASTNode() = default;
 	virtual void Accept(ASTNodeVisitor& visitor) const = 0;
 
-	[[nodiscard]] std::optional<Type> GetInferredType() const;
-	void SetInferredType(Type type) const;
+	[[nodiscard]] std::optional<TypeDescriptor> GetInferredType() const;
+	void SetInferredType(TypeDescriptor type) const;
 
 private:
-	mutable std::optional<Type> m_inferredType;
+	mutable std::optional<TypeDescriptor> m_inferredType;
 };
 
 using ASTNodePtr = std::unique_ptr<ASTNode>;
@@ -48,7 +48,7 @@ using ASTNodePtr = std::unique_ptr<ASTNode>;
 struct FunctionParameter
 {
 	std::string name;
-	Type type = Type::ERROR;
+	TypeDescriptor type = Type::ERROR;
 	bool isPointer = false;
 };
 
@@ -237,17 +237,17 @@ class VariableDeclarationASTNode final : public StatementASTNode
 public:
 	VariableDeclarationASTNode(
 		std::vector<std::string> names,
-		std::optional<Type> declaredType,
+		std::optional<TypeDescriptor> declaredType,
 		std::vector<ASTNodePtr> values);
 
 	[[nodiscard]] const std::vector<std::string>& GetNames() const;
-	[[nodiscard]] std::optional<Type> GetDeclaredType() const;
+	[[nodiscard]] std::optional<TypeDescriptor> GetDeclaredType() const;
 	[[nodiscard]] const std::vector<ASTNodePtr>& GetValues() const;
 	void Accept(ASTNodeVisitor& visitor) const override;
 
 private:
 	std::vector<std::string> m_names;
-	std::optional<Type> m_declaredType;
+	std::optional<TypeDescriptor> m_declaredType;
 	std::vector<ASTNodePtr> m_values;
 };
 
@@ -364,18 +364,18 @@ public:
 	FunctionDeclarationASTNode(
 		std::string name,
 		std::vector<FunctionParameter> parameters,
-		std::optional<Type> returnType,
+		const std::optional<TypeDescriptor>& returnType,
 		ASTNodePtr body);
 
 	[[nodiscard]] const std::string& GetName() const;
 	[[nodiscard]] const std::vector<FunctionParameter>& GetParameters() const;
-	[[nodiscard]] Type GetReturnType() const;
+	[[nodiscard]] TypeDescriptor GetReturnType() const;
 	[[nodiscard]] const ASTNode& GetBody() const;
 	void Accept(ASTNodeVisitor& visitor) const override;
 
 private:
 	std::string m_name;
 	std::vector<FunctionParameter> m_parameters;
-	std::optional<Type> m_returnType;
+	std::optional<TypeDescriptor> m_returnType;
 	ASTNodePtr m_body;
 };

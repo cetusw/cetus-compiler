@@ -23,6 +23,7 @@ enum class SemanticTag
 	EXPRESSION_LIST,
 	EXPRESSION_LIST_SINGLE,
 	TYPE_NAME,
+	ARRAY_TYPE,
 	PARAM,
 	POINTER_PARAM,
 	PARAM_LIST,
@@ -76,6 +77,7 @@ enum class SemanticTag
 	if (value == "expression_list") return SemanticTag::EXPRESSION_LIST;
 	if (value == "expression_list_single") return SemanticTag::EXPRESSION_LIST_SINGLE;
 	if (value == "type_name") return SemanticTag::TYPE_NAME;
+	if (value == "array_type") return SemanticTag::ARRAY_TYPE;
 	if (value == "param") return SemanticTag::PARAM;
 	if (value == "pointer_param") return SemanticTag::POINTER_PARAM;
 	if (value == "param_list") return SemanticTag::PARAM_LIST;

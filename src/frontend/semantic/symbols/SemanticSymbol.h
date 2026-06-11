@@ -7,7 +7,7 @@
 
 struct ParameterSignature
 {
-	Type type = Type::ERROR;
+	TypeDescriptor type = Type::ERROR;
 	bool isPointer = false;
 };
 
@@ -21,7 +21,7 @@ enum class SemanticSymbolKind
 struct SemanticSymbol
 {
 	std::string name;
-	Type type = Type::ERROR;
+	TypeDescriptor type = Type::ERROR;
 	SemanticSymbolKind kind = SemanticSymbolKind::VARIABLE;
 	std::vector<ParameterSignature> parameters;
 };

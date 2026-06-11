@@ -54,6 +54,7 @@ add_library(cetus_frontend STATIC
         src/frontend/syntax/lalr/LR1ClosureCalculator.cpp
         src/frontend/syntax/presentation/presenters/ConsolePresenter.cpp
         src/frontend/semantic/symbols/SymbolTable.cpp
+        src/frontend/semantic/Type.cpp
         src/frontend/semantic/rules/TypeRules.cpp
         src/frontend/semantic/SemanticAnalyzer.cpp
         src/frontend/syntax/parser/AstReductionBuilder.cpp

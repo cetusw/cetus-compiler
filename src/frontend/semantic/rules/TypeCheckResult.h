@@ -14,7 +14,7 @@ struct SemanticDiagnostic
 
 struct TypeCheckResult
 {
-	[[nodiscard]] static TypeCheckResult Success(const Type rootType, SymbolTable symbols)
+	[[nodiscard]] static TypeCheckResult Success(const TypeDescriptor& rootType, SymbolTable symbols)
 	{
 		TypeCheckResult result;
 		result.success = true;
@@ -23,7 +23,7 @@ struct TypeCheckResult
 		return result;
 	}
 
-	[[nodiscard]] static TypeCheckResult Success(const Type rootType)
+	[[nodiscard]] static TypeCheckResult Success(const TypeDescriptor& rootType)
 	{
 		TypeCheckResult result;
 		result.success = true;
@@ -89,7 +89,7 @@ struct TypeCheckResult
 	}
 
 	bool success = false;
-	Type type = Type::ERROR;
+	TypeDescriptor type = Type::ERROR;
 	SymbolTable symbols;
 	std::vector<SemanticDiagnostic> diagnostics;
 };

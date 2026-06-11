@@ -230,19 +230,9 @@ std::string AstDumper::JoinParameters(const std::vector<FunctionParameter>& para
 	return result;
 }
 
-const char* AstDumper::ToString(const Type type)
+std::string AstDumper::ToString(const TypeDescriptor& type)
 {
-	switch (type)
-	{
-	case Type::INT: return "int";
-	case Type::FLOAT: return "float";
-	case Type::BOOL: return "bool";
-	case Type::STRING: return "string";
-	case Type::VOID: return "void";
-	case Type::ERROR: return "error";
-	}
-
-	throw std::runtime_error("Unsupported type.");
+	return type.ToString();
 }
 
 const char* AstDumper::ToString(const UnaryOperator op)

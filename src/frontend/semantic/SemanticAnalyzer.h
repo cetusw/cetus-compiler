@@ -42,24 +42,24 @@ public:
 	void Visit(const FunctionDeclarationASTNode& node) override;
 
 private:
-	[[nodiscard]] Type AnalyzeChild(const ASTNode& node);
-	[[nodiscard]] std::vector<Type> AnalyzeValues(const std::vector<ASTNodePtr>& values);
-	[[nodiscard]] static bool IsFalsey(Type type);
-	[[nodiscard]] static bool HasError(const std::vector<Type>& types);
-	void ValidateAssignment(const std::vector<std::string>& names, const std::vector<Type>& valueTypes);
-	void DefineShortVariables(const std::vector<std::string>& names, const std::vector<Type>& valueTypes);
+	[[nodiscard]] TypeDescriptor AnalyzeChild(const ASTNode& node);
+	[[nodiscard]] std::vector<TypeDescriptor> AnalyzeValues(const std::vector<ASTNodePtr>& values);
+	[[nodiscard]] static bool IsFalsey(TypeDescriptor type);
+	[[nodiscard]] static bool HasError(const std::vector<TypeDescriptor>& types);
+	void ValidateAssignment(const std::vector<std::string>& names, const std::vector<TypeDescriptor>& valueTypes);
+	void DefineShortVariables(const std::vector<std::string>& names, const std::vector<TypeDescriptor>& valueTypes);
 	void DefineVariables(
 		const std::vector<std::string>& names,
-		std::optional<Type> declaredType,
-		const std::vector<Type>& valueTypes);
+		const std::optional<TypeDescriptor>& declaredType,
+		const std::vector<TypeDescriptor>& valueTypes);
 	void PredeclareTopLevelFunctions(const ASTNode& node);
 	void PredeclareTopLevelFunctions(const StatementListASTNode& node);
 	void PredeclareFunction(const FunctionDeclarationASTNode& node);
 	void ValidateEntryPoint();
 	void DefineBuiltinFunctions();
-	void TypeCheckBuiltinCall(const CallExpressionASTNode& node, const std::vector<Type>& argumentTypes);
-	void TypeCheckFunctionCall(const CallExpressionASTNode& node, const SemanticSymbol& symbol, const std::vector<Type>& argumentTypes);
-	[[nodiscard]] bool ValidateValueExpression(Type type, const char* context);
+	void TypeCheckBuiltinCall(const CallExpressionASTNode& node, const std::vector<TypeDescriptor>& argumentTypes);
+	void TypeCheckFunctionCall(const CallExpressionASTNode& node, const SemanticSymbol& symbol, const std::vector<TypeDescriptor>& argumentTypes);
+	[[nodiscard]] bool ValidateValueExpression(const TypeDescriptor& type, const char* context);
 	[[nodiscard]] bool ValidateUserDefinedName(const std::string& name, const char* declarationKind);
 	[[nodiscard]] bool DefineFunctionSymbol(const FunctionDeclarationASTNode& node);
 	[[nodiscard]] static std::vector<ParameterSignature> BuildParameterSignatures(const FunctionDeclarationASTNode& node);
@@ -67,14 +67,14 @@ private:
 	[[nodiscard]] static bool StatementListAlwaysReturns(const StatementListASTNode& node);
 	[[nodiscard]] static bool IfAlwaysReturns(const IfASTNode& node);
 	[[nodiscard]] static bool IsCallableKind(SemanticSymbolKind kind);
-	void SetCurrentType(const ASTNode& node, Type type);
+	void SetCurrentType(const ASTNode& node, const TypeDescriptor& type);
 	void SetTypeCheckResult(const ASTNode& node, TypeCheckResult result);
 	void AddDiagnostic(std::string message);
 	void AddDiagnostics(std::vector<SemanticDiagnostic> diagnostics);
 
 	SymbolTable m_symbolTable;
-	std::optional<Type> m_currentFunctionReturnType;
-	Type m_currentType = Type::ERROR;
+	std::optional<TypeDescriptor> m_currentFunctionReturnType;
+	TypeDescriptor m_currentType = Type::ERROR;
 	std::vector<SemanticDiagnostic> m_diagnostics;
 	std::unordered_set<const FunctionDeclarationASTNode*> m_predeclaredFunctions;
 	int m_loopDepth = 0;

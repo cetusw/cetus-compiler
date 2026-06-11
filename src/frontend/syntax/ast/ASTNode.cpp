@@ -2,14 +2,14 @@
 
 #include <utility>
 
-std::optional<Type> ASTNode::GetInferredType() const
+std::optional<TypeDescriptor> ASTNode::GetInferredType() const
 {
 	return m_inferredType;
 }
 
-void ASTNode::SetInferredType(const Type type) const
+void ASTNode::SetInferredType(TypeDescriptor type) const
 {
-	m_inferredType = type;
+	m_inferredType = std::move(type);
 }
 
 BoolLiteralASTNode::BoolLiteralASTNode(const bool value)
@@ -257,10 +257,10 @@ void ShortVariableDeclarationASTNode::Accept(ASTNodeVisitor& visitor) const
 
 VariableDeclarationASTNode::VariableDeclarationASTNode(
 	std::vector<std::string> names,
-	std::optional<Type> declaredType,
+	std::optional<TypeDescriptor> declaredType,
 	std::vector<ASTNodePtr> values)
 	: m_names(std::move(names))
-	, m_declaredType(declaredType)
+	, m_declaredType(std::move(declaredType))
 	, m_values(std::move(values))
 {
 }
@@ -270,7 +270,7 @@ const std::vector<std::string>& VariableDeclarationASTNode::GetNames() const
 	return m_names;
 }
 
-std::optional<Type> VariableDeclarationASTNode::GetDeclaredType() const
+std::optional<TypeDescriptor> VariableDeclarationASTNode::GetDeclaredType() const
 {
 	return m_declaredType;
 }
@@ -438,7 +438,7 @@ void ReturnASTNode::Accept(ASTNodeVisitor& visitor) const
 FunctionDeclarationASTNode::FunctionDeclarationASTNode(
 	std::string name,
 	std::vector<FunctionParameter> parameters,
-	const std::optional<Type> returnType,
+	const std::optional<TypeDescriptor>& returnType,
 	ASTNodePtr body)
 	: m_name(std::move(name))
 	, m_parameters(std::move(parameters))
@@ -457,7 +457,7 @@ const std::vector<FunctionParameter>& FunctionDeclarationASTNode::GetParameters(
 	return m_parameters;
 }
 
-Type FunctionDeclarationASTNode::GetReturnType() const
+TypeDescriptor FunctionDeclarationASTNode::GetReturnType() const
 {
 	return m_returnType.value_or(Type::VOID);
 }
