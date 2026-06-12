@@ -35,6 +35,7 @@ public:
 	[[nodiscard]] bool IsArray() const;
 	[[nodiscard]] bool IsSlice() const;
 	[[nodiscard]] bool IsSequence() const;
+	[[nodiscard]] bool IsIndexable() const;
 	[[nodiscard]] bool IsStruct() const;
 
 	[[nodiscard]] RuntimeInt AsInt() const;

@@ -132,6 +132,11 @@ bool Value::IsSequence() const
 	return IsArray() || IsSlice();
 }
 
+bool Value::IsIndexable() const
+{
+	return IsSequence() || IsString();
+}
+
 bool Value::IsStruct() const
 {
 	return std::holds_alternative<HeapObject>(m_data) && std::get<HeapObject>(m_data)->GetType() == ObjType::STRUCT;

@@ -113,6 +113,8 @@ func main() {
 
 `len(array)` и `len(slice)` возвращают длину первого измерения. Для `[2][3]int` результат `len(matrix)` равен `2`.
 
+`len(string)` и `string[index]` на текущем этапе работают в byte-based модели. Это значит, что длина и индекс строки измеряются в байтах, а не в Unicode code points.
+
 ## Ввод
 
 Input native-функция `scan` читает значение из `stdin` и записывает его в destination-переменную.

@@ -31,7 +31,17 @@ Heap objects используются для значений, которые н
 - `ObjNative`;
 - `ObjRef`;
 - `ObjArray`;
+- `ObjSlice`;
 - `ObjStruct`.
+
+`ObjArray` используется как backing storage для fixed arrays и slice storage.
+
+`ObjSlice` является view-дескриптором поверх `ObjArray` и хранит:
+
+- storage;
+- offset;
+- length;
+- capacity.
 
 `ObjStruct` хранит имя struct-типа и значения полей. Layout полей приходит из semantic symbol типа, а instance создаётся codegen/VM при default declaration:
 

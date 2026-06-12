@@ -32,6 +32,7 @@ public:
 	[[nodiscard]] bool IsNamed() const;
 	[[nodiscard]] int GetArrayLength() const;
 	[[nodiscard]] const TypeDescriptor& GetElementType() const;
+	[[nodiscard]] TypeDescriptor GetIndexResultType() const;
 	[[nodiscard]] const std::string& GetName() const;
 	[[nodiscard]] std::string ToString() const;
 

@@ -2,17 +2,26 @@
 
 #include "../objects/ObjArray.h"
 #include "../objects/ObjSlice.h"
+#include "../objects/ObjString.h"
 #include "../vm.h"
 
 namespace
 {
-int SequenceLength(const Value& value)
+int IndexableLength(const Value& value)
 {
+	if (value.IsString())
+	{
+		return static_cast<int>(value.AsString().length());
+	}
 	return value.IsArray() ? value.AsArray()->Length() : value.AsSlice()->Length();
 }
 
-const Value& SequenceGet(const Value& value, const int index)
+Value IndexableGet(const Value& value, const int index)
 {
+	if (value.IsString())
+	{
+		return Value(std::make_shared<ObjString>(value.AsString().substr(static_cast<std::size_t>(index), 1)));
+	}
 	return value.IsArray() ? value.AsArray()->Get(index) : value.AsSlice()->Get(index);
 }
 } // namespace
@@ -21,19 +30,19 @@ const Value& SequenceGet(const Value& value, const int index)
 InterpretResult GetIndexInstruction::Execute(VM& vm) const
 {
 	const Value indexValue = vm.Pop().Dereference();
-	const Value sequenceValue = vm.Pop().Dereference();
-	if (!sequenceValue.IsSequence() || !indexValue.IsInt())
+	const Value indexableValue = vm.Pop().Dereference();
+	if (!indexableValue.IsIndexable() || !indexValue.IsInt())
 	{
 		return InterpretResult::RUNTIME_ERROR;
 	}
 
 	const RuntimeInt index = indexValue.AsInt();
-	const int length = SequenceLength(sequenceValue);
+	const int length = IndexableLength(indexableValue);
 	if (index < 0 || index >= length)
 	{
 		return InterpretResult::RUNTIME_ERROR;
 	}
 
-	vm.Push(SequenceGet(sequenceValue, static_cast<int>(index)));
+	vm.Push(IndexableGet(indexableValue, static_cast<int>(index)));
 	return InterpretResult::OK;
 }

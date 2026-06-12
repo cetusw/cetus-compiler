@@ -205,9 +205,9 @@ void SemanticAnalyzer::Visit(const IndexASTNode& node)
 	{
 		hasError = true;
 	}
-	else if (!objectType.IsSequence())
+	else if (!objectType.IsIndexable())
 	{
-		AddDiagnostic("Index access expects array or slice value.");
+		AddDiagnostic("Index access expects string, array or slice value.");
 		hasError = true;
 	}
 
@@ -217,11 +217,11 @@ void SemanticAnalyzer::Visit(const IndexASTNode& node)
 	}
 	else if (indexType != Type::INT)
 	{
-		AddDiagnostic("Array index must have int type.");
+		AddDiagnostic("Index must have int type.");
 		hasError = true;
 	}
 
-	SetCurrentType(node, hasError ? TypeDescriptor(Type::ERROR) : objectType.GetElementType());
+	SetCurrentType(node, hasError ? TypeDescriptor(Type::ERROR) : objectType.GetIndexResultType());
 }
 
 // TODO отрефакторить
@@ -764,7 +764,23 @@ TypeDescriptor SemanticAnalyzer::AnalyzeAssignmentTarget(const ASTNode& target)
 		return existing->type;
 	}
 
-	if (dynamic_cast<const IndexASTNode*>(&target) || dynamic_cast<const MemberAccessASTNode*>(&target))
+	if (const auto* index = dynamic_cast<const IndexASTNode*>(&target))
+	{
+		const TypeDescriptor targetType = AnalyzeChild(*index);
+		if (targetType == Type::ERROR)
+		{
+			return Type::ERROR;
+		}
+		const auto objectType = index->GetObject().GetInferredType();
+		if (objectType.has_value() && *objectType == Type::STRING)
+		{
+			AddDiagnostic("Cannot assign to string index.");
+			return Type::ERROR;
+		}
+		return targetType;
+	}
+
+	if (dynamic_cast<const MemberAccessASTNode*>(&target))
 	{
 		return AnalyzeChild(target);
 	}

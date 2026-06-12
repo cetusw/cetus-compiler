@@ -96,6 +96,20 @@ const TypeDescriptor& TypeDescriptor::GetElementType() const
 	return *m_elementType;
 }
 
+TypeDescriptor TypeDescriptor::GetIndexResultType() const
+{
+	if (IsSequence())
+	{
+		return GetElementType();
+	}
+	if (*this == Type::STRING)
+	{
+		return Type::STRING;
+	}
+
+	throw std::logic_error("Type is not indexable.");
+}
+
 const std::string& TypeDescriptor::GetName() const
 {
 	if (!IsNamed())

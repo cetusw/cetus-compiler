@@ -1,0 +1,19 @@
+func IsPalindrome(text string) bool {
+    left := 0;
+    right := len(text) - 1;
+
+    for left < right {
+        if text[left] != text[right] {
+            return false;
+        }
+
+        left = left + 1;
+        right = right - 1;
+    }
+
+    return true;
+}
+
+func main() {
+    println(IsPalindrome("racecar"));
+}
