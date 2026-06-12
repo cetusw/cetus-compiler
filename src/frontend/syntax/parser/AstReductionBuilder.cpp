@@ -27,7 +27,7 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 	case SemanticTag::ARRAY_LITERAL:
 		return BuildArrayLiteral(std::move(values));
 	case SemanticTag::ARRAY_LITERAL_EMPTY:
-		return BuildEmptyArrayLiteral(std::move(values));
+		return BuildEmptyArrayLiteral(values);
 	case SemanticTag::IDENTIFIER:
 		return BuildIdentifier(values);
 	case SemanticTag::ADDRESS_OF:
@@ -46,6 +46,16 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildArrayType(values);
 	case SemanticTag::SLICE_TYPE:
 		return BuildSliceType(values);
+	case SemanticTag::POINTER_TYPE:
+		return BuildPointerType(values);
+	case SemanticTag::SINGLE_RETURN_TYPE:
+		return BuildSingleReturnType(std::move(values));
+	case SemanticTag::TUPLE_RETURN_TYPE:
+		return BuildTupleReturnType(std::move(values));
+	case SemanticTag::TYPE_LIST:
+		return BuildTypeList(std::move(values));
+	case SemanticTag::TYPE_LIST_SINGLE:
+		return BuildSingleTypeList(std::move(values));
 	case SemanticTag::PARAM:
 		return BuildParameter(values);
 	case SemanticTag::POINTER_PARAM:
@@ -354,10 +364,54 @@ AstSemanticValue AstReductionBuilder::BuildSliceType(const std::vector<AstSemant
 	return { nullptr, std::nullopt, {}, {}, {}, TypeDescriptor::Slice(TakeType(values, 2)) };
 }
 
+AstSemanticValue AstReductionBuilder::BuildPointerType(const std::vector<AstSemanticValue>& values)
+{
+	RequireValueCount(values, 2, "Pointer type reduction");
+	return { nullptr, std::nullopt, {}, {}, {}, TypeDescriptor::Pointer(TakeType(values, 1)) };
+}
+
+AstSemanticValue AstReductionBuilder::BuildSingleReturnType(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 1, "Single return type reduction");
+	return { nullptr, std::nullopt, {}, {}, {}, TakeType(values, 0) };
+}
+
+AstSemanticValue AstReductionBuilder::BuildTupleReturnType(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 3, "Tuple return type reduction");
+	return { nullptr, std::nullopt, {}, {}, {}, TypeDescriptor::Tuple(TakeTypeList(values, 1)) };
+}
+
+AstSemanticValue AstReductionBuilder::BuildTypeList(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 3, "Type list reduction");
+	std::vector<TypeDescriptor> types = TakeTypeList(values, 0);
+	std::vector<TypeDescriptor> nextType = TakeTypeList(values, 2);
+	types.push_back(std::move(nextType.front()));
+	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, std::move(types) };
+}
+
+AstSemanticValue AstReductionBuilder::BuildSingleTypeList(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 1, "Single type list reduction");
+	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, { TakeType(values, 0) } };
+}
+
 AstSemanticValue AstReductionBuilder::BuildParameter(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 2, "Parameter reduction");
-	return { nullptr, std::nullopt, {}, {}, { FunctionParameter{ TakeToken(values, 0).lexeme, TakeType(values, 1) } } };
+	const TypeDescriptor parameterType = TakeType(values, 1);
+	if (parameterType.IsPointer())
+	{
+		return {
+			nullptr,
+			std::nullopt,
+			{},
+			{},
+			{ FunctionParameter{ TakeToken(values, 0).lexeme, parameterType.GetPointeeType(), true } }
+		};
+	}
+	return { nullptr, std::nullopt, {}, {}, { FunctionParameter{ TakeToken(values, 0).lexeme, parameterType } } };
 }
 
 AstSemanticValue AstReductionBuilder::BuildPointerParameter(const std::vector<AstSemanticValue>& values)
@@ -528,7 +582,7 @@ AstSemanticValue AstReductionBuilder::BuildDecrement(std::vector<AstSemanticValu
 AstSemanticValue AstReductionBuilder::BuildStructField(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 3, "Struct field reduction");
-	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, { StructField{ TakeToken(values, 0).lexeme, TakeType(values, 1) } } };
+	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, {}, { StructField{ TakeToken(values, 0).lexeme, TakeType(values, 1) } } };
 }
 
 AstSemanticValue AstReductionBuilder::BuildStructFieldList(std::vector<AstSemanticValue> values)
@@ -537,13 +591,13 @@ AstSemanticValue AstReductionBuilder::BuildStructFieldList(std::vector<AstSemant
 	std::vector<StructField> fields = TakeStructFieldList(values, 0);
 	std::vector<StructField> nextField = TakeStructFieldList(values, 1);
 	fields.push_back(std::move(nextField.front()));
-	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, std::move(fields) };
+	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, {}, std::move(fields) };
 }
 
 AstSemanticValue AstReductionBuilder::BuildSingleStructFieldList(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 1, "Single struct field list reduction");
-	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, TakeStructFieldList(values, 0) };
+	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, {}, TakeStructFieldList(values, 0) };
 }
 
 AstSemanticValue AstReductionBuilder::BuildStructDeclaration(std::vector<AstSemanticValue> values)
@@ -999,6 +1053,25 @@ std::vector<FunctionParameter> AstReductionBuilder::TakeParameterList(
 	}
 
 	return std::move(values[index].parameters);
+}
+
+std::vector<TypeDescriptor> AstReductionBuilder::TakeTypeList(
+	std::vector<AstSemanticValue>& values,
+	const std::size_t index)
+{
+	if (!values[index].types.empty())
+	{
+		return std::move(values[index].types);
+	}
+	if (values[index].type.has_value())
+	{
+		std::vector<TypeDescriptor> types;
+		types.push_back(*values[index].type);
+		values[index].type.reset();
+		return types;
+	}
+
+	throw std::runtime_error("Expected type list semantic value.");
 }
 
 std::vector<StructField> AstReductionBuilder::TakeStructFieldList(

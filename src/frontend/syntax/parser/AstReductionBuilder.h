@@ -15,6 +15,7 @@ struct AstSemanticValue
 	std::vector<ASTNodePtr> expressions = {};
 	std::vector<FunctionParameter> parameters = {};
 	std::optional<TypeDescriptor> type = std::nullopt;
+	std::vector<TypeDescriptor> types = {};
 	std::vector<StructField> fields = {};
 	bool compositeLiteralInitializer = false;
 };
@@ -44,6 +45,11 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildTypeName(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildArrayType(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildSliceType(const std::vector<AstSemanticValue>& values);
+	[[nodiscard]] static AstSemanticValue BuildPointerType(const std::vector<AstSemanticValue>& values);
+	[[nodiscard]] static AstSemanticValue BuildSingleReturnType(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildTupleReturnType(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildTypeList(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildSingleTypeList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildParameter(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildPointerParameter(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildParameterList(std::vector<AstSemanticValue> values);
@@ -102,6 +108,7 @@ private:
 	[[nodiscard]] static std::vector<std::string> TakeIdentifierList(std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static std::vector<std::string> TakeIdentifierNamesFromTargets(std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static std::vector<FunctionParameter> TakeParameterList(std::vector<AstSemanticValue>& values, std::size_t index);
+	[[nodiscard]] static std::vector<TypeDescriptor> TakeTypeList(std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static std::vector<StructField> TakeStructFieldList(std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static TypeDescriptor TakeType(const std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static Token TakeToken(const std::vector<AstSemanticValue>& values, std::size_t index);

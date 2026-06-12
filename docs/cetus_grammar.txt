@@ -16,13 +16,13 @@
 ~StructField~ -> IDENTIFIER ~Type~ SEMICOLON @struct_field
 
 ~FunctionDecl~ -> FUNC IDENTIFIER LPAREN RPAREN ~Block~ @function_void_no_params
-~FunctionDecl~ -> FUNC IDENTIFIER LPAREN RPAREN ~Type~ ~Block~ @function_return_no_params
+~FunctionDecl~ -> FUNC IDENTIFIER LPAREN RPAREN ~ReturnType~ ~Block~ @function_return_no_params
 ~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~Block~ @function_void
-~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~Type~ ~Block~ @function_return
+~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~ReturnType~ ~Block~ @function_return
 ~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN RPAREN ~Block~ @method_void_no_params
-~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN RPAREN ~Type~ ~Block~ @method_return_no_params
+~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN RPAREN ~ReturnType~ ~Block~ @method_return_no_params
 ~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN ~ParamList~ RPAREN ~Block~ @method_void
-~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN ~ParamList~ RPAREN ~Type~ ~Block~ @method_return
+~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN ~ParamList~ RPAREN ~ReturnType~ ~Block~ @method_return
 
 ~StmtList~ -> ~StmtList~ ~Stmt~ @statement_list
 ~StmtList~ -> ~Stmt~ @statement_list_single
@@ -72,12 +72,18 @@
 ~Type~ -> IDENTIFIER @type_name
 ~Type~ -> LBRACKET INT_LIT RBRACKET ~Type~ @array_type
 ~Type~ -> LBRACKET RBRACKET ~Type~ @slice_type
+~Type~ -> STAR ~Type~ @pointer_type
+
+~ReturnType~ -> ~Type~ @single_return_type
+~ReturnType~ -> LPAREN ~TypeList~ RPAREN @tuple_return_type
+
+~TypeList~ -> ~TypeList~ COMMA ~Type~ @type_list
+~TypeList~ -> ~Type~ @type_list_single
 
 ~ParamList~ -> ~ParamList~ COMMA ~Param~ @param_list
 ~ParamList~ -> ~Param~ @param_list_single
 
 ~Param~ -> IDENTIFIER ~Type~ @param
-~Param~ -> IDENTIFIER STAR ~Type~ @pointer_param
 
 ~Con~ -> ~Con~ OR_OR ~Con1~ @binary
 ~Con~ -> ~Con1~ @pass_expr
