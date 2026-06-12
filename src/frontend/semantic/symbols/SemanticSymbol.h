@@ -9,6 +9,11 @@ struct ParameterSignature
 {
 	TypeDescriptor type = Type::ERROR;
 	bool isPointer = false;
+
+	[[nodiscard]] TypeDescriptor GetEffectiveType() const
+	{
+		return isPointer ? TypeDescriptor::Pointer(type) : type;
+	}
 };
 
 struct FieldSignature
