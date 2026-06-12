@@ -218,7 +218,17 @@ void Value::Print() const
 			}
 			else if (arg->GetType() == ObjType::ARRAY)
 			{
-				std::printf("<array>");
+				const auto array = std::static_pointer_cast<ObjArray>(arg);
+				std::printf("[");
+				for (int index = 0; index < array->Length(); ++index)
+				{
+					if (index > 0)
+					{
+						std::printf(", ");
+					}
+					array->Get(index).Print();
+				}
+				std::printf("]");
 			}
 			else if (arg->GetType() == ObjType::STRUCT)
 			{

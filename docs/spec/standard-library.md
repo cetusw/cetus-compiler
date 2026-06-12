@@ -23,23 +23,24 @@ VM создаётся со стандартной библиотекой чер�
 
 Минимальный набор native-функций:
 
-- `print(value)`;
-- `println(value)`;
+- `print(value, ...)`;
+- `println(value, ...)`;
 - `len(value)`;
 - `scan(&value)`.
 
 ## Вывод
 
-### `print(value)`
+### `print(value, ...)`
 
-Печатает значение без перевода строки.
+Печатает одно или несколько значений без перевода строки. Между аргументами печатается один пробел.
 
-Поддерживаемые типы аргумента:
+Поддерживаемые типы аргументов:
 
 - `int`;
 - `float`;
 - `bool`;
 - `string`.
+- array/slice runtime values.
 
 Возвращает `void`.
 
@@ -54,16 +55,17 @@ func main() {
 
 Ожидаемый вывод: `ab`.
 
-### `println(value)`
+### `println(value, ...)`
 
-Печатает значение и добавляет перевод строки.
+Печатает одно или несколько значений и добавляет перевод строки. Между аргументами печатается один пробел.
 
-Поддерживаемые типы аргумента:
+Поддерживаемые типы аргументов:
 
 - `int`;
 - `float`;
 - `bool`;
 - `string`.
+- array/slice runtime values.
 
 Возвращает `void`.
 
@@ -73,6 +75,7 @@ func main() {
 func main() {
     println(1);
     println("ok");
+    println("values:", []int{1, 2, 3});
 }
 ```
 
@@ -81,18 +84,21 @@ func main() {
 ```text
 1
 ok
+values: [1, 2, 3]
 ```
 
 ## Длина
 
 ### `len(value)`
 
-Сейчас поддерживает только `string`.
+Поддерживает `string`, fixed array и slice.
 
 Сигнатура:
 
 ```text
 len(string) int
+len([N]T) int
+len([]T) int
 ```
 
 Пример:
@@ -105,13 +111,7 @@ func main() {
 
 Ожидаемый вывод: `3`.
 
-Для массивов поддерживается контракт:
-
-```text
-len([N]T) int
-```
-
-`len(array)` возвращает длину первого измерения. Для `[2][3]int` результат `len(matrix)` равен `2`.
+`len(array)` и `len(slice)` возвращают длину первого измерения. Для `[2][3]int` результат `len(matrix)` равен `2`.
 
 ## Ввод
 
@@ -158,9 +158,9 @@ func main() {
 
 ## `printf` compatibility
 
-`printf(value)` сохранён как compatibility alias для `println(value)`.
+`printf(value, ...)` сохранён как compatibility alias для `println(value, ...)`.
 
-Это не C-like `printf`: форматные строки и несколько аргументов не поддерживаются.
+Это не C-like `printf`: форматные строки не поддерживаются.
 
 Поддерживаемые типы аргумента такие же, как у `println`:
 
@@ -169,7 +169,7 @@ func main() {
 - `bool`;
 - `string`.
 
-Codegen резолвит вызов `printf(value)` в runtime-вызов `println(value)`.
+Codegen резолвит вызов `printf(value, ...)` в runtime-вызов `println(value, ...)`.
 
 Пример:
 

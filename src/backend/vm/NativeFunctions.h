@@ -13,6 +13,10 @@ inline Value NativePrint(int argc, Value* args)
 {
 	for (int i = 0; i < argc; i++)
 	{
+		if (i > 0)
+		{
+			std::printf(" ");
+		}
 		args[i].Print();
 	}
 	return {};

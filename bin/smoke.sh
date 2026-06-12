@@ -23,7 +23,7 @@ run_positive_output() {
     run_positive "$file"
 
     local actual
-    actual="$(grep -v -E '^(--- Trace Execution ---|\[|[0-9]{4} OP_|$)' "${SMOKE_STDOUT}" || true)"
+    actual="$(grep -v -E '^(--- Trace Execution ---|\[ |[0-9]{4} OP_|$)' "${SMOKE_STDOUT}" || true)"
     if [[ "${actual}" != "${expected}" ]]; then
         echo "Unexpected stdout for: $file" >&2
         echo "expected:" >&2
@@ -44,7 +44,7 @@ run_positive_output_stdin() {
     printf '%s' "${input}" | "${CETUS_BIN}" --run-expr "$file" >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"
 
     local actual
-    actual="$(grep -v -E '^(--- Trace Execution ---|\[|[0-9]{4} OP_|$)' "${SMOKE_STDOUT}" || true)"
+    actual="$(grep -v -E '^(--- Trace Execution ---|\[ |[0-9]{4} OP_|$)' "${SMOKE_STDOUT}" || true)"
     if [[ "${actual}" != "${expected}" ]]; then
         echo "Unexpected stdout for: $file" >&2
         echo "expected:" >&2
@@ -126,7 +126,10 @@ run_negative "${ROOT_DIR}/tests/smoke/negative/function_arity.cetus" "Function c
 run_negative "${ROOT_DIR}/tests/smoke/negative/array_bounds.cetus" "VM execution failed"
 
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/array_basic.cetus" $'0\n7\n3\n5\n0'
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/bubble_sort.cetus" $'До сортировки: [64, 34, 25, 12, 22, 11, 90]\nПосле сортировки: [11, 12, 22, 25, 34, 64, 90]'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/if_nested_empty.cetus" $'1\n2'
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/index_swap.cetus" "[2, 1, 3]"
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/len_slice.cetus" "4"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/increment.cetus" "3"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/decrement.cetus" "2"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/for_condition.cetus" $'0\n1\n2'
@@ -139,6 +142,7 @@ run_positive_output "${ROOT_DIR}/tests/smoke/positive/slice_literal.cetus" $'3\n
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/slice_parameter.cetus" "7"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_literal.cetus" "hello"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_operations.cetus" $'abc\ntrue\ntrue\n3'
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/variadic_println_array.cetus" $'Before: [64, 34, 25]\n[[1, 2], [3, 4]]'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/method_basic.cetus" "5"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/method_ref_receiver.cetus" "5"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/struct_basic.cetus" "1"

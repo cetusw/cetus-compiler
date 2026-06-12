@@ -185,7 +185,7 @@ Slice имеет тип элемента, но не содержит длину 
 [2][3]int
 ```
 
-На текущем этапе parser и semantic analyzer понимают fixed array type и slice type в typed declarations, function parameters и return types. Runtime поддерживает default fixed array creation, fixed array index reading, bounds check и `len(array)`. Runtime slice values, slice literals и assignment by index добавляются отдельными задачами.
+На текущем этапе parser и semantic analyzer понимают fixed array type и slice type в typed declarations, function parameters и return types. Runtime поддерживает default fixed array creation, array/slice literals через `ObjArray`, index reading/writing, bounds check, `len(array)` и `len(slice)`.
 
 ## Пользовательские Типы
 

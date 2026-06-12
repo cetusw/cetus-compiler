@@ -337,30 +337,28 @@ void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, c
 	const std::string& calleeName = node.GetCalleeName();
 	if (calleeName == "printf" || calleeName == "print" || calleeName == "println")
 	{
-		if (argumentTypes.size() != 1)
+		if (argumentTypes.empty())
 		{
-			AddDiagnostic(calleeName + " expects exactly one argument.");
+			AddDiagnostic(calleeName + " expects at least one argument.");
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
-		if (!ValidateValueExpression(argumentTypes.front(), "function argument"))
+
+		bool hasError = false;
+		for (std::size_t index = 0; index < argumentTypes.size(); ++index)
 		{
-			SetCurrentType(node, Type::ERROR);
-			return;
+			if (!ValidateValueExpression(argumentTypes[index], "function argument"))
+			{
+				hasError = true;
+			}
+			if (IsAddressOfExpression(*node.GetArguments()[index]))
+			{
+				AddDiagnostic(calleeName + " expects value argument, not address argument.");
+				hasError = true;
+			}
 		}
-		if (IsAddressOfExpression(*node.GetArguments().front()))
+		if (hasError)
 		{
-			AddDiagnostic(calleeName + " expects value argument, not address argument.");
-			SetCurrentType(node, Type::ERROR);
-			return;
-		}
-		const TypeDescriptor& argumentType = argumentTypes.front();
-		if (argumentType != Type::INT
-			&& argumentType != Type::FLOAT
-			&& argumentType != Type::BOOL
-			&& argumentType != Type::STRING)
-		{
-			AddDiagnostic(calleeName + " expects int, float, bool or string argument.");
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
