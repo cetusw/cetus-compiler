@@ -114,8 +114,16 @@ std::string JsonPreparedGrammarStorage::SerializeSemanticTag(const SemanticTag t
 	case SemanticTag::STRING_LITERAL: return "string_literal";
 	case SemanticTag::ARRAY_LITERAL: return "array_literal";
 	case SemanticTag::ARRAY_LITERAL_EMPTY: return "array_literal_empty";
+	case SemanticTag::STRUCT_LITERAL: return "struct_literal";
+	case SemanticTag::STRUCT_LITERAL_EMPTY: return "struct_literal_empty";
+	case SemanticTag::NAMED_POSTFIX: return "named_postfix";
+	case SemanticTag::IDENTIFIER_TAIL: return "identifier_tail";
+	case SemanticTag::STRUCT_LITERAL_TAIL: return "struct_literal_tail";
+	case SemanticTag::STRUCT_LITERAL_EMPTY_TAIL: return "struct_literal_empty_tail";
 	case SemanticTag::IDENTIFIER: return "identifier";
 	case SemanticTag::ADDRESS_OF: return "address_of";
+	case SemanticTag::ADDRESS_OF_STRUCT_LITERAL: return "address_of_struct_literal";
+	case SemanticTag::ADDRESS_OF_STRUCT_LITERAL_EMPTY: return "address_of_struct_literal_empty";
 	case SemanticTag::IDENTIFIER_LIST: return "identifier_list";
 	case SemanticTag::IDENTIFIER_LIST_SINGLE: return "identifier_list_single";
 	case SemanticTag::EXPRESSION_LIST: return "expression_list";
@@ -147,6 +155,9 @@ std::string JsonPreparedGrammarStorage::SerializeSemanticTag(const SemanticTag t
 	case SemanticTag::STRUCT_FIELD: return "struct_field";
 	case SemanticTag::STRUCT_FIELD_LIST: return "struct_field_list";
 	case SemanticTag::STRUCT_FIELD_LIST_SINGLE: return "struct_field_list_single";
+	case SemanticTag::FIELD_INITIALIZER: return "field_initializer";
+	case SemanticTag::FIELD_INITIALIZER_LIST: return "field_initializer_list";
+	case SemanticTag::FIELD_INITIALIZER_LIST_SINGLE: return "field_initializer_list_single";
 	case SemanticTag::STRUCT_DECLARATION: return "struct_declaration";
 	case SemanticTag::SHORT_VAR_DECLARATION: return "short_var_declaration";
 	case SemanticTag::VAR_INFERRED_DECLARATION: return "var_inferred_declaration";

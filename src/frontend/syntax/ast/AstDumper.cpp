@@ -120,6 +120,19 @@ void AstDumper::Visit(const ArrayLiteralASTNode& expr)
 	}
 }
 
+void AstDumper::Visit(const StructLiteralASTNode& expr)
+{
+	DumpLine("StructLiteralASTNode(" + expr.GetTypeName() + ")");
+	for (const StructFieldInitializer& initializer : expr.GetInitializers())
+	{
+		m_indent += 2;
+		DumpLine("StructFieldInitializer(" + initializer.name + ")");
+		m_indent += 2;
+		initializer.expression->Accept(*this);
+		m_indent -= 4;
+	}
+}
+
 void AstDumper::Visit(const IncrementASTNode& expr)
 {
 	DumpLine("IncrementASTNode");

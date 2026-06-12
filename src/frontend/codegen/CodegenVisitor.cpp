@@ -124,6 +124,11 @@ void CodegenVisitor::Visit(const ArrayLiteralASTNode& expr)
 	CurrentEmitter().EmitArray(static_cast<int>(expr.GetElements().size()));
 }
 
+void CodegenVisitor::Visit(const StructLiteralASTNode&)
+{
+	Fail("Struct literal code generation is not implemented yet.");
+}
+
 void CodegenVisitor::Visit(const IdentifierASTNode& expr)
 {
 	if (!EnsureTyped(expr))

@@ -93,6 +93,8 @@ std::string_view TokenTypeToGrammarTerminal(const TokenType type)
 		return "GREATER_EQUAL";
 	case TokenType::IDENTIFIER:
 		return "IDENTIFIER";
+	case TokenType::TYPE_IDENTIFIER:
+		return "TYPE_IDENTIFIER";
 	case TokenType::INT_LIT:
 		return "INT_LIT";
 	case TokenType::FLOAT_LIT:

@@ -45,6 +45,7 @@ enum class TokenType
     ELLIPSIS,           // ...
 
     IDENTIFIER,         // имя переменной / функции
+    TYPE_IDENTIFIER,    // имя пользовательского типа в контексте composite literal
     STRING,             // "строка" или `сырая строка`
     INT_LIT,            // 123
     FLOAT_LIT,          // 123.456

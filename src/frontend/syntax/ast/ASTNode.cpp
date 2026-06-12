@@ -93,6 +93,27 @@ void ArrayLiteralASTNode::Accept(ASTNodeVisitor& visitor) const
 	visitor.Visit(*this);
 }
 
+StructLiteralASTNode::StructLiteralASTNode(std::string typeName, std::vector<StructFieldInitializer> initializers)
+	: m_typeName(std::move(typeName))
+	, m_initializers(std::move(initializers))
+{
+}
+
+const std::string& StructLiteralASTNode::GetTypeName() const
+{
+	return m_typeName;
+}
+
+const std::vector<StructFieldInitializer>& StructLiteralASTNode::GetInitializers() const
+{
+	return m_initializers;
+}
+
+void StructLiteralASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}
+
 IdentifierASTNode::IdentifierASTNode(std::string name)
 	: m_name(std::move(name))
 {

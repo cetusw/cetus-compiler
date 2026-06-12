@@ -17,6 +17,8 @@ struct AstSemanticValue
 	std::optional<TypeDescriptor> type = std::nullopt;
 	std::vector<TypeDescriptor> types = {};
 	std::vector<StructField> fields = {};
+	std::vector<StructFieldInitializer> fieldInitializers = {};
+	bool hasStructLiteralTail = false;
 	bool compositeLiteralInitializer = false;
 };
 
@@ -36,8 +38,16 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildStringLiteral(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildArrayLiteral(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildEmptyArrayLiteral(const std::vector<AstSemanticValue>& values);
+	[[nodiscard]] static AstSemanticValue BuildStructLiteral(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildEmptyStructLiteral(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildIdentifier(const std::vector<AstSemanticValue>& values);
+	[[nodiscard]] static AstSemanticValue BuildNamedPostfix(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildIdentifierTail(const std::vector<AstSemanticValue>& values);
+	[[nodiscard]] static AstSemanticValue BuildStructLiteralTail(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildEmptyStructLiteralTail(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildAddressOf(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildAddressOfStructLiteral(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildAddressOfEmptyStructLiteral(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildIdentifierList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildSingleIdentifierList(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildExpressionList(std::vector<AstSemanticValue> values);
@@ -69,6 +79,9 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildStructField(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildStructFieldList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildSingleStructFieldList(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildFieldInitializer(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildFieldInitializerList(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildSingleFieldInitializerList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildStructDeclaration(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildShortVariableDeclaration(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildVarInferredDeclaration(std::vector<AstSemanticValue> values);
@@ -110,6 +123,7 @@ private:
 	[[nodiscard]] static std::vector<FunctionParameter> TakeParameterList(std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static std::vector<TypeDescriptor> TakeTypeList(std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static std::vector<StructField> TakeStructFieldList(std::vector<AstSemanticValue>& values, std::size_t index);
+	[[nodiscard]] static std::vector<StructFieldInitializer> TakeFieldInitializerList(std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static TypeDescriptor TakeType(const std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static Token TakeToken(const std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static BinaryOperator ToBinaryOperator(TokenType type);

@@ -103,6 +103,61 @@ void SemanticAnalyzer::Visit(const ArrayLiteralASTNode& node)
 	SetCurrentType(node, hasError ? TypeDescriptor(Type::ERROR) : literalType);
 }
 
+void SemanticAnalyzer::Visit(const StructLiteralASTNode& node)
+{
+	const TypeDescriptor literalType = TypeDescriptor::Named(node.GetTypeName());
+	bool hasError = false;
+
+	if (!ValidateTypeReference(literalType, "struct literal"))
+	{
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+
+	const SemanticSymbol* symbol = m_symbolTable.Resolve(node.GetTypeName());
+	if (!symbol || symbol->kind != SemanticSymbolKind::TYPE)
+	{
+		AddDiagnostic("Struct literal expects declared struct type: " + node.GetTypeName());
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+
+	std::unordered_set<std::string> initializedFields;
+	for (const StructFieldInitializer& initializer : node.GetInitializers())
+	{
+		if (!initializedFields.insert(initializer.name).second)
+		{
+			AddDiagnostic("Struct literal field is initialized more than once: " + node.GetTypeName() + "." + initializer.name);
+			hasError = true;
+			continue;
+		}
+
+		const FieldSignature* field = ResolveField(literalType, initializer.name);
+		if (!field)
+		{
+			AddDiagnostic("Struct literal field is not declared: " + node.GetTypeName() + "." + initializer.name);
+			hasError = true;
+			continue;
+		}
+
+		const TypeDescriptor actualType = AnalyzeChild(*initializer.expression);
+		if (!ValidateValueExpression(actualType, "struct literal field initializer"))
+		{
+			hasError = true;
+			continue;
+		}
+
+		if (actualType != field->type)
+		{
+			AddDiagnostic("Struct literal field initializer type does not match declared field type: "
+				+ node.GetTypeName() + "." + initializer.name);
+			hasError = true;
+		}
+	}
+
+	SetCurrentType(node, hasError ? TypeDescriptor(Type::ERROR) : literalType);
+}
+
 void SemanticAnalyzer::Visit(const IdentifierASTNode& node)
 {
 	const SemanticSymbol* symbol = m_symbolTable.Resolve(node.GetName());

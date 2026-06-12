@@ -2,6 +2,7 @@
 #include "Token.h"
 #include <optional>
 #include <string>
+#include <unordered_set>
 #include <unordered_map>
 #include <vector>
 
@@ -47,6 +48,9 @@ private:
 	[[nodiscard]] bool ShouldInsertSemicolon() const;
 	[[nodiscard]] static bool IsSemicolonTerminator(TokenType type);
 	[[nodiscard]] bool IsElseContinuationAfterNewline() const;
+	void PromoteStructLiteralTypeHeads();
+	[[nodiscard]] std::unordered_set<std::string> CollectDeclaredTypeNames() const;
+	[[nodiscard]] bool IsStructLiteralHeadContext(std::size_t tokenIndex) const;
 	[[nodiscard]] int GetEofLine() const;
 	void AddToken(TokenType type, std::string lexeme);
 	void AddToken(TokenType type, std::string lexeme, int line);

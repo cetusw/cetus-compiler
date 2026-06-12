@@ -48,6 +48,7 @@ LexerResult LexicalAnalyzer::ScanTokens()
 		}
 	}
 
+	PromoteStructLiteralTypeHeads();
 	AddToken(TokenType::EOF_TOKEN, "", GetEofLine());
 	return { std::move(m_tokens), std::nullopt, GetEofLine() };
 }
@@ -505,6 +506,82 @@ bool LexicalAnalyzer::IsElseContinuationAfterNewline() const
 	}
 
 	return false;
+}
+
+void LexicalAnalyzer::PromoteStructLiteralTypeHeads()
+{
+	const std::unordered_set<std::string> declaredTypeNames = CollectDeclaredTypeNames();
+	for (std::size_t index = 0; index + 1 < m_tokens.size(); ++index)
+	{
+		Token& token = m_tokens[index];
+		if (token.type != TokenType::IDENTIFIER)
+		{
+			continue;
+		}
+		if (!declaredTypeNames.contains(token.lexeme))
+		{
+			continue;
+		}
+		if (m_tokens[index + 1].type != TokenType::LBRACE)
+		{
+			continue;
+		}
+		if (!IsStructLiteralHeadContext(index))
+		{
+			continue;
+		}
+
+		token.type = TokenType::TYPE_IDENTIFIER;
+	}
+}
+
+std::unordered_set<std::string> LexicalAnalyzer::CollectDeclaredTypeNames() const
+{
+	std::unordered_set<std::string> typeNames;
+	for (std::size_t index = 0; index + 1 < m_tokens.size(); ++index)
+	{
+		if (m_tokens[index].type == TokenType::TYPE && m_tokens[index + 1].type == TokenType::IDENTIFIER)
+		{
+			typeNames.insert(m_tokens[index + 1].lexeme);
+		}
+	}
+	return typeNames;
+}
+
+bool LexicalAnalyzer::IsStructLiteralHeadContext(const std::size_t tokenIndex) const
+{
+	if (tokenIndex == 0)
+	{
+		return false;
+	}
+
+	switch (m_tokens[tokenIndex - 1].type)
+	{
+	case TokenType::BIT_AND:
+	case TokenType::RETURN:
+	case TokenType::EQUAL:
+	case TokenType::COLON_EQUAL:
+	case TokenType::COMMA:
+	case TokenType::LPAREN:
+	case TokenType::LBRACE:
+	case TokenType::COLON:
+	case TokenType::SEMICOLON:
+	case TokenType::PLUS:
+	case TokenType::MINUS:
+	case TokenType::SLASH:
+	case TokenType::PERCENT:
+	case TokenType::OR_OR:
+	case TokenType::AND_AND:
+	case TokenType::EQUAL_EQUAL:
+	case TokenType::BANG_EQUAL:
+	case TokenType::LESS:
+	case TokenType::LESS_EQUAL:
+	case TokenType::GREATER:
+	case TokenType::GREATER_EQUAL:
+		return true;
+	default:
+		return false;
+	}
 }
 
 void LexicalAnalyzer::AddToken(const TokenType type, std::string lexeme)

@@ -28,10 +28,26 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildArrayLiteral(std::move(values));
 	case SemanticTag::ARRAY_LITERAL_EMPTY:
 		return BuildEmptyArrayLiteral(values);
+	case SemanticTag::STRUCT_LITERAL:
+		return BuildStructLiteral(std::move(values));
+	case SemanticTag::STRUCT_LITERAL_EMPTY:
+		return BuildEmptyStructLiteral(std::move(values));
+	case SemanticTag::NAMED_POSTFIX:
+		return BuildNamedPostfix(std::move(values));
+	case SemanticTag::IDENTIFIER_TAIL:
+		return BuildIdentifierTail(values);
+	case SemanticTag::STRUCT_LITERAL_TAIL:
+		return BuildStructLiteralTail(std::move(values));
+	case SemanticTag::STRUCT_LITERAL_EMPTY_TAIL:
+		return BuildEmptyStructLiteralTail(values);
 	case SemanticTag::IDENTIFIER:
 		return BuildIdentifier(values);
 	case SemanticTag::ADDRESS_OF:
 		return BuildAddressOf(std::move(values));
+	case SemanticTag::ADDRESS_OF_STRUCT_LITERAL:
+		return BuildAddressOfStructLiteral(std::move(values));
+	case SemanticTag::ADDRESS_OF_STRUCT_LITERAL_EMPTY:
+		return BuildAddressOfEmptyStructLiteral(std::move(values));
 	case SemanticTag::IDENTIFIER_LIST:
 		return BuildIdentifierList(std::move(values));
 	case SemanticTag::IDENTIFIER_LIST_SINGLE:
@@ -94,6 +110,12 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildStructFieldList(std::move(values));
 	case SemanticTag::STRUCT_FIELD_LIST_SINGLE:
 		return BuildSingleStructFieldList(std::move(values));
+	case SemanticTag::FIELD_INITIALIZER:
+		return BuildFieldInitializer(std::move(values));
+	case SemanticTag::FIELD_INITIALIZER_LIST:
+		return BuildFieldInitializerList(std::move(values));
+	case SemanticTag::FIELD_INITIALIZER_LIST_SINGLE:
+		return BuildSingleFieldInitializerList(std::move(values));
 	case SemanticTag::STRUCT_DECLARATION:
 		return BuildStructDeclaration(std::move(values));
 	case SemanticTag::SHORT_VAR_DECLARATION:
@@ -281,16 +303,112 @@ AstSemanticValue AstReductionBuilder::BuildEmptyArrayLiteral(const std::vector<A
 	throw std::logic_error("Empty array literal reduction expects 5 or 6 semantic values.");
 }
 
+AstSemanticValue AstReductionBuilder::BuildStructLiteral(std::vector<AstSemanticValue> values)
+{
+	if (values.size() == 4 || values.size() == 5)
+	{
+		return {
+			std::make_unique<StructLiteralASTNode>(
+				TakeToken(values, 0).lexeme,
+				TakeFieldInitializerList(values, 2)),
+			std::nullopt
+		};
+	}
+
+	throw std::logic_error("Struct literal reduction expects 4 or 5 semantic values.");
+}
+
+AstSemanticValue AstReductionBuilder::BuildEmptyStructLiteral(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 3, "Empty struct literal reduction");
+	return {
+		std::make_unique<StructLiteralASTNode>(
+			TakeToken(values, 0).lexeme,
+			std::vector<StructFieldInitializer>{}),
+		std::nullopt
+	};
+}
+
 AstSemanticValue AstReductionBuilder::BuildIdentifier(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 1, "Identifier reduction");
 	return { std::make_unique<IdentifierASTNode>(TakeToken(values, 0).lexeme), std::nullopt };
 }
 
+AstSemanticValue AstReductionBuilder::BuildNamedPostfix(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 2, "Named postfix reduction");
+	const std::string typeOrName = TakeToken(values, 0).lexeme;
+	if (values[1].hasStructLiteralTail)
+	{
+		return {
+			std::make_unique<StructLiteralASTNode>(typeOrName, TakeFieldInitializerList(values, 1)),
+			std::nullopt
+		};
+	}
+
+	return { std::make_unique<IdentifierASTNode>(typeOrName), std::nullopt };
+}
+
+AstSemanticValue AstReductionBuilder::BuildIdentifierTail(const std::vector<AstSemanticValue>& values)
+{
+	RequireValueCount(values, 0, "Identifier tail reduction");
+	return { nullptr, std::nullopt };
+}
+
+AstSemanticValue AstReductionBuilder::BuildStructLiteralTail(std::vector<AstSemanticValue> values)
+{
+	if (values.size() != 3 && values.size() != 4)
+	{
+		throw std::logic_error("Struct literal tail reduction expects 3 or 4 semantic values.");
+	}
+
+	AstSemanticValue result;
+	result.hasStructLiteralTail = true;
+	result.fieldInitializers = TakeFieldInitializerList(values, 1);
+	return result;
+}
+
+AstSemanticValue AstReductionBuilder::BuildEmptyStructLiteralTail(const std::vector<AstSemanticValue>& values)
+{
+	RequireValueCount(values, 2, "Empty struct literal tail reduction");
+	AstSemanticValue result;
+	result.hasStructLiteralTail = true;
+	return result;
+}
+
 AstSemanticValue AstReductionBuilder::BuildAddressOf(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 2, "Address-of reduction");
 	return { std::make_unique<AddressOfASTNode>(TakeNode(values, 1)), std::nullopt };
+}
+
+AstSemanticValue AstReductionBuilder::BuildAddressOfStructLiteral(std::vector<AstSemanticValue> values)
+{
+	if (values.size() == 5 || values.size() == 6)
+	{
+		return {
+			std::make_unique<AddressOfASTNode>(
+				std::make_unique<StructLiteralASTNode>(
+					TakeToken(values, 1).lexeme,
+					TakeFieldInitializerList(values, 3))),
+			std::nullopt
+		};
+	}
+
+	throw std::logic_error("Address-of struct literal reduction expects 5 or 6 semantic values.");
+}
+
+AstSemanticValue AstReductionBuilder::BuildAddressOfEmptyStructLiteral(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 4, "Address-of empty struct literal reduction");
+	return {
+		std::make_unique<AddressOfASTNode>(
+			std::make_unique<StructLiteralASTNode>(
+				TakeToken(values, 1).lexeme,
+				std::vector<StructFieldInitializer>{})),
+		std::nullopt
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildIdentifierList(std::vector<AstSemanticValue> values)
@@ -598,6 +716,29 @@ AstSemanticValue AstReductionBuilder::BuildSingleStructFieldList(std::vector<Ast
 {
 	RequireValueCount(values, 1, "Single struct field list reduction");
 	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, {}, TakeStructFieldList(values, 0) };
+}
+
+AstSemanticValue AstReductionBuilder::BuildFieldInitializer(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 3, "Field initializer reduction");
+	std::vector<StructFieldInitializer> initializers;
+	initializers.push_back(StructFieldInitializer{ TakeToken(values, 0).lexeme, TakeNode(values, 2) });
+	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, {}, {}, std::move(initializers) };
+}
+
+AstSemanticValue AstReductionBuilder::BuildFieldInitializerList(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 3, "Field initializer list reduction");
+	std::vector<StructFieldInitializer> initializers = TakeFieldInitializerList(values, 0);
+	std::vector<StructFieldInitializer> nextInitializer = TakeFieldInitializerList(values, 2);
+	initializers.push_back(std::move(nextInitializer.front()));
+	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, {}, {}, std::move(initializers) };
+}
+
+AstSemanticValue AstReductionBuilder::BuildSingleFieldInitializerList(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 1, "Single field initializer list reduction");
+	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, {}, {}, TakeFieldInitializerList(values, 0) };
 }
 
 AstSemanticValue AstReductionBuilder::BuildStructDeclaration(std::vector<AstSemanticValue> values)
@@ -1084,6 +1225,18 @@ std::vector<StructField> AstReductionBuilder::TakeStructFieldList(
 	}
 
 	return std::move(values[index].fields);
+}
+
+std::vector<StructFieldInitializer> AstReductionBuilder::TakeFieldInitializerList(
+	std::vector<AstSemanticValue>& values,
+	const std::size_t index)
+{
+	if (values[index].fieldInitializers.empty())
+	{
+		throw std::runtime_error("Expected struct field initializer list semantic value.");
+	}
+
+	return std::move(values[index].fieldInitializers);
 }
 
 TypeDescriptor AstReductionBuilder::TakeType(const std::vector<AstSemanticValue>& values, const std::size_t index)

@@ -58,6 +58,12 @@ struct StructField
 	TypeDescriptor type = Type::ERROR;
 };
 
+struct StructFieldInitializer
+{
+	std::string name;
+	ASTNodePtr expression;
+};
+
 class StatementASTNode : public ASTNode
 {
 };
@@ -126,6 +132,20 @@ public:
 private:
 	TypeDescriptor m_type;
 	std::vector<ASTNodePtr> m_elements;
+};
+
+class StructLiteralASTNode final : public ExpressionASTNode
+{
+public:
+	StructLiteralASTNode(std::string typeName, std::vector<StructFieldInitializer> initializers);
+
+	[[nodiscard]] const std::string& GetTypeName() const;
+	[[nodiscard]] const std::vector<StructFieldInitializer>& GetInitializers() const;
+	void Accept(ASTNodeVisitor& visitor) const override;
+
+private:
+	std::string m_typeName;
+	std::vector<StructFieldInitializer> m_initializers;
 };
 
 class IdentifierASTNode final : public ExpressionASTNode

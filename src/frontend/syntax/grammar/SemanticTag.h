@@ -18,8 +18,16 @@ enum class SemanticTag
 	STRING_LITERAL,
 	ARRAY_LITERAL,
 	ARRAY_LITERAL_EMPTY,
+	STRUCT_LITERAL,
+	STRUCT_LITERAL_EMPTY,
+	NAMED_POSTFIX,
+	IDENTIFIER_TAIL,
+	STRUCT_LITERAL_TAIL,
+	STRUCT_LITERAL_EMPTY_TAIL,
 	IDENTIFIER,
 	ADDRESS_OF,
+	ADDRESS_OF_STRUCT_LITERAL,
+	ADDRESS_OF_STRUCT_LITERAL_EMPTY,
 	IDENTIFIER_LIST,
 	IDENTIFIER_LIST_SINGLE,
 	EXPRESSION_LIST,
@@ -51,6 +59,9 @@ enum class SemanticTag
 	STRUCT_FIELD,
 	STRUCT_FIELD_LIST,
 	STRUCT_FIELD_LIST_SINGLE,
+	FIELD_INITIALIZER,
+	FIELD_INITIALIZER_LIST,
+	FIELD_INITIALIZER_LIST_SINGLE,
 	STRUCT_DECLARATION,
 	SHORT_VAR_DECLARATION,
 	VAR_INFERRED_DECLARATION,
@@ -99,8 +110,16 @@ enum class SemanticTag
 	if (value == "string_literal") return SemanticTag::STRING_LITERAL;
 	if (value == "array_literal") return SemanticTag::ARRAY_LITERAL;
 	if (value == "array_literal_empty") return SemanticTag::ARRAY_LITERAL_EMPTY;
+	if (value == "struct_literal") return SemanticTag::STRUCT_LITERAL;
+	if (value == "struct_literal_empty") return SemanticTag::STRUCT_LITERAL_EMPTY;
+	if (value == "named_postfix") return SemanticTag::NAMED_POSTFIX;
+	if (value == "identifier_tail") return SemanticTag::IDENTIFIER_TAIL;
+	if (value == "struct_literal_tail") return SemanticTag::STRUCT_LITERAL_TAIL;
+	if (value == "struct_literal_empty_tail") return SemanticTag::STRUCT_LITERAL_EMPTY_TAIL;
 	if (value == "identifier") return SemanticTag::IDENTIFIER;
 	if (value == "address_of") return SemanticTag::ADDRESS_OF;
+	if (value == "address_of_struct_literal") return SemanticTag::ADDRESS_OF_STRUCT_LITERAL;
+	if (value == "address_of_struct_literal_empty") return SemanticTag::ADDRESS_OF_STRUCT_LITERAL_EMPTY;
 	if (value == "identifier_list") return SemanticTag::IDENTIFIER_LIST;
 	if (value == "identifier_list_single") return SemanticTag::IDENTIFIER_LIST_SINGLE;
 	if (value == "expression_list") return SemanticTag::EXPRESSION_LIST;
@@ -132,6 +151,9 @@ enum class SemanticTag
 	if (value == "struct_field") return SemanticTag::STRUCT_FIELD;
 	if (value == "struct_field_list") return SemanticTag::STRUCT_FIELD_LIST;
 	if (value == "struct_field_list_single") return SemanticTag::STRUCT_FIELD_LIST_SINGLE;
+	if (value == "field_initializer") return SemanticTag::FIELD_INITIALIZER;
+	if (value == "field_initializer_list") return SemanticTag::FIELD_INITIALIZER_LIST;
+	if (value == "field_initializer_list_single") return SemanticTag::FIELD_INITIALIZER_LIST_SINGLE;
 	if (value == "struct_declaration") return SemanticTag::STRUCT_DECLARATION;
 	if (value == "short_var_declaration") return SemanticTag::SHORT_VAR_DECLARATION;
 	if (value == "var_inferred_declaration") return SemanticTag::VAR_INFERRED_DECLARATION;

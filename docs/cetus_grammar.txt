@@ -69,7 +69,13 @@
 ~AssignableList~ -> ~AssignableList~ COMMA ~PostfixExp~ @assignable_list
 ~AssignableList~ -> ~PostfixExp~ @assignable_list_single
 
+~FieldInitList~ -> ~FieldInitList~ COMMA ~FieldInit~ @field_initializer_list
+~FieldInitList~ -> ~FieldInit~ @field_initializer_list_single
+
+~FieldInit~ -> IDENTIFIER COLON ~Con~ @field_initializer
+
 ~Type~ -> IDENTIFIER @type_name
+~Type~ -> TYPE_IDENTIFIER @type_name
 ~Type~ -> LBRACKET INT_LIT RBRACKET ~Type~ @array_type
 ~Type~ -> LBRACKET RBRACKET ~Type~ @slice_type
 ~Type~ -> STAR ~Type~ @pointer_type
@@ -115,6 +121,12 @@
 ~Exp2~ -> LBRACKET RBRACKET ~Type~ LBRACE ~ExpressionList~ RBRACE @array_literal
 ~Exp2~ -> LBRACKET INT_LIT RBRACKET ~Type~ LBRACE RBRACE @array_literal_empty
 ~Exp2~ -> LBRACKET RBRACKET ~Type~ LBRACE RBRACE @array_literal_empty
+~Exp2~ -> TYPE_IDENTIFIER LBRACE ~FieldInitList~ RBRACE @struct_literal
+~Exp2~ -> TYPE_IDENTIFIER LBRACE ~FieldInitList~ COMMA RBRACE @struct_literal
+~Exp2~ -> TYPE_IDENTIFIER LBRACE RBRACE @struct_literal_empty
+~Exp2~ -> BIT_AND TYPE_IDENTIFIER LBRACE ~FieldInitList~ RBRACE @address_of_struct_literal
+~Exp2~ -> BIT_AND TYPE_IDENTIFIER LBRACE ~FieldInitList~ COMMA RBRACE @address_of_struct_literal
+~Exp2~ -> BIT_AND TYPE_IDENTIFIER LBRACE RBRACE @address_of_struct_literal_empty
 ~Exp2~ -> MINUS ~Exp2~ @unary
 ~Exp2~ -> BIT_AND ~PostfixExp~ @address_of
 ~Exp2~ -> ~PostfixExp~ @pass_expr
