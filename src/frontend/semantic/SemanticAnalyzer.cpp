@@ -335,6 +335,57 @@ void SemanticAnalyzer::TypeCheckMethodCall(
 void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, const std::vector<TypeDescriptor>& argumentTypes)
 {
 	const std::string& calleeName = node.GetCalleeName();
+	if (calleeName == "append")
+	{
+		if (argumentTypes.size() < 2)
+		{
+			AddDiagnostic("append expects at least two arguments.");
+			SetCurrentType(node, Type::ERROR);
+			return;
+		}
+		if (!ValidateValueExpression(argumentTypes.front(), "function argument"))
+		{
+			SetCurrentType(node, Type::ERROR);
+			return;
+		}
+		if (!argumentTypes.front().IsSlice())
+		{
+			AddDiagnostic("append expects slice as first argument.");
+			SetCurrentType(node, Type::ERROR);
+			return;
+		}
+		if (IsAddressOfExpression(*node.GetArguments().front()))
+		{
+			AddDiagnostic("append expects value argument, not address argument.");
+			SetCurrentType(node, Type::ERROR);
+			return;
+		}
+
+		const TypeDescriptor elementType = argumentTypes.front().GetElementType();
+		bool hasError = false;
+		for (std::size_t index = 1; index < argumentTypes.size(); ++index)
+		{
+			if (!ValidateValueExpression(argumentTypes[index], "function argument"))
+			{
+				hasError = true;
+				continue;
+			}
+			if (IsAddressOfExpression(*node.GetArguments()[index]))
+			{
+				AddDiagnostic("append expects value argument, not address argument.");
+				hasError = true;
+				continue;
+			}
+			if (argumentTypes[index] != elementType)
+			{
+				AddDiagnostic("append element type does not match slice element type.");
+				hasError = true;
+			}
+		}
+		SetCurrentType(node, hasError ? Type::ERROR : argumentTypes.front());
+		return;
+	}
+
 	if (calleeName == "printf" || calleeName == "print" || calleeName == "println")
 	{
 		if (argumentTypes.empty())
@@ -354,6 +405,15 @@ void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, c
 			if (IsAddressOfExpression(*node.GetArguments()[index]))
 			{
 				AddDiagnostic(calleeName + " expects value argument, not address argument.");
+				hasError = true;
+			}
+			if (argumentTypes[index] != Type::INT
+				&& argumentTypes[index] != Type::FLOAT
+				&& argumentTypes[index] != Type::BOOL
+				&& argumentTypes[index] != Type::STRING
+				&& !argumentTypes[index].IsSequence())
+			{
+				AddDiagnostic(calleeName + " expects int, float, bool, string, array or slice argument.");
 				hasError = true;
 			}
 		}
@@ -1178,6 +1238,7 @@ void SemanticAnalyzer::DefineBuiltinFunctions()
 	m_symbolTable.Define(SemanticSymbol{ "printf", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, false } }, {}, {} });
 	m_symbolTable.Define(SemanticSymbol{ "print", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, false } }, {}, {} });
 	m_symbolTable.Define(SemanticSymbol{ "println", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, false } }, {}, {} });
+	m_symbolTable.Define(SemanticSymbol{ "append", Type::ERROR, SemanticSymbolKind::BUILTIN_FUNCTION, {}, {}, {} });
 	m_symbolTable.Define(SemanticSymbol{ "len", Type::INT, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::STRING, false } }, {}, {} });
 	m_symbolTable.Define(SemanticSymbol{ "scan", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, true } }, {}, {} });
 }

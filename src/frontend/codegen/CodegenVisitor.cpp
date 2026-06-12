@@ -116,6 +116,11 @@ void CodegenVisitor::Visit(const ArrayLiteralASTNode& expr)
 			return;
 		}
 	}
+	if (expr.GetType().IsSlice())
+	{
+		CurrentEmitter().EmitSlice(static_cast<int>(expr.GetElements().size()));
+		return;
+	}
 	CurrentEmitter().EmitArray(static_cast<int>(expr.GetElements().size()));
 }
 
@@ -756,6 +761,11 @@ void CodegenVisitor::EmitDefault(const TypeDescriptor& type)
 			}
 		}
 		CurrentEmitter().EmitArray(length);
+		return;
+	}
+	if (type.IsSlice())
+	{
+		CurrentEmitter().EmitSlice(0);
 		return;
 	}
 	if (type.IsNamed())

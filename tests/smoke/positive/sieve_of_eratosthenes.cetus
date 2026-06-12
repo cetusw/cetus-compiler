@@ -1,0 +1,28 @@
+func Sieve(limit int) {
+    var isPrime []bool
+
+    for i := 0; i <= limit; i++ {
+        isPrime = append(isPrime, true)
+    }
+
+    isPrime[0] = false
+    isPrime[1] = false
+
+    for p := 2; p * p <= limit; p++ {
+        if isPrime[p] {
+            for multiple := p * p; multiple <= limit; multiple = multiple + p {
+                isPrime[multiple] = false
+            }
+        }
+    }
+
+    for i := 2; i <= limit; i = i + 1 {
+        if isPrime[i] {
+            println(i)
+        }
+    }
+}
+
+func main() {
+    Sieve(10)
+}

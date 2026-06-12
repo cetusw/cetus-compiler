@@ -23,6 +23,7 @@
 #include "SetIndexInstruction.h"
 #include "SetLocalInstruction.h"
 #include "SetMemberInstruction.h"
+#include "SliceInstruction.h"
 #include "StructInstruction.h"
 #include <array>
 
@@ -62,6 +63,7 @@ public:
 
 		m_table[OP_CALL] = std::make_unique<CallInstruction>();
 		m_table[OP_ARRAY] = std::make_unique<ArrayInstruction>();
+		m_table[OP_SLICE] = std::make_unique<SliceInstruction>();
 		m_table[OP_GET_INDEX] = std::make_unique<GetIndexInstruction>();
 		m_table[OP_SET_INDEX] = std::make_unique<SetIndexInstruction>();
 		m_table[OP_STRUCT] = std::make_unique<StructInstruction>();

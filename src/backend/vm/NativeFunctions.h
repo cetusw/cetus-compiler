@@ -2,6 +2,7 @@
 
 #include "objects/ObjArray.h"
 #include "objects/ObjRef.h"
+#include "objects/ObjSlice.h"
 #include "objects/ObjString.h"
 #include "types/Value.h"
 #include <iostream>
@@ -9,6 +10,11 @@
 
 namespace NativeFunctions
 {
+inline int SequenceLength(const Value& value)
+{
+	return value.IsArray() ? value.AsArray()->Length() : value.AsSlice()->Length();
+}
+
 inline Value NativePrint(int argc, Value* args)
 {
 	for (int i = 0; i < argc; i++)
@@ -39,11 +45,28 @@ inline Value NativeLen(int argc, Value* args)
 	{
 		return Value(static_cast<RuntimeInt>(args[0].AsString().length()));
 	}
-	if (args[0].IsArray())
+	if (args[0].IsSequence())
 	{
-		return Value(static_cast<RuntimeInt>(args[0].AsArray()->Length()));
+		return Value(static_cast<RuntimeInt>(SequenceLength(args[0])));
 	}
 	return {};
+}
+
+inline Value NativeAppend(int argc, Value* args)
+{
+	if (argc < 2 || !args[0].IsSlice())
+	{
+		return {};
+	}
+
+	const auto slice = args[0].AsSlice();
+	std::vector<Value> values;
+	values.reserve(static_cast<std::size_t>(argc - 1));
+	for (int index = 1; index < argc; ++index)
+	{
+		values.push_back(args[index].Dereference());
+	}
+	return Value(slice->Append(values));
 }
 
 inline Value NativeScan(int argc, Value* args)

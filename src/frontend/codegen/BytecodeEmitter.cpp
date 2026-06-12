@@ -125,6 +125,12 @@ void BytecodeEmitter::EmitArray(const int length) const
 	EmitOperandByte(length);
 }
 
+void BytecodeEmitter::EmitSlice(const int length) const
+{
+	EmitOpcode(OP_SLICE);
+	EmitOperandByte(length);
+}
+
 void BytecodeEmitter::EmitIndexLoad() const
 {
 	EmitOpcode(OP_GET_INDEX);

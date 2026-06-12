@@ -43,6 +43,7 @@ static const std::unordered_map<std::string, OpCodeInfo> INSTRUCTIONS = {
 	{ "ref_global", { OP_REF_GLOBAL, OperandType::BYTE } },
 	{ "call", { OP_CALL, OperandType::BYTE } },
 	{ "array", { OP_ARRAY, OperandType::BYTE } },
+	{ "slice", { OP_SLICE, OperandType::BYTE } },
 	{ "get_index", { OP_GET_INDEX, OperandType::NONE } },
 	{ "set_index", { OP_SET_INDEX, OperandType::NONE } },
 	{ "get_member", { OP_GET_MEMBER, OperandType::BYTE } },

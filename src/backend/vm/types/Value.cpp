@@ -3,6 +3,7 @@
 #include "../objects/ObjFunction.h"
 #include "../objects/ObjRef.h"
 #include "../objects/ObjString.h"
+#include "../objects/ObjSlice.h"
 #include "../objects/ObjStruct.h"
 #include "src/backend/vm/objects/ObjNative.h"
 
@@ -10,6 +11,24 @@
 #include <cinttypes>
 #include <cstdio>
 #include <type_traits>
+
+namespace
+{
+template <typename TSequence>
+void PrintSequence(const TSequence& sequence)
+{
+	std::printf("[");
+	for (int index = 0; index < sequence.Length(); ++index)
+	{
+		if (index > 0)
+		{
+			std::printf(", ");
+		}
+		sequence.Get(index).Print();
+	}
+	std::printf("]");
+}
+} // namespace
 
 Value::Value()
 	: m_data(nullptr)
@@ -103,6 +122,16 @@ bool Value::IsArray() const
 	return std::holds_alternative<HeapObject>(m_data) && std::get<HeapObject>(m_data)->GetType() == ObjType::ARRAY;
 }
 
+bool Value::IsSlice() const
+{
+	return std::holds_alternative<HeapObject>(m_data) && std::get<HeapObject>(m_data)->GetType() == ObjType::SLICE;
+}
+
+bool Value::IsSequence() const
+{
+	return IsArray() || IsSlice();
+}
+
 bool Value::IsStruct() const
 {
 	return std::holds_alternative<HeapObject>(m_data) && std::get<HeapObject>(m_data)->GetType() == ObjType::STRUCT;
@@ -162,6 +191,12 @@ std::shared_ptr<ObjArray> Value::AsArray() const
 	return std::static_pointer_cast<ObjArray>(obj);
 }
 
+std::shared_ptr<ObjSlice> Value::AsSlice() const
+{
+	const auto obj = std::get<HeapObject>(m_data);
+	return std::static_pointer_cast<ObjSlice>(obj);
+}
+
 std::shared_ptr<ObjStruct> Value::AsStruct() const
 {
 	const auto obj = std::get<HeapObject>(m_data);
@@ -218,17 +253,11 @@ void Value::Print() const
 			}
 			else if (arg->GetType() == ObjType::ARRAY)
 			{
-				const auto array = std::static_pointer_cast<ObjArray>(arg);
-				std::printf("[");
-				for (int index = 0; index < array->Length(); ++index)
-				{
-					if (index > 0)
-					{
-						std::printf(", ");
-					}
-					array->Get(index).Print();
-				}
-				std::printf("]");
+				PrintSequence(*std::static_pointer_cast<ObjArray>(arg));
+			}
+			else if (arg->GetType() == ObjType::SLICE)
+			{
+				PrintSequence(*std::static_pointer_cast<ObjSlice>(arg));
 			}
 			else if (arg->GetType() == ObjType::STRUCT)
 			{

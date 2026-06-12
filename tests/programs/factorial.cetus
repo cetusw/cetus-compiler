@@ -1,0 +1,15 @@
+func Factorial(n int) int {
+    result := 1
+
+    for i := 2; i <= n; i++ {
+        result = result * i
+    }
+
+    return result
+}
+
+func main() {
+    println(Factorial(3))
+    println(Factorial(5))
+    println(Factorial(10))
+}
