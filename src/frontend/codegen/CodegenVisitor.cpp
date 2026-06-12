@@ -153,25 +153,11 @@ void CodegenVisitor::Visit(const StructLiteralASTNode& expr)
 		return;
 	}
 
-	std::unordered_map<std::string, const ASTNode*> initializers;
-	for (const StructFieldInitializer& initializer : expr.GetInitializers())
-	{
-		initializers[initializer.name] = initializer.expression.get();
-	}
-
 	std::vector<std::string> fieldNames;
 	fieldNames.reserve(symbol->fields.size());
 	for (const FieldSignature& field : symbol->fields)
 	{
-		const auto it = initializers.find(field.name);
-		if (it != initializers.end())
-		{
-			it->second->Accept(*this);
-		}
-		else
-		{
-			EmitDefault(field.type);
-		}
+		EmitDefault(field.type);
 		if (m_error.has_value())
 		{
 			return;
@@ -180,6 +166,19 @@ void CodegenVisitor::Visit(const StructLiteralASTNode& expr)
 	}
 
 	CurrentEmitter().EmitStruct(expr.GetTypeName(), fieldNames);
+
+	for (const StructFieldInitializer& initializer : expr.GetInitializers())
+	{
+		initializer.expression->Accept(*this);
+		if (m_error.has_value())
+		{
+			return;
+		}
+
+		CurrentEmitter().EmitOver();
+		CurrentEmitter().EmitMemberSet(initializer.name);
+		CurrentEmitter().EmitOpcode(OP_POP);
+	}
 }
 
 void CodegenVisitor::Visit(const IdentifierASTNode& expr)

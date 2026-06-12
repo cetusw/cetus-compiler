@@ -98,6 +98,7 @@ add_library(cetus_backend_vm STATIC
         src/backend/vm/instructions/LoopInstruction.cpp
         src/backend/vm/instructions/NegateInstruction.cpp
         src/backend/vm/instructions/NotInstruction.cpp
+        src/backend/vm/instructions/OverInstruction.cpp
         src/backend/vm/instructions/PopInstruction.cpp
         src/backend/vm/instructions/PointerInstruction.cpp
         src/backend/vm/instructions/RefGlobalInstruction.cpp

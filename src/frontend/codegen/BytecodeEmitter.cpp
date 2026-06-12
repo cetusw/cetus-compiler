@@ -174,6 +174,11 @@ void BytecodeEmitter::EmitPointer() const
 	EmitOpcode(OP_POINTER);
 }
 
+void BytecodeEmitter::EmitOver() const
+{
+	EmitOpcode(OP_OVER);
+}
+
 void BytecodeEmitter::EmitMemberLoad(const std::string& fieldName) const
 {
 	EmitOpcode(OP_GET_MEMBER);

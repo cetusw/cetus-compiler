@@ -34,6 +34,7 @@ public:
 	void EmitIndexSet() const;
 	void EmitStruct(const std::string& typeName, const std::vector<std::string>& fieldNames) const;
 	void EmitPointer() const;
+	void EmitOver() const;
 	void EmitMemberLoad(const std::string& fieldName) const;
 	void EmitMemberSet(const std::string& fieldName) const;
 

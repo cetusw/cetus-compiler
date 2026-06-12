@@ -40,6 +40,7 @@ enum OpCode : uint8_t
 	OP_SET_INDEX,
 	OP_STRUCT,
 	OP_POINTER,
+	OP_OVER,
 	OP_GET_MEMBER,
 	OP_SET_MEMBER,
 
