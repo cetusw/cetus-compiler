@@ -1,0 +1,17 @@
+// TODO реализовать map
+func CountCharacters(text string) map[string]int {
+    freq := map[string]int{}
+
+    for i := 0; i < len(text); i++ {
+        ch := text[i]
+        freq[ch]++
+    }
+
+    return freq
+}
+
+func main() {
+    freq := CountCharacters("banana")
+
+    print(freq)
+}

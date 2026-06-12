@@ -9,6 +9,7 @@
 - [Entry point](#entry-point)
 - [Методы](#методы)
 - [Вызовы](#вызовы)
+- [Multiple Return](#multiple-return)
 - [Связь с тестами](#связь-с-тестами)
 
 ## Объявление функции
@@ -46,11 +47,11 @@ func printFlag(flag bool) {
 
 Параметры доступны внутри тела функции как локальные переменные. Повтор имени параметра в одной функции является семантической ошибкой.
 
-Параметр может принимать адрес значения. Синтаксис намеренно близок к Go: в сигнатуре используется `*T`, а на стороне вызова явно передаётся адрес через `&value`.
+Параметр может иметь pointer type. Синтаксис намеренно близок к Go: в сигнатуре используется `*T`, а на стороне вызова явно передаётся адрес через `&value`, если передаётся value типа `T`.
 
 ```cetus
 func inc(value *int) {
-    value = value + 1;
+    // mutating semantics defined by pointer model
 }
 
 func main() {
@@ -60,7 +61,14 @@ func main() {
 }
 ```
 
-На текущем этапе pointer-параметры используются только как управляемая форма передачи по ссылке. Полноценная арифметика указателей и разыменование как отдельные выражения не поддерживаются.
+Если аргумент уже имеет тип `*T`, повторный `&` не требуется:
+
+```cetus
+node := NewNode();
+UseNode(node);
+```
+
+На уровне language contract pointer parameter означает обычный typed argument, а не специальный ref-slot API frontend-а. Внутренний runtime-механизм может временно использовать reference object, но пользовательский контракт описывается через `*T`.
 
 Вызов pointer-параметра без `&` или с адресом временного выражения является семантической ошибкой:
 
@@ -75,7 +83,7 @@ func main() {
 }
 ```
 
-Ref-параметр внутри функции ведёт себя как обычная локальная переменная, но чтение и запись происходят через ссылку на исходный slot/global.
+Mutating semantics pointer-параметра определяется target type и runtime pointer model. Compiler не должен допускать pointer target с невалидным lifetime.
 
 ## Возвращаемый тип
 
@@ -95,11 +103,27 @@ func value() int {
 }
 ```
 
+Функция может возвращать несколько значений:
+
+```cetus
+func pop() (int, bool) {
+    return 0, false;
+}
+```
+
+Multiple return задаёт упорядоченный список результатов функции. Это часть function signature, а не отдельный aggregate type пользователя.
+
 ## Return
 
 `return;` допустим только в функции с типом возврата `void`.
 
 `return expr;` допустим только в функции с не-`void` типом возврата, если тип выражения совпадает с типом возврата.
+
+Для функции с несколькими результатами:
+
+- `return` должен вернуть то же количество значений, что и в сигнатуре;
+- тип каждого возвращаемого значения должен совпадать с соответствующим типом результата;
+- arity mismatch должен быть semantic error до codegen/runtime.
 
 `return` вне функции является семантической ошибкой.
 
@@ -181,7 +205,7 @@ p.Sum()
 
 Semantic analyzer хранит методы в таблице методов соответствующего типа. Codegen генерирует метод как обычную функцию с qualified name, например `Point.Sum`, а method call передаёт receiver первым аргументом.
 
-Receiver по ссылке объявляется через `*T`:
+Pointer receiver объявляется через `*T`:
 
 ```cetus
 func (p *Point) Move(dx int) {
@@ -195,13 +219,18 @@ func (p *Point) Move(dx int) {
 p.Move(4);
 ```
 
-`&p` на стороне вызова не пишется. Semantic analyzer видит pointer receiver в method table, а codegen автоматически передаёт receiver как runtime reference.
+`&p` на стороне вызова не пишется. Semantic analyzer видит pointer receiver в method table и применяет pointer dispatch rules:
 
-На текущем этапе pointer receiver требует assignable identifier receiver:
+- `p.Method()` допустим, если `p` имеет тип `*T`;
+- `p.Method()` допустим, если `p` имеет тип `T` и является addressable;
+- вызов на не-addressable temporary является semantic error.
+
+Примеры:
 
 ```cetus
-p.Move();          // ok
-points[0].Move();  // semantic error
+point.Move();        // ok, если point: T и addressable
+stack.Push(10);      // ok, если stack: *Stack
+MakePoint().Move();  // semantic error
 ```
 
 ## Вызовы
@@ -228,7 +257,11 @@ value := answer();
 
 Количество аргументов должно совпадать с количеством параметров. Тип каждого аргумента должен совпадать с типом соответствующего параметра.
 
-Для ref-параметра аргумент должен быть assignable identifier того же типа.
+Для pointer parameter или pointer receiver:
+
+- value типа `T` передаётся как `&value`, если нужен `*T`;
+- value типа `*T` передаётся как обычный pointer argument;
+- temporary value нельзя использовать там, где нужен адрес стабильного объекта.
 
 Идентификатор переменной не может использоваться как вызываемая функция.
 
@@ -243,6 +276,30 @@ func add(a int, b int) int {
 ```
 
 Рекурсивные и взаимно рекурсивные вызовы разрешены, если сигнатуры функций корректны.
+
+## Multiple Return
+
+Multiple return values допускаются в следующих контекстах:
+
+- в `return`;
+- в multiple assignment или multiple declaration;
+- как expanded arguments в function or native call, если arity соответствует expected argument positions.
+
+Примеры:
+
+```cetus
+value, ok := stack.Pop();
+return value, true;
+println(stack.Pop());
+```
+
+Multiple return value нельзя неявно сохранять в одну переменную обычного типа:
+
+```cetus
+value := stack.Pop();  // semantic error
+```
+
+Если контекст ожидает один аргумент или одно значение, multiple-return function call не сворачивается автоматически.
 
 ## Связь с тестами
 

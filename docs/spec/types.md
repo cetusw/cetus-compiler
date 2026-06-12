@@ -9,6 +9,9 @@
 - [Неявное приведение числовых типов](#неявное-приведение-числовых-типов)
 - [Массивы](#массивы)
 - [Пользовательские типы](#пользовательские-типы)
+- [Указатели и Nullable-значения](#указатели-и-nullable-значения)
+- [Addressability](#addressability)
+- [Struct Composite Literal](#struct-composite-literal)
 - [Совместимость](#совместимость)
 - [Будущие типы](#будущие-типы)
 
@@ -209,6 +212,136 @@ var points [2]Point;
 
 Runtime-представление struct instance хранится в `ObjStruct`. Default value для struct создаёт instance со значениями полей по умолчанию. Member access возвращает тип соответствующего поля.
 
+Named type участвует в системе типов как отдельное имя, а не как alias встроенного типа. Поэтому:
+
+- `Point` и `int` несовместимы;
+- `Point` и `OtherPoint` несовместимы, даже если имеют одинаковый набор полей;
+- поле struct и parameter function могут иметь тип named struct.
+
+## Указатели и Nullable-значения
+
+Pointer type записывается как `*T`:
+
+```cetus
+*int
+*Point
+[]*Point
+```
+
+`*T` является отдельным типовым конструктором, так же как `[]T` и `[N]T`.
+
+Целевой контракт языка:
+
+- `&value` возвращает значение типа `*T`, если `value` имеет тип `T` и является addressable;
+- `&Point{...}` возвращает `*Point` и создаёт heap-backed instance;
+- `*T` является nullable type;
+- default value для `*T` равен `nil`.
+
+Literal `nil` является отдельным значением языка и совместим только с nullable types. На текущем этапе nullable считаются:
+
+- `*T`;
+- `[]T`;
+- function values, если позже они станут пользовательскими значениями.
+
+`nil` несовместим с:
+
+- `int`;
+- `float`;
+- `bool`;
+- `string`;
+- struct value `T`.
+
+Указатели на текущем этапе не поддерживают:
+
+- pointer arithmetic;
+- явное разыменование через отдельный оператор `*expr`;
+- сравнение порядка указателей;
+- произвольное преобразование pointer types.
+
+Неявное разыменование разрешено только в member access и method dispatch для pointer-to-struct.
+
+## Addressability
+
+Addressability определяет, можно ли получить стабильную ссылку на значение или передать его как mutating receiver.
+
+Addressable выражения:
+
+- identifier переменной;
+- member access на addressable объекте;
+- index access на sequence, если runtime поддерживает стабильную ссылку на элемент;
+- future explicit dereference expression.
+
+Не addressable:
+
+- literal;
+- результат арифметического выражения;
+- результат comparison;
+- результат function call, если он не возвращает pointer;
+- временный struct literal без address-of.
+
+Правила:
+
+- `&expr` допустим только для addressable выражения или для composite literal, для которого язык явно разрешает heap allocation;
+- pointer receiver method call с receiver типа `T` допустим только для addressable receiver;
+- pointer receiver method call с receiver типа `*T` допустим как обычный value call.
+
+## Struct Composite Literal
+
+Struct literal создаёт значение named struct type:
+
+```cetus
+Point{
+    x: 1,
+    y: 2,
+}
+```
+
+Field names являются обязательной частью текущего контракта. Positional struct literal не поддерживается.
+
+Семантические правила:
+
+- имя типа должно разрешаться в struct type;
+- каждое поле должно существовать в declaration типа;
+- поле нельзя указывать более одного раза;
+- тип initializer должен совпадать с типом поля;
+- неуказанные поля получают default value своего типа;
+- пустой struct literal допустим, если syntax поддерживает `Point{}`.
+
+`&Point{...}` отличается от `Point{...}`:
+
+- `Point{...}` создаёт struct value;
+- `&Point{...}` создаёт pointer на heap-backed struct instance.
+
+## Pointer Receiver Dispatch
+
+Если method объявлен с receiver типа `*T`:
+
+```cetus
+func (p *Point) Move(dx int) {
+    p.x = p.x + dx;
+}
+```
+
+то вызов подчиняется следующим правилам:
+
+- если receiver expression уже имеет тип `*T`, method получает это pointer value;
+- если receiver expression имеет тип `T` и является addressable, compiler неявно берёт адрес receiver;
+- если receiver expression имеет тип `T`, но не является addressable, вызов является semantic error.
+
+Примеры:
+
+```cetus
+var point Point;
+point.Move(1);      // ok, point addressable
+
+stack := NewStack();
+stack.Push(10);     // ok, stack already has type *Stack
+
+MakePoint().Move(1);  // semantic error
+```
+
+Pointer receiver не означает отдельный синтаксис вызова. Пользователь по-прежнему пишет `value.Method()`.
+
 ## Совместимость
 
 Совместимыми для `==` и `!=` считаются:
@@ -216,8 +349,34 @@ Runtime-представление struct instance хранится в `ObjStruc
 - одинаковые типы;
 - пары truthy-compatible типов.
 
+Для pointer и nullable types:
+
+- `*T` совместим только с `*T`;
+- `*T` совместим с `nil`;
+- `[]T` совместим с `nil`;
+- разные pointer target types несовместимы;
+- struct values сравниваются только если язык явно определит такую операцию позже.
+
 Для арифметики `int` и `float` объединяются в `float`, если хотя бы один операнд имеет тип `float`; иначе результат имеет тип `int`.
 
-> TODO
->
-> Требуется специфицировать слайсы, функции, nullable-значения и полный semantic/runtime контракт пользовательских типов.
+Функция может возвращать несколько значений. Multiple return не является sequence type. Это специальный function-result contract:
+
+```cetus
+func Pop() (int, bool)
+```
+
+`(int, bool)` нельзя интерпретировать как массив, slice или struct. Это упорядоченный список результатов функции, который используется в:
+
+- `return value, ok`;
+- multiple assignment;
+- argument expansion в call context, если language rule это разрешает.
+
+## Будущие типы
+
+В будущих фазах планируются:
+
+- полноценные pointer values для всех addressable объектов;
+- safe escape model для `&local`;
+- явное dereference expression;
+- richer nullable model;
+- interface-like or generic aggregate contracts.

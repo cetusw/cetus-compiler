@@ -9,6 +9,7 @@
 - [Return](#return)
 - [If](#if)
 - [Блок](#блок)
+- [Addressability В Statements](#addressability-в-statements)
 
 ## Список операторов
 
@@ -63,12 +64,19 @@ var isHappy = true;
 var count int;
 var weight float = 70.5;
 var numbers [3]int;
+var stack *Stack;
 ```
 
 Множественное объявление:
 
 ```cetus
 var a, b, c int = 1, 2, 3;
+```
+
+Если правая часть является вызовом функции с несколькими результатами, количество имён должно совпадать с количеством возвращаемых значений:
+
+```cetus
+value, ok := stack.Pop();
 ```
 
 Количество имён и initializer-выражений должно совпадать, если initializer указан.
@@ -81,6 +89,7 @@ Array declarations используют общий typed declaration синта�
 a = 10;
 a, b = 1, 2;
 numbers[1] = 42;
+value, ok = stack.Pop();
 ```
 
 Присваивание изменяет уже объявленные переменные. Если имя отсутствует в доступных областях видимости, это семантическая ошибка.
@@ -90,6 +99,15 @@ numbers[1] = 42;
 Для `array[index] = value` тип `value` должен быть совместим с типом элемента массива. Индекс должен иметь тип `int`.
 
 Assignment by index поддерживается для массивов.
+
+Assignment to member поддерживается для struct fields:
+
+```cetus
+point.x = 1;
+stack.data = append(stack.data, 10);
+```
+
+Если левый operand имеет тип `*T`, member assignment использует неявное разыменование pointer receiver/object.
 
 Присваивание является оператором и имеет тип `void`.
 
@@ -103,6 +121,14 @@ return a + b;
 ```
 
 `return` вне функции является семантической ошибкой.
+
+Для функции с несколькими результатами:
+
+```cetus
+return value, true;
+```
+
+Количество возвращаемых значений и их типы должны совпадать с function signature.
 
 ## If
 
@@ -208,3 +234,35 @@ for i := 0; i < 3; i = i + 1 {
 Блок имеет тип `void`.
 
 Блок создаёт новую область видимости. Имена, созданные внутри блока, недоступны после выхода из блока.
+
+## Addressability В Statements
+
+Addressability влияет на mutating operations:
+
+- `&value` требует addressable operand;
+- pointer receiver method call на value receiver требует addressable receiver;
+- assignment target должен быть assignable;
+- `++` и `--` требуют assignable `int` target.
+
+Addressable в statement-контексте:
+
+- локальная или глобальная переменная;
+- поле addressable struct value;
+- поле через pointer-to-struct object;
+- индекс mutable sequence, если runtime поддерживает стабильную запись в элемент.
+
+Не addressable:
+
+- literal;
+- arithmetic result;
+- comparison result;
+- temporary function result без pointer type;
+- временный struct value.
+
+Примеры:
+
+```cetus
+inc(&value);          // ok
+inc(&(a + b));        // semantic error
+MakePoint().Move();   // semantic error
+```

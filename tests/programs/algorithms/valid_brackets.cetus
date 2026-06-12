@@ -34,5 +34,6 @@ func IsValidBrackets(text string) bool {
 }
 
 func main() {
-    print(IsValidBrackets("({[]})"))
+    println(IsValidBrackets("({[]{)"))
+    println(IsValidBrackets("({[]})"))
 }

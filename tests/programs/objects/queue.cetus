@@ -1,0 +1,38 @@
+type Queue struct {
+    data []int
+}
+
+func NewQueue() *Queue {
+    return &Queue{
+        data: []int{},
+    }
+}
+
+func (q *Queue) Enqueue(value int) {
+    q.data = append(q.data, value)
+}
+
+func (q *Queue) Dequeue() (int, bool) {
+    if len(q.data) == 0 {
+        return 0, false
+    }
+
+    value := q.data[0]
+    q.data = q.data[1:]
+
+    return value, true
+}
+
+func (q *Queue) IsEmpty() bool {
+    return len(q.data) == 0
+}
+
+func main() {
+    queue := NewQueue()
+
+    queue.Enqueue(10)
+    queue.Enqueue(20)
+
+    println(queue.Dequeue())
+    println(queue.Dequeue())
+}
