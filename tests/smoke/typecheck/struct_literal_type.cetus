@@ -1,0 +1,10 @@
+type Stack struct {
+    data []int;
+}
+
+func main() {
+    var stack Stack = Stack{
+        data: []int{},
+    };
+    print(1);
+}

@@ -1,0 +1,9 @@
+type Queue struct {
+    data []int;
+}
+
+func main() {
+    var queue Queue = Queue{
+        head: 0,
+    };
+}
