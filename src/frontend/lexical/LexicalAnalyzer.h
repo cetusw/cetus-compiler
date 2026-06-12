@@ -46,6 +46,7 @@ private:
 	void HandleNewline();
 	[[nodiscard]] bool ShouldInsertSemicolon() const;
 	[[nodiscard]] static bool IsSemicolonTerminator(TokenType type);
+	[[nodiscard]] bool IsElseContinuationAfterNewline() const;
 	[[nodiscard]] int GetEofLine() const;
 	void AddToken(TokenType type, std::string lexeme);
 	void AddToken(TokenType type, std::string lexeme, int line);

@@ -113,6 +113,7 @@ std::string JsonPreparedGrammarStorage::SerializeSemanticTag(const SemanticTag t
 	case SemanticTag::FLOAT_LITERAL: return "float_literal";
 	case SemanticTag::STRING_LITERAL: return "string_literal";
 	case SemanticTag::ARRAY_LITERAL: return "array_literal";
+	case SemanticTag::ARRAY_LITERAL_EMPTY: return "array_literal_empty";
 	case SemanticTag::IDENTIFIER: return "identifier";
 	case SemanticTag::ADDRESS_OF: return "address_of";
 	case SemanticTag::IDENTIFIER_LIST: return "identifier_list";
@@ -132,6 +133,7 @@ std::string JsonPreparedGrammarStorage::SerializeSemanticTag(const SemanticTag t
 	case SemanticTag::METHOD_CALL: return "method_call";
 	case SemanticTag::MEMBER_ACCESS: return "member_access";
 	case SemanticTag::INDEX_ACCESS: return "index_access";
+	case SemanticTag::SLICE_EXPRESSION: return "slice_expression";
 	case SemanticTag::ASSIGNABLE_LIST: return "assignable_list";
 	case SemanticTag::ASSIGNABLE_LIST_SINGLE: return "assignable_list_single";
 	case SemanticTag::ASSIGNMENT: return "assignment";
@@ -145,7 +147,11 @@ std::string JsonPreparedGrammarStorage::SerializeSemanticTag(const SemanticTag t
 	case SemanticTag::VAR_INFERRED_DECLARATION: return "var_inferred_declaration";
 	case SemanticTag::VAR_TYPED_DECLARATION: return "var_typed_declaration";
 	case SemanticTag::VAR_TYPED_INITIALIZED_DECLARATION: return "var_typed_initialized_declaration";
+	case SemanticTag::VAR_TYPED_DECLARATION_FULL: return "var_typed_declaration_full";
+	case SemanticTag::VAR_TYPED_COMPOSITE_DECLARATION: return "var_typed_composite_declaration";
+	case SemanticTag::VAR_TYPED_EMPTY_COMPOSITE_DECLARATION: return "var_typed_empty_composite_declaration";
 	case SemanticTag::EXPRESSION_STATEMENT: return "expression_statement";
+	case SemanticTag::EMPTY_STATEMENT: return "empty_statement";
 	case SemanticTag::PROGRAM: return "program";
 	case SemanticTag::PROGRAM_EMPTY: return "program_empty";
 	case SemanticTag::STATEMENT_LIST: return "statement_list";

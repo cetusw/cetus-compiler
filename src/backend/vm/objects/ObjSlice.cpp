@@ -90,6 +90,11 @@ void ObjSlice::Set(const int index, const Value& value) const
 	m_storage->Set(StorageIndex(index), value);
 }
 
+std::shared_ptr<ObjSlice> ObjSlice::SubSlice(const int start, const int end) const
+{
+	return std::make_shared<ObjSlice>(m_storage, m_offset + start, end - start, m_capacity - start);
+}
+
 std::shared_ptr<ObjSlice> ObjSlice::Append(const std::vector<Value>& values) const
 {
 	const int newLength = NewLength(values);

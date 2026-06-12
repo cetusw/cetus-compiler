@@ -213,6 +213,43 @@ void IndexASTNode::Accept(ASTNodeVisitor& visitor) const
 	visitor.Visit(*this);
 }
 
+SliceExpressionASTNode::SliceExpressionASTNode(ASTNodePtr object, ASTNodePtr start, ASTNodePtr end)
+	: m_object(std::move(object))
+	, m_start(std::move(start))
+	, m_end(std::move(end))
+{
+}
+
+const ASTNode& SliceExpressionASTNode::GetObject() const
+{
+	return *m_object;
+}
+
+const ASTNode* SliceExpressionASTNode::GetStart() const
+{
+	return m_start.get();
+}
+
+const ASTNode* SliceExpressionASTNode::GetEnd() const
+{
+	return m_end.get();
+}
+
+bool SliceExpressionASTNode::HasStart() const
+{
+	return m_start != nullptr;
+}
+
+bool SliceExpressionASTNode::HasEnd() const
+{
+	return m_end != nullptr;
+}
+
+void SliceExpressionASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}
+
 CallExpressionASTNode::CallExpressionASTNode(std::string calleeName, std::vector<ASTNodePtr> arguments)
 	: m_receiver(nullptr)
 	, m_calleeName(std::move(calleeName))
@@ -365,6 +402,11 @@ const ASTNode& ExpressionStatementASTNode::GetExpression() const
 }
 
 void ExpressionStatementASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}
+
+void EmptyStatementASTNode::Accept(ASTNodeVisitor& visitor) const
 {
 	visitor.Visit(*this);
 }

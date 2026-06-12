@@ -17,6 +17,7 @@ enum class SemanticTag
 	FLOAT_LITERAL,
 	STRING_LITERAL,
 	ARRAY_LITERAL,
+	ARRAY_LITERAL_EMPTY,
 	IDENTIFIER,
 	ADDRESS_OF,
 	IDENTIFIER_LIST,
@@ -36,6 +37,7 @@ enum class SemanticTag
 	METHOD_CALL,
 	MEMBER_ACCESS,
 	INDEX_ACCESS,
+	SLICE_EXPRESSION,
 	ASSIGNABLE_LIST,
 	ASSIGNABLE_LIST_SINGLE,
 	ASSIGNMENT,
@@ -49,7 +51,11 @@ enum class SemanticTag
 	VAR_INFERRED_DECLARATION,
 	VAR_TYPED_DECLARATION,
 	VAR_TYPED_INITIALIZED_DECLARATION,
+	VAR_TYPED_DECLARATION_FULL,
+	VAR_TYPED_COMPOSITE_DECLARATION,
+	VAR_TYPED_EMPTY_COMPOSITE_DECLARATION,
 	EXPRESSION_STATEMENT,
+	EMPTY_STATEMENT,
 	PROGRAM,
 	PROGRAM_EMPTY,
 	STATEMENT_LIST,
@@ -87,6 +93,7 @@ enum class SemanticTag
 	if (value == "float_literal") return SemanticTag::FLOAT_LITERAL;
 	if (value == "string_literal") return SemanticTag::STRING_LITERAL;
 	if (value == "array_literal") return SemanticTag::ARRAY_LITERAL;
+	if (value == "array_literal_empty") return SemanticTag::ARRAY_LITERAL_EMPTY;
 	if (value == "identifier") return SemanticTag::IDENTIFIER;
 	if (value == "address_of") return SemanticTag::ADDRESS_OF;
 	if (value == "identifier_list") return SemanticTag::IDENTIFIER_LIST;
@@ -106,6 +113,7 @@ enum class SemanticTag
 	if (value == "method_call") return SemanticTag::METHOD_CALL;
 	if (value == "member_access") return SemanticTag::MEMBER_ACCESS;
 	if (value == "index_access") return SemanticTag::INDEX_ACCESS;
+	if (value == "slice_expression") return SemanticTag::SLICE_EXPRESSION;
 	if (value == "assignable_list") return SemanticTag::ASSIGNABLE_LIST;
 	if (value == "assignable_list_single") return SemanticTag::ASSIGNABLE_LIST_SINGLE;
 	if (value == "assignment") return SemanticTag::ASSIGNMENT;
@@ -119,7 +127,11 @@ enum class SemanticTag
 	if (value == "var_inferred_declaration") return SemanticTag::VAR_INFERRED_DECLARATION;
 	if (value == "var_typed_declaration") return SemanticTag::VAR_TYPED_DECLARATION;
 	if (value == "var_typed_initialized_declaration") return SemanticTag::VAR_TYPED_INITIALIZED_DECLARATION;
+	if (value == "var_typed_declaration_full") return SemanticTag::VAR_TYPED_DECLARATION_FULL;
+	if (value == "var_typed_composite_declaration") return SemanticTag::VAR_TYPED_COMPOSITE_DECLARATION;
+	if (value == "var_typed_empty_composite_declaration") return SemanticTag::VAR_TYPED_EMPTY_COMPOSITE_DECLARATION;
 	if (value == "expression_statement") return SemanticTag::EXPRESSION_STATEMENT;
+	if (value == "empty_statement") return SemanticTag::EMPTY_STATEMENT;
 	if (value == "program") return SemanticTag::PROGRAM;
 	if (value == "program_empty") return SemanticTag::PROGRAM_EMPTY;
 	if (value == "statement_list") return SemanticTag::STATEMENT_LIST;

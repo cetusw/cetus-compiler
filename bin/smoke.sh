@@ -11,6 +11,11 @@ SMOKE_STDERR="${SMOKE_OUT_DIR}/stderr.txt"
 cmake --build "${BUILD_DIR}"
 mkdir -p "${SMOKE_OUT_DIR}"
 
+normalize_stdout() {
+    sed -E 's/\[ <fn.*$//' "${SMOKE_STDOUT}" \
+        | grep -v -E '^(--- Trace Execution ---|[0-9]{4} OP_|$)' || true
+}
+
 run_positive() {
     local file="$1"
     echo "[smoke] positive: ${file#${ROOT_DIR}/}"
@@ -23,7 +28,7 @@ run_positive_output() {
     run_positive "$file"
 
     local actual
-    actual="$(grep -v -E '^(--- Trace Execution ---|\[ |[0-9]{4} OP_|$)' "${SMOKE_STDOUT}" || true)"
+    actual="$(normalize_stdout)"
     if [[ "${actual}" != "${expected}" ]]; then
         echo "Unexpected stdout for: $file" >&2
         echo "expected:" >&2
@@ -44,7 +49,7 @@ run_positive_output_stdin() {
     printf '%s' "${input}" | "${CETUS_BIN}" --run-expr "$file" >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"
 
     local actual
-    actual="$(grep -v -E '^(--- Trace Execution ---|\[ |[0-9]{4} OP_|$)' "${SMOKE_STDOUT}" || true)"
+    actual="$(normalize_stdout)"
     if [[ "${actual}" != "${expected}" ]]; then
         echo "Unexpected stdout for: $file" >&2
         echo "expected:" >&2
@@ -134,12 +139,14 @@ run_positive_output "${ROOT_DIR}/tests/smoke/positive/index_swap.cetus" "[2, 1, 
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/len_slice.cetus" "4"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/increment.cetus" "3"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/decrement.cetus" "2"
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/else_if.cetus" "2"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/for_condition.cetus" $'0\n1\n2'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/for_classic.cetus" $'0\n1\n2'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/for_break_continue.cetus" $'0\n2\n3'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/ref_parameter.cetus" "2"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/runtime_numbers.cetus" $'1\n1.5\n1\n3\n3.5'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/semicolon_insertion.cetus" "3"
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/slice_expression.cetus" $'[1, 9, 3, 4]\n[1, 9]\n[3, 4]\n[1, 9, 3, 4]'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/slice_literal.cetus" $'3\n34\n3'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/slice_parameter.cetus" "7"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/sieve_of_eratosthenes.cetus" $'2\n3\n5\n7'
@@ -148,9 +155,17 @@ run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_literal.cetus" "hel
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_operations.cetus" $'abc\ntrue\ntrue\n3'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/palindrome.cetus" "true"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/variadic_println_array.cetus" $'Before: [64, 34, 25]\n[[1, 2], [3, 4]]'
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/var_typed_composite.cetus" $'[4, 9, 1, 7, 3]\n3'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/method_basic.cetus" "5"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/method_ref_receiver.cetus" "5"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/struct_basic.cetus" "1"
+run_positive_output "${ROOT_DIR}/tests/programs/max.cetus" "9"
+run_positive_output "${ROOT_DIR}/tests/programs/linear_search.cetus" "2"
+run_positive_output "${ROOT_DIR}/tests/programs/binary_search.cetus" "4"
+run_positive_output "${ROOT_DIR}/tests/programs/fizz_buzz.cetus" $'1\n2\nFizz\n4\nBuzz\nFizz\n7\n8\nFizz\nBuzz\n11\nFizz\n13\n14\nFizzBuzz\n16\n17\nFizz\n19\nBuzz\nFizz\n22\n23\nFizz\nBuzz\n26\nFizz\n28\n29\nFizzBuzz'
+run_positive_output "${ROOT_DIR}/tests/programs/selection_sort.cetus" "[11, 12, 22, 25, 64]"
+run_positive_output "${ROOT_DIR}/tests/programs/insertion_sort.cetus" "[1, 2, 3, 4, 5, 6]"
+run_positive_output "${ROOT_DIR}/tests/programs/valid_brackets.cetus" "true"
 run_positive_output_stdin "${ROOT_DIR}/tests/smoke/positive/scan_input.cetus" $'cetus\n42\n2.5\ntrue\n' $'cetus\n42\n2.5\ntrue'
 run_typecheck_positive "${ROOT_DIR}/tests/smoke/typecheck/array_type.cetus"
 run_typecheck_positive "${ROOT_DIR}/tests/smoke/typecheck/slice_type.cetus"

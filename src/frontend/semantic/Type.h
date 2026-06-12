@@ -29,10 +29,12 @@ public:
 	[[nodiscard]] bool IsSlice() const;
 	[[nodiscard]] bool IsSequence() const;
 	[[nodiscard]] bool IsIndexable() const;
+	[[nodiscard]] bool IsSliceable() const;
 	[[nodiscard]] bool IsNamed() const;
 	[[nodiscard]] int GetArrayLength() const;
 	[[nodiscard]] const TypeDescriptor& GetElementType() const;
 	[[nodiscard]] TypeDescriptor GetIndexResultType() const;
+	[[nodiscard]] TypeDescriptor GetSliceResultType() const;
 	[[nodiscard]] const std::string& GetName() const;
 	[[nodiscard]] std::string ToString() const;
 

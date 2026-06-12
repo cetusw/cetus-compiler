@@ -39,6 +39,8 @@ std::string_view TokenTypeToGrammarTerminal(const TokenType type)
 		return "STRUCT";
 	case TokenType::COMMA:
 		return "COMMA";
+	case TokenType::COLON:
+		return "COLON";
 	case TokenType::EQUAL:
 		return "EQUAL";
 	case TokenType::COLON_EQUAL:

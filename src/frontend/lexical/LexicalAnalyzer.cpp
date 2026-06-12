@@ -419,7 +419,7 @@ bool LexicalAnalyzer::HandleOperator(const char c)
 void LexicalAnalyzer::HandleNewline()
 {
 	const int newlineLine = m_line;
-	if (ShouldInsertSemicolon())
+	if (ShouldInsertSemicolon() && !IsElseContinuationAfterNewline())
 	{
 		AddToken(TokenType::SEMICOLON, ";", newlineLine);
 	}
@@ -449,6 +449,7 @@ bool LexicalAnalyzer::IsSemicolonTerminator(const TokenType type)
 	case TokenType::NIL:
 	case TokenType::RPAREN:
 	case TokenType::RBRACKET:
+	case TokenType::RBRACE:
 	case TokenType::BREAK:
 	case TokenType::CONTINUE:
 	case TokenType::RETURN:
@@ -458,6 +459,52 @@ bool LexicalAnalyzer::IsSemicolonTerminator(const TokenType type)
 	default:
 		return false;
 	}
+}
+
+// TODO отрефакторить + нужно разрешить многострочные комментарии между if и else
+bool LexicalAnalyzer::IsElseContinuationAfterNewline() const
+{
+	int cursor = m_current;
+	while (cursor < static_cast<int>(m_source.length()))
+	{
+		const char c = m_source[cursor];
+		if (c == ' ' || c == '\t' || c == '\r')
+		{
+			++cursor;
+			continue;
+		}
+		if (c == '/' && cursor + 1 < static_cast<int>(m_source.length()) && m_source[cursor + 1] == '*')
+		{
+			cursor += 2;
+			while (cursor + 1 < static_cast<int>(m_source.length()))
+			{
+				if (m_source[cursor] == '\n')
+				{
+					return false;
+				}
+				if (m_source[cursor] == '*' && m_source[cursor + 1] == '/')
+				{
+					cursor += 2;
+					break;
+				}
+				++cursor;
+			}
+			continue;
+		}
+		if (std::isalpha(static_cast<unsigned char>(c)) || c == '_')
+		{
+			int end = cursor + 1;
+			while (end < static_cast<int>(m_source.length())
+				&& (std::isalnum(static_cast<unsigned char>(m_source[end])) || m_source[end] == '_'))
+			{
+				++end;
+			}
+			return std::string_view(m_source.data() + cursor, end - cursor) == "else";
+		}
+		return false;
+	}
+
+	return false;
 }
 
 void LexicalAnalyzer::AddToken(const TokenType type, std::string lexeme)

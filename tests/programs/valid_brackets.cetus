@@ -1,0 +1,38 @@
+func IsOpening(ch string) bool {
+    return ch == "(" || ch == "[" || ch == "{"
+}
+
+func Matches(open string, close string) bool {
+    return open == "(" && close == ")" ||
+           open == "[" && close == "]" ||
+           open == "{" && close == "}"
+}
+
+func IsValidBrackets(text string) bool {
+    stack := []string{}
+
+    for i := 0; i < len(text); i++ {
+        ch := text[i]
+
+        if IsOpening(ch) {
+            stack = append(stack, ch)
+        } else if ch == ")" || ch == "]" || ch == "}" {
+            if len(stack) == 0 {
+                return false
+            }
+
+            last := stack[len(stack) - 1]
+            stack = stack[:len(stack) - 1]
+
+            if !Matches(last, ch) {
+                return false
+            }
+        }
+    }
+
+    return len(stack) == 0
+}
+
+func main() {
+    print(IsValidBrackets("({[]})"))
+}

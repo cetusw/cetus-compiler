@@ -131,6 +131,21 @@ void BytecodeEmitter::EmitSlice(const int length) const
 	EmitOperandByte(length);
 }
 
+void BytecodeEmitter::EmitSliceLoad(const bool hasStart, const bool hasEnd) const
+{
+	EmitOpcode(OP_GET_SLICE);
+	int flags = 0;
+	if (hasStart)
+	{
+		flags |= 0x01;
+	}
+	if (hasEnd)
+	{
+		flags |= 0x02;
+	}
+	EmitOperandByte(flags);
+}
+
 void BytecodeEmitter::EmitIndexLoad() const
 {
 	EmitOpcode(OP_GET_INDEX);

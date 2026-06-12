@@ -91,6 +91,7 @@ add_library(cetus_backend_vm STATIC
         src/backend/vm/instructions/GetIndexInstruction.cpp
         src/backend/vm/instructions/GetLocalInstruction.cpp
         src/backend/vm/instructions/GetMemberInstruction.cpp
+        src/backend/vm/instructions/GetSliceInstruction.cpp
         src/backend/vm/instructions/JumpIfFalseInstruction.cpp
         src/backend/vm/instructions/JumpInstruction.cpp
         src/backend/vm/instructions/LoopInstruction.cpp

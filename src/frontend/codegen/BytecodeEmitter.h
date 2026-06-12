@@ -29,6 +29,7 @@ public:
 	void EmitGlobalRef(const std::string& name) const;
 	void EmitArray(int length) const;
 	void EmitSlice(int length) const;
+	void EmitSliceLoad(bool hasStart, bool hasEnd) const;
 	void EmitIndexLoad() const;
 	void EmitIndexSet() const;
 	void EmitStruct(const std::string& typeName, const std::vector<std::string>& fieldNames) const;

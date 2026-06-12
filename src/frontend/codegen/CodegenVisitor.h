@@ -28,6 +28,7 @@ public:
 	void Visit(const BinaryASTNode& expr) override;
 	void Visit(const MemberAccessASTNode& expr) override;
 	void Visit(const IndexASTNode& expr) override;
+	void Visit(const SliceExpressionASTNode& expr) override;
 	void Visit(const CallExpressionASTNode& expr) override;
 	void Visit(const AssignmentASTNode& expr) override;
 	void Visit(const IncrementASTNode& expr) override;
@@ -35,6 +36,7 @@ public:
 	void Visit(const ShortVariableDeclarationASTNode& expr) override;
 	void Visit(const VariableDeclarationASTNode& expr) override;
 	void Visit(const ExpressionStatementASTNode& expr) override;
+	void Visit(const EmptyStatementASTNode& expr) override;
 	void Visit(const ProgramASTNode& expr) override;
 	void Visit(const StatementListASTNode& expr) override;
 	void Visit(const BlockASTNode& expr) override;

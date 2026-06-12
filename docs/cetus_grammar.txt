@@ -6,6 +6,7 @@
 
 ~TopLevelDecl~ -> ~FunctionDecl~ @pass_expr
 ~TopLevelDecl~ -> ~TypeDecl~ @pass_expr
+~TopLevelDecl~ -> SEMICOLON @empty_statement
 
 ~TypeDecl~ -> TYPE IDENTIFIER STRUCT LBRACE ~StructFieldList~ RBRACE @struct_declaration
 
@@ -27,23 +28,34 @@
 ~StmtList~ -> ~Stmt~ @statement_list_single
 
 ~Stmt~ -> ~SimpleStmt~ SEMICOLON @pass_expr
+~Stmt~ -> ~VarDecl~ SEMICOLON @pass_expr
+~Stmt~ -> SEMICOLON @empty_statement
 ~Stmt~ -> RETURN SEMICOLON @return_void
 ~Stmt~ -> RETURN ~Con~ SEMICOLON @return_value
-~Stmt~ -> IF ~Con~ ~Block~ @if
-~Stmt~ -> IF ~Con~ ~Block~ ELSE ~Block~ @if_else
+~Stmt~ -> ~IfStmt~ @pass_expr
 ~Stmt~ -> FOR ~Con~ ~Block~ @for_condition
-~Stmt~ -> FOR ~SimpleStmt~ SEMICOLON ~Con~ SEMICOLON ~SimpleStmt~ ~Block~ @for_classic
+~Stmt~ -> FOR ~ForInit~ SEMICOLON ~Con~ SEMICOLON ~SimpleStmt~ ~Block~ @for_classic
 ~Stmt~ -> BREAK SEMICOLON @break
 ~Stmt~ -> CONTINUE SEMICOLON @continue
 
+~IfStmt~ -> IF ~Con~ ~Block~ @if
+~IfStmt~ -> IF ~Con~ ~Block~ ELSE ~Block~ @if_else
+~IfStmt~ -> IF ~Con~ ~Block~ ELSE ~IfStmt~ @if_else
+
 ~SimpleStmt~ -> ~AssignableList~ COLON_EQUAL ~ExpressionList~ @short_var_declaration
-~SimpleStmt~ -> VAR ~IdentifierList~ EQUAL ~ExpressionList~ @var_inferred_declaration
-~SimpleStmt~ -> VAR ~IdentifierList~ ~Type~ @var_typed_declaration
-~SimpleStmt~ -> VAR ~IdentifierList~ ~Type~ EQUAL ~ExpressionList~ @var_typed_initialized_declaration
 ~SimpleStmt~ -> ~AssignableList~ EQUAL ~ExpressionList~ @assignment
-~SimpleStmt~ -> ~LargId~ PLUS_PLUS @increment
-~SimpleStmt~ -> ~LargId~ MINUS_MINUS @decrement
+~SimpleStmt~ -> ~PostfixExp~ PLUS_PLUS @increment
+~SimpleStmt~ -> ~PostfixExp~ MINUS_MINUS @decrement
 ~SimpleStmt~ -> ~Con~ @expression_statement
+
+~VarDecl~ -> VAR ~IdentifierList~ EQUAL ~ExpressionList~ @var_inferred_declaration
+~VarDecl~ -> VAR ~IdentifierList~ ~Type~ @var_typed_declaration
+~VarDecl~ -> VAR ~IdentifierList~ ~Type~ EQUAL ~ExpressionList~ @var_typed_initialized_declaration
+~VarDecl~ -> VAR ~IdentifierList~ ~Type~ LBRACE ~ExpressionList~ RBRACE @var_typed_composite_declaration
+~VarDecl~ -> VAR ~IdentifierList~ ~Type~ LBRACE RBRACE @var_typed_empty_composite_declaration
+
+~ForInit~ -> ~SimpleStmt~ @pass_expr
+~ForInit~ -> ~VarDecl~ @pass_expr
 
 ~Block~ -> LBRACE ~StmtList~ RBRACE @block
 ~Block~ -> LBRACE RBRACE @block_empty
@@ -54,15 +66,12 @@
 ~ExpressionList~ -> ~ExpressionList~ COMMA ~Con~ @expression_list
 ~ExpressionList~ -> ~Con~ @expression_list_single
 
-~AssignableList~ -> ~AssignableList~ COMMA ~LargId~ @assignable_list
-~AssignableList~ -> ~LargId~ @assignable_list_single
+~AssignableList~ -> ~AssignableList~ COMMA ~PostfixExp~ @assignable_list
+~AssignableList~ -> ~PostfixExp~ @assignable_list_single
 
 ~Type~ -> IDENTIFIER @type_name
 ~Type~ -> LBRACKET INT_LIT RBRACKET ~Type~ @array_type
 ~Type~ -> LBRACKET RBRACKET ~Type~ @slice_type
-
-~ArrayLiteralType~ -> LBRACKET INT_LIT RBRACKET ~Type~ @array_type
-~ArrayLiteralType~ -> LBRACKET RBRACKET ~Type~ @slice_type
 
 ~ParamList~ -> ~ParamList~ COMMA ~Param~ @param_list
 ~ParamList~ -> ~Param~ @param_list_single
@@ -94,19 +103,26 @@
 ~Exp2~ -> LPAREN ~Con~ RPAREN @group
 ~Exp2~ -> IDENTIFIER LPAREN RPAREN @call_no_args
 ~Exp2~ -> IDENTIFIER LPAREN ~ExpressionList~ RPAREN @call
-~Exp2~ -> ~LargId~ DOT IDENTIFIER LPAREN RPAREN @method_call_no_args
-~Exp2~ -> ~LargId~ DOT IDENTIFIER LPAREN ~ExpressionList~ RPAREN @method_call
-~Exp2~ -> ~ArrayLiteralType~ LBRACE ~ExpressionList~ RBRACE @array_literal
+~Exp2~ -> ~PostfixExp~ DOT IDENTIFIER LPAREN RPAREN @method_call_no_args
+~Exp2~ -> ~PostfixExp~ DOT IDENTIFIER LPAREN ~ExpressionList~ RPAREN @method_call
+~Exp2~ -> LBRACKET INT_LIT RBRACKET ~Type~ LBRACE ~ExpressionList~ RBRACE @array_literal
+~Exp2~ -> LBRACKET RBRACKET ~Type~ LBRACE ~ExpressionList~ RBRACE @array_literal
+~Exp2~ -> LBRACKET INT_LIT RBRACKET ~Type~ LBRACE RBRACE @array_literal_empty
+~Exp2~ -> LBRACKET RBRACKET ~Type~ LBRACE RBRACE @array_literal_empty
 ~Exp2~ -> MINUS ~Exp2~ @unary
-~Exp2~ -> BIT_AND ~LargId~ @address_of
-~Exp2~ -> ~LargId~ @pass_expr
+~Exp2~ -> BIT_AND ~PostfixExp~ @address_of
+~Exp2~ -> ~PostfixExp~ @pass_expr
 ~Exp2~ -> INT_LIT @int_literal
 ~Exp2~ -> FLOAT_LIT @float_literal
 ~Exp2~ -> STRING @string_literal
 
-~LargId~ -> IDENTIFIER @identifier
-~LargId~ -> ~LargId~ DOT IDENTIFIER @member_access
-~LargId~ -> ~LargId~ LBRACKET ~Exp~ RBRACKET @index_access
+~PostfixExp~ -> IDENTIFIER @identifier
+~PostfixExp~ -> ~PostfixExp~ DOT IDENTIFIER @member_access
+~PostfixExp~ -> ~PostfixExp~ LBRACKET ~Exp~ RBRACKET @index_access
+~PostfixExp~ -> ~PostfixExp~ LBRACKET COLON RBRACKET @slice_expression
+~PostfixExp~ -> ~PostfixExp~ LBRACKET COLON ~Exp~ RBRACKET @slice_expression
+~PostfixExp~ -> ~PostfixExp~ LBRACKET ~Exp~ COLON RBRACKET @slice_expression
+~PostfixExp~ -> ~PostfixExp~ LBRACKET ~Exp~ COLON ~Exp~ RBRACKET @slice_expression
 
 ~MulOp~ -> STAR @pass_token
 ~MulOp~ -> SLASH @pass_token

@@ -118,6 +118,8 @@ int DisassembleInstruction(const Chunk& chunk, const int offset)
 		return ByteInstruction("OP_ARRAY", chunk, offset);
 	case OP_SLICE:
 		return ByteInstruction("OP_SLICE", chunk, offset);
+	case OP_GET_SLICE:
+		return ByteInstruction("OP_GET_SLICE", chunk, offset);
 	case OP_GET_INDEX:
 		return SimpleInstruction("OP_GET_INDEX", offset);
 	case OP_SET_INDEX:

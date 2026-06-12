@@ -210,6 +210,24 @@ private:
 	ASTNodePtr m_index;
 };
 
+class SliceExpressionASTNode final : public ExpressionASTNode
+{
+public:
+	SliceExpressionASTNode(ASTNodePtr object, ASTNodePtr start, ASTNodePtr end);
+
+	[[nodiscard]] const ASTNode& GetObject() const;
+	[[nodiscard]] const ASTNode* GetStart() const;
+	[[nodiscard]] const ASTNode* GetEnd() const;
+	[[nodiscard]] bool HasStart() const;
+	[[nodiscard]] bool HasEnd() const;
+	void Accept(ASTNodeVisitor& visitor) const override;
+
+private:
+	ASTNodePtr m_object;
+	ASTNodePtr m_start;
+	ASTNodePtr m_end;
+};
+
 class CallExpressionASTNode final : public ExpressionASTNode
 {
 public:
@@ -309,6 +327,12 @@ public:
 
 private:
 	ASTNodePtr m_expression;
+};
+
+class EmptyStatementASTNode final : public StatementASTNode
+{
+public:
+	void Accept(ASTNodeVisitor& visitor) const override;
 };
 
 class ProgramASTNode final : public StatementASTNode

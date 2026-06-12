@@ -16,6 +16,7 @@ struct AstSemanticValue
 	std::vector<FunctionParameter> parameters = {};
 	std::optional<TypeDescriptor> type = std::nullopt;
 	std::vector<StructField> fields = {};
+	bool compositeLiteralInitializer = false;
 };
 
 // TODO отрефакторить. слишком много методов
@@ -33,6 +34,7 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildFloatLiteral(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildStringLiteral(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildArrayLiteral(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildEmptyArrayLiteral(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildIdentifier(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildAddressOf(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildIdentifierList(std::vector<AstSemanticValue> values);
@@ -52,6 +54,7 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildMethodCall(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildMemberAccess(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildIndexAccess(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildSliceExpression(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildAssignableList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildSingleAssignableList(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildAssignment(std::vector<AstSemanticValue> values);
@@ -65,7 +68,11 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildVarInferredDeclaration(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildVarTypedDeclaration(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildVarTypedInitializedDeclaration(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildVarTypedDeclarationFull(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildVarTypedCompositeDeclaration(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildVarTypedEmptyCompositeDeclaration(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildExpressionStatement(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildEmptyStatement(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildProgram(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildEmptyProgram(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildStatementList(std::vector<AstSemanticValue> values);

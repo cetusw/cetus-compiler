@@ -1,7 +1,30 @@
 #include "LALRBuilder.h"
 #include "src/frontend/syntax/grammar/transformation/transformations/AugmentStartGrammarTransformation.h"
 
+#include <sstream>
 #include <stdexcept>
+
+namespace
+{
+std::string FormatAction(const Action& action)
+{
+	switch (action.type)
+	{
+	case ActionType::SHIFT:
+		return "shift " + std::to_string(action.value);
+	case ActionType::REDUCE:
+		return "reduce " + std::to_string(action.value);
+	case ActionType::GOTO:
+		return "goto " + std::to_string(action.value);
+	case ActionType::ACCEPT:
+		return "accept";
+	case ActionType::ERROR:
+		return "error";
+	}
+
+	return "unknown";
+}
+}
 
 LALRBuilder::LALRBuilder(Grammar grammar)
 	: m_grammar(std::move(grammar))
@@ -198,7 +221,11 @@ void LALRBuilder::AddAction(const int state, const Symbol& symbol, const Action 
 			const std::string type = (oldAction.type == ActionType::SHIFT && action.type == ActionType::REDUCE)
 				? "Shift/Reduce"
 				: "Reduce/Reduce";
-			throw std::runtime_error(type + " conflict in state " + std::to_string(state) + " on symbol '" + symbol.GetValue() + "'");
+			std::ostringstream message;
+			message << type << " conflict in state " << state << " on symbol '" << symbol.GetValue()
+				<< "': existing " << FormatAction(oldAction)
+				<< ", new " << FormatAction(action);
+			throw std::runtime_error(message.str());
 		}
 		return;
 	}

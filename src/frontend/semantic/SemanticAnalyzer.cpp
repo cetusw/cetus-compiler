@@ -224,6 +224,52 @@ void SemanticAnalyzer::Visit(const IndexASTNode& node)
 	SetCurrentType(node, hasError ? TypeDescriptor(Type::ERROR) : objectType.GetIndexResultType());
 }
 
+void SemanticAnalyzer::Visit(const SliceExpressionASTNode& node)
+{
+	const TypeDescriptor objectType = AnalyzeChild(node.GetObject());
+	bool hasError = false;
+
+	if (!ValidateValueExpression(objectType, "sliced value"))
+	{
+		hasError = true;
+	}
+	else if (!objectType.IsSliceable())
+	{
+		AddDiagnostic("Slice expression expects array or slice value.");
+		hasError = true;
+	}
+
+	if (const ASTNode* start = node.GetStart())
+	{
+		const TypeDescriptor startType = AnalyzeChild(*start);
+		if (!ValidateValueExpression(startType, "slice bound"))
+		{
+			hasError = true;
+		}
+		else if (startType != Type::INT)
+		{
+			AddDiagnostic("Slice bound must have int type.");
+			hasError = true;
+		}
+	}
+
+	if (const ASTNode* end = node.GetEnd())
+	{
+		const TypeDescriptor endType = AnalyzeChild(*end);
+		if (!ValidateValueExpression(endType, "slice bound"))
+		{
+			hasError = true;
+		}
+		else if (endType != Type::INT)
+		{
+			AddDiagnostic("Slice bound must have int type.");
+			hasError = true;
+		}
+	}
+
+	SetCurrentType(node, hasError ? TypeDescriptor(Type::ERROR) : objectType.GetSliceResultType());
+}
+
 // TODO отрефакторить
 void SemanticAnalyzer::Visit(const CallExpressionASTNode& node)
 {
@@ -718,6 +764,11 @@ void SemanticAnalyzer::Visit(const ExpressionStatementASTNode& node)
 	SetCurrentType(node, expressionType == Type::ERROR ? Type::ERROR : Type::VOID);
 }
 
+void SemanticAnalyzer::Visit(const EmptyStatementASTNode& node)
+{
+	SetCurrentType(node, Type::VOID);
+}
+
 void SemanticAnalyzer::ValidateAssignment(const std::vector<ASTNodePtr>& targets, const std::vector<TypeDescriptor>& valueTypes)
 {
 	if (targets.size() != valueTypes.size())
@@ -884,7 +935,8 @@ void SemanticAnalyzer::Visit(const StatementListASTNode& node)
 	bool hasReturned = false;
 	for (const ASTNodePtr& child : node.GetStatements())
 	{
-		if (hasReturned)
+		const bool isEmptyStatement = dynamic_cast<const EmptyStatementASTNode*>(child.get()) != nullptr;
+		if (hasReturned && !isEmptyStatement)
 		{
 			AddDiagnostic("Unreachable statement.");
 			hasChildError = true;

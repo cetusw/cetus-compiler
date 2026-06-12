@@ -26,6 +26,8 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildStringLiteral(values);
 	case SemanticTag::ARRAY_LITERAL:
 		return BuildArrayLiteral(std::move(values));
+	case SemanticTag::ARRAY_LITERAL_EMPTY:
+		return BuildEmptyArrayLiteral(std::move(values));
 	case SemanticTag::IDENTIFIER:
 		return BuildIdentifier(values);
 	case SemanticTag::ADDRESS_OF:
@@ -64,6 +66,8 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildMemberAccess(std::move(values));
 	case SemanticTag::INDEX_ACCESS:
 		return BuildIndexAccess(std::move(values));
+	case SemanticTag::SLICE_EXPRESSION:
+		return BuildSliceExpression(std::move(values));
 	case SemanticTag::ASSIGNABLE_LIST:
 		return BuildAssignableList(std::move(values));
 	case SemanticTag::ASSIGNABLE_LIST_SINGLE:
@@ -90,8 +94,16 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildVarTypedDeclaration(std::move(values));
 	case SemanticTag::VAR_TYPED_INITIALIZED_DECLARATION:
 		return BuildVarTypedInitializedDeclaration(std::move(values));
+	case SemanticTag::VAR_TYPED_DECLARATION_FULL:
+		return BuildVarTypedDeclarationFull(std::move(values));
+	case SemanticTag::VAR_TYPED_COMPOSITE_DECLARATION:
+		return BuildVarTypedCompositeDeclaration(std::move(values));
+	case SemanticTag::VAR_TYPED_EMPTY_COMPOSITE_DECLARATION:
+		return BuildVarTypedEmptyCompositeDeclaration(std::move(values));
 	case SemanticTag::EXPRESSION_STATEMENT:
 		return BuildExpressionStatement(std::move(values));
+	case SemanticTag::EMPTY_STATEMENT:
+		return BuildEmptyStatement(values);
 	case SemanticTag::PROGRAM:
 		return BuildProgram(std::move(values));
 	case SemanticTag::PROGRAM_EMPTY:
@@ -203,19 +215,72 @@ AstSemanticValue AstReductionBuilder::BuildStringLiteral(const std::vector<AstSe
 
 AstSemanticValue AstReductionBuilder::BuildArrayLiteral(std::vector<AstSemanticValue> values)
 {
-	RequireValueCount(values, 4, "Array literal reduction");
-	return {
-		std::make_unique<ArrayLiteralASTNode>(
-			TakeType(values, 0),
-			TakeExpressionList(values, 2)),
-		std::nullopt
-	};
+	if (values.size() == 6)
+	{
+		return {
+			std::make_unique<ArrayLiteralASTNode>(
+				TypeDescriptor::Slice(TakeType(values, 2)),
+				TakeExpressionList(values, 4)),
+			std::nullopt
+		};
+	}
+	if (values.size() == 7)
+	{
+		const int length = std::stoi(TakeToken(values, 1).lexeme);
+		if (length <= 0)
+		{
+			throw std::runtime_error("Array length must be positive.");
+		}
+		return {
+			std::make_unique<ArrayLiteralASTNode>(
+				TypeDescriptor::Array(length, TakeType(values, 3)),
+				TakeExpressionList(values, 5)),
+			std::nullopt
+		};
+	}
+
+	throw std::logic_error("Array literal reduction expects 6 or 7 semantic values.");
+}
+
+AstSemanticValue AstReductionBuilder::BuildEmptyArrayLiteral(const std::vector<AstSemanticValue>& values)
+{
+	if (values.size() == 5)
+	{
+		return {
+			std::make_unique<ArrayLiteralASTNode>(
+				TypeDescriptor::Slice(TakeType(values, 2)),
+				std::vector<ASTNodePtr>{}),
+			std::nullopt
+		};
+	}
+	if (values.size() == 6)
+	{
+		const int length = std::stoi(TakeToken(values, 1).lexeme);
+		if (length <= 0)
+		{
+			throw std::runtime_error("Array length must be positive.");
+		}
+		return {
+			std::make_unique<ArrayLiteralASTNode>(
+				TypeDescriptor::Array(length, TakeType(values, 3)),
+				std::vector<ASTNodePtr>{}),
+			std::nullopt
+		};
+	}
+
+	throw std::logic_error("Empty array literal reduction expects 5 or 6 semantic values.");
 }
 
 AstSemanticValue AstReductionBuilder::BuildIdentifier(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 1, "Identifier reduction");
 	return { std::make_unique<IdentifierASTNode>(TakeToken(values, 0).lexeme), std::nullopt };
+}
+
+AstSemanticValue AstReductionBuilder::BuildAddressOf(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 2, "Address-of reduction");
+	return { std::make_unique<AddressOfASTNode>(TakeNode(values, 1)), std::nullopt };
 }
 
 AstSemanticValue AstReductionBuilder::BuildIdentifierList(std::vector<AstSemanticValue> values)
@@ -307,12 +372,6 @@ AstSemanticValue AstReductionBuilder::BuildPointerParameter(const std::vector<As
 	};
 }
 
-AstSemanticValue AstReductionBuilder::BuildAddressOf(std::vector<AstSemanticValue> values)
-{
-	RequireValueCount(values, 2, "Address-of reduction");
-	return { std::make_unique<AddressOfASTNode>(TakeNode(values, 1)), std::nullopt };
-}
-
 AstSemanticValue AstReductionBuilder::BuildParameterList(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "Parameter list reduction");
@@ -379,6 +438,52 @@ AstSemanticValue AstReductionBuilder::BuildIndexAccess(std::vector<AstSemanticVa
 {
 	RequireValueCount(values, 4, "Index access reduction");
 	return { std::make_unique<IndexASTNode>(TakeNode(values, 0), TakeNode(values, 2)), std::nullopt };
+}
+
+AstSemanticValue AstReductionBuilder::BuildSliceExpression(std::vector<AstSemanticValue> values)
+{
+	if (values.size() == 4)
+	{
+		return {
+			std::make_unique<SliceExpressionASTNode>(
+				TakeNode(values, 0),
+				nullptr,
+				nullptr),
+			std::nullopt
+		};
+	}
+	if (values.size() == 5)
+	{
+		if (values[2].token.has_value() && values[2].token->type == TokenType::COLON)
+		{
+			return {
+				std::make_unique<SliceExpressionASTNode>(
+					TakeNode(values, 0),
+					nullptr,
+					TakeNode(values, 3)),
+				std::nullopt
+			};
+		}
+		return {
+			std::make_unique<SliceExpressionASTNode>(
+				TakeNode(values, 0),
+				TakeNode(values, 2),
+				nullptr),
+			std::nullopt
+		};
+	}
+	if (values.size() == 6)
+	{
+		return {
+			std::make_unique<SliceExpressionASTNode>(
+				TakeNode(values, 0),
+				TakeNode(values, 2),
+				TakeNode(values, 4)),
+			std::nullopt
+		};
+	}
+
+	throw std::logic_error("Slice expression reduction expects 4, 5 or 6 semantic values.");
 }
 
 AstSemanticValue AstReductionBuilder::BuildAssignableList(std::vector<AstSemanticValue> values)
@@ -499,10 +604,75 @@ AstSemanticValue AstReductionBuilder::BuildVarTypedInitializedDeclaration(std::v
 	};
 }
 
+AstSemanticValue AstReductionBuilder::BuildVarTypedDeclarationFull(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 4, "Typed variable declaration full reduction");
+	const TypeDescriptor declaredType = TakeType(values, 2);
+	const std::vector<std::string> names = TakeIdentifierList(values, 1);
+
+	std::vector<ASTNodePtr> initializers;
+	if (values[3].compositeLiteralInitializer)
+	{
+		initializers.push_back(std::make_unique<ArrayLiteralASTNode>(
+			declaredType,
+			std::move(values[3].expressions)));
+	}
+	else
+	{
+		initializers = std::move(values[3].expressions);
+	}
+
+	return {
+		std::make_unique<VariableDeclarationASTNode>(
+			std::move(names),
+			declaredType,
+			std::move(initializers)),
+		std::nullopt
+	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildVarTypedCompositeDeclaration(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 6, "Typed composite variable declaration reduction");
+	std::vector<ASTNodePtr> initializers;
+	initializers.push_back(std::make_unique<ArrayLiteralASTNode>(
+		TakeType(values, 2),
+		TakeExpressionList(values, 4)));
+	return {
+		std::make_unique<VariableDeclarationASTNode>(
+			TakeIdentifierList(values, 1),
+			TakeType(values, 2),
+			std::move(initializers)),
+		std::nullopt
+	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildVarTypedEmptyCompositeDeclaration(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 5, "Typed empty composite variable declaration reduction");
+	std::vector<ASTNodePtr> initializers;
+	initializers.push_back(std::make_unique<ArrayLiteralASTNode>(
+		TakeType(values, 2),
+		std::vector<ASTNodePtr>{}));
+	return {
+		std::make_unique<VariableDeclarationASTNode>(
+			TakeIdentifierList(values, 1),
+			TakeType(values, 2),
+			std::move(initializers)),
+		std::nullopt
+	};
+}
+
 AstSemanticValue AstReductionBuilder::BuildExpressionStatement(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 1, "Expression statement reduction");
 	return { std::make_unique<ExpressionStatementASTNode>(TakeNode(values, 0)), std::nullopt };
+}
+
+AstSemanticValue AstReductionBuilder::BuildEmptyStatement(const std::vector<AstSemanticValue>& values)
+{
+	RequireValueCount(values, 1, "Empty statement reduction");
+	return { std::make_unique<EmptyStatementASTNode>(), std::nullopt };
 }
 
 AstSemanticValue AstReductionBuilder::BuildProgram(std::vector<AstSemanticValue> values)
@@ -804,7 +974,7 @@ std::vector<std::string> AstReductionBuilder::TakeIdentifierNamesFromTargets(
 	std::vector<AstSemanticValue>& values,
 	const std::size_t index)
 {
-	std::vector<ASTNodePtr> targets = TakeExpressionList(values, index);
+	const std::vector<ASTNodePtr> targets = TakeExpressionList(values, index);
 	std::vector<std::string> names;
 	names.reserve(targets.size());
 	for (const ASTNodePtr& target : targets)
@@ -867,20 +1037,34 @@ BinaryOperator AstReductionBuilder::ToBinaryOperator(const TokenType type)
 {
 	switch (type)
 	{
-	case TokenType::OR_OR: return BinaryOperator::OR;
-	case TokenType::AND_AND: return BinaryOperator::AND;
-	case TokenType::PLUS: return BinaryOperator::ADD;
-	case TokenType::MINUS: return BinaryOperator::SUBTRACT;
-	case TokenType::STAR: return BinaryOperator::MULTIPLY;
-	case TokenType::SLASH: return BinaryOperator::DIVIDE;
-	case TokenType::PERCENT: return BinaryOperator::MODULO;
-	case TokenType::LESS: return BinaryOperator::LESS;
-	case TokenType::LESS_EQUAL: return BinaryOperator::LESS_EQUAL;
-	case TokenType::BANG_EQUAL: return BinaryOperator::NOT_EQUAL;
-	case TokenType::EQUAL_EQUAL: return BinaryOperator::EQUAL;
-	case TokenType::GREATER: return BinaryOperator::GREATER;
-	case TokenType::GREATER_EQUAL: return BinaryOperator::GREATER_EQUAL;
-	default: throw std::runtime_error("Unsupported binary operator token.");
+	case TokenType::OR_OR:
+		return BinaryOperator::OR;
+	case TokenType::AND_AND:
+		return BinaryOperator::AND;
+	case TokenType::PLUS:
+		return BinaryOperator::ADD;
+	case TokenType::MINUS:
+		return BinaryOperator::SUBTRACT;
+	case TokenType::STAR:
+		return BinaryOperator::MULTIPLY;
+	case TokenType::SLASH:
+		return BinaryOperator::DIVIDE;
+	case TokenType::PERCENT:
+		return BinaryOperator::MODULO;
+	case TokenType::LESS:
+		return BinaryOperator::LESS;
+	case TokenType::LESS_EQUAL:
+		return BinaryOperator::LESS_EQUAL;
+	case TokenType::BANG_EQUAL:
+		return BinaryOperator::NOT_EQUAL;
+	case TokenType::EQUAL_EQUAL:
+		return BinaryOperator::EQUAL;
+	case TokenType::GREATER:
+		return BinaryOperator::GREATER;
+	case TokenType::GREATER_EQUAL:
+		return BinaryOperator::GREATER_EQUAL;
+	default:
+		throw std::runtime_error("Unsupported binary operator token.");
 	}
 }
 
@@ -888,8 +1072,11 @@ UnaryOperator AstReductionBuilder::ToUnaryOperator(const TokenType type)
 {
 	switch (type)
 	{
-	case TokenType::MINUS: return UnaryOperator::NEGATE;
-	case TokenType::BANG: return UnaryOperator::NOT;
-	default: throw std::runtime_error("Unsupported unary operator token.");
+	case TokenType::MINUS:
+		return UnaryOperator::NEGATE;
+	case TokenType::BANG:
+		return UnaryOperator::NOT;
+	default:
+		throw std::runtime_error("Unsupported unary operator token.");
 	}
 }

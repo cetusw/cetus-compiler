@@ -1,0 +1,7 @@
+func main() {
+    var nums []int{4, 9, 1, 7, 3}
+    var fixed [3]int{1, 2, 3}
+
+    println(nums)
+    println(fixed[2])
+}

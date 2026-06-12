@@ -238,6 +238,38 @@ void CodegenVisitor::Visit(const IndexASTNode& expr)
 	CurrentEmitter().EmitIndexLoad();
 }
 
+void CodegenVisitor::Visit(const SliceExpressionASTNode& expr)
+{
+	if (!EnsureTyped(expr))
+	{
+		return;
+	}
+
+	expr.GetObject().Accept(*this);
+	if (m_error.has_value())
+	{
+		return;
+	}
+	if (const ASTNode* start = expr.GetStart())
+	{
+		start->Accept(*this);
+		if (m_error.has_value())
+		{
+			return;
+		}
+	}
+	if (const ASTNode* end = expr.GetEnd())
+	{
+		end->Accept(*this);
+		if (m_error.has_value())
+		{
+			return;
+		}
+	}
+
+	CurrentEmitter().EmitSliceLoad(expr.HasStart(), expr.HasEnd());
+}
+
 void CodegenVisitor::Visit(const CallExpressionASTNode& expr)
 {
 	if (!EnsureTyped(expr))
@@ -466,6 +498,10 @@ void CodegenVisitor::Visit(const ExpressionStatementASTNode& expr)
 	}
 
 	CurrentEmitter().EmitOpcode(OP_POP);
+}
+
+void CodegenVisitor::Visit(const EmptyStatementASTNode&)
+{
 }
 
 void CodegenVisitor::Visit(const ProgramASTNode& expr)

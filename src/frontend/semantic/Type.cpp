@@ -73,6 +73,12 @@ bool TypeDescriptor::IsIndexable() const
 	return IsSequence() || *this == Type::STRING;
 }
 
+// TODO может отставить только IsSequence()
+bool TypeDescriptor::IsSliceable() const
+{
+	return IsSequence();
+}
+
 bool TypeDescriptor::IsNamed() const
 {
 	return m_kind == Kind::NAMED;
@@ -108,6 +114,16 @@ TypeDescriptor TypeDescriptor::GetIndexResultType() const
 	}
 
 	throw std::logic_error("Type is not indexable.");
+}
+
+TypeDescriptor TypeDescriptor::GetSliceResultType() const
+{
+	if (!IsSliceable())
+	{
+		throw std::logic_error("Type is not sliceable.");
+	}
+
+	return Slice(GetElementType());
 }
 
 const std::string& TypeDescriptor::GetName() const

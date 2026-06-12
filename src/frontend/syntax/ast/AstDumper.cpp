@@ -71,6 +71,20 @@ void AstDumper::Visit(const IndexASTNode& expr)
 	DumpChild(expr.GetIndex());
 }
 
+void AstDumper::Visit(const SliceExpressionASTNode& expr)
+{
+	DumpLine("SliceExpressionASTNode");
+	DumpChild(expr.GetObject());
+	if (const ASTNode* start = expr.GetStart())
+	{
+		DumpChild(*start);
+	}
+	if (const ASTNode* end = expr.GetEnd())
+	{
+		DumpChild(*end);
+	}
+}
+
 void AstDumper::Visit(const CallExpressionASTNode& expr)
 {
 	DumpLine(std::string(expr.IsMethodCall() ? "MethodCallExpressionASTNode(" : "CallExpressionASTNode(") + expr.GetCalleeName() + ")");
@@ -140,6 +154,11 @@ void AstDumper::Visit(const ExpressionStatementASTNode& expr)
 {
 	DumpLine("ExpressionStatementASTNode");
 	DumpChild(expr.GetExpression());
+}
+
+void AstDumper::Visit(const EmptyStatementASTNode&)
+{
+	DumpLine("EmptyStatementASTNode");
 }
 
 void AstDumper::Visit(const ProgramASTNode& expr)
