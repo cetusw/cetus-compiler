@@ -63,6 +63,46 @@ void SemanticAnalyzer::Visit(const StringLiteralASTNode& node)
 	SetCurrentType(node, Type::STRING);
 }
 
+void SemanticAnalyzer::Visit(const ArrayLiteralASTNode& node)
+{
+	const TypeDescriptor literalType = node.GetType();
+	bool hasError = false;
+
+	if (!literalType.IsSequence())
+	{
+		AddDiagnostic("Array literal type must be array or slice.");
+		hasError = true;
+	}
+	else if (literalType.IsArray() && literalType.GetArrayLength() != static_cast<int>(node.GetElements().size()))
+	{
+		AddDiagnostic("Array literal element count does not match array length.");
+		hasError = true;
+	}
+
+	if (!ValidateTypeReference(literalType, "array literal"))
+	{
+		hasError = true;
+	}
+
+	const TypeDescriptor elementType = literalType.IsSequence() ? literalType.GetElementType() : TypeDescriptor(Type::ERROR);
+	for (const ASTNodePtr& element : node.GetElements())
+	{
+		const TypeDescriptor actualType = AnalyzeChild(*element);
+		if (!ValidateValueExpression(actualType, "array literal element"))
+		{
+			hasError = true;
+			continue;
+		}
+		if (elementType != Type::ERROR && actualType != elementType)
+		{
+			AddDiagnostic("Array literal element type does not match literal element type.");
+			hasError = true;
+		}
+	}
+
+	SetCurrentType(node, hasError ? TypeDescriptor(Type::ERROR) : literalType);
+}
+
 void SemanticAnalyzer::Visit(const IdentifierASTNode& node)
 {
 	const SemanticSymbol* symbol = m_symbolTable.Resolve(node.GetName());

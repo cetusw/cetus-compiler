@@ -129,6 +129,9 @@ func main() {
 ~Type~ -> IDENTIFIER @type_name
 ~Type~ -> LBRACKET INT_LIT RBRACKET ~Type~ @array_type
 ~Type~ -> LBRACKET RBRACKET ~Type~ @slice_type
+
+~ArrayLiteralType~ -> LBRACKET INT_LIT RBRACKET ~Type~ @array_type
+~ArrayLiteralType~ -> LBRACKET RBRACKET ~Type~ @slice_type
 ```
 
 Целевой синтаксис массивов расширяет type grammar формой `[N]T`:
@@ -168,6 +171,7 @@ var a [2][3]int;
 ~Exp2~ -> LPAREN ~Con~ RPAREN @group
 ~Exp2~ -> IDENTIFIER LPAREN RPAREN @call_no_args
 ~Exp2~ -> IDENTIFIER LPAREN ~ExpressionList~ RPAREN @call
+~Exp2~ -> ~ArrayLiteralType~ LBRACE ~ExpressionList~ RBRACE @array_literal
 ~Exp2~ -> MINUS ~Exp2~ @unary
 ~Exp2~ -> ~LargId~ @pass_expr
 ~Exp2~ -> INT_LIT @int_literal

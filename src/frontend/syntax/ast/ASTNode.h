@@ -114,6 +114,20 @@ private:
 	std::string m_value;
 };
 
+class ArrayLiteralASTNode final : public ExpressionASTNode
+{
+public:
+	ArrayLiteralASTNode(TypeDescriptor type, std::vector<ASTNodePtr> elements);
+
+	[[nodiscard]] const TypeDescriptor& GetType() const;
+	[[nodiscard]] const std::vector<ASTNodePtr>& GetElements() const;
+	void Accept(ASTNodeVisitor& visitor) const override;
+
+private:
+	TypeDescriptor m_type;
+	std::vector<ASTNodePtr> m_elements;
+};
+
 class IdentifierASTNode final : public ExpressionASTNode
 {
 public:

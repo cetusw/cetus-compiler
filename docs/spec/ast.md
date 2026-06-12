@@ -33,6 +33,7 @@ AST-узлы:
 - `FloatLiteralASTNode`;
 - `BoolLiteralASTNode`;
 - `StringLiteralASTNode`;
+- `ArrayLiteralASTNode`;
 - `UnaryASTNode`;
 - `BinaryASTNode`;
 - `AssignmentASTNode`;
@@ -46,7 +47,6 @@ AST-узлы:
 - `IndexASTNode`;
 - `CallExpressionASTNode`;
 - `TypeDescriptor` описывает scalar, fixed array, slice и named types для declared/inferred types;
-- будущий `ArrayLiteralASTNode` будет добавлен вместе с реализацией array literals;
 - `IfASTNode`;
 - `ReturnASTNode`;
 - `FunctionDeclarationASTNode`.
@@ -70,6 +70,7 @@ AST-узлы:
 | `@float_literal` | `FloatLiteralASTNode` |
 | `@bool_literal` | `BoolLiteralASTNode` |
 | `@string_literal` | `StringLiteralASTNode` |
+| `@array_literal` | `ArrayLiteralASTNode` |
 | `@unary` | `UnaryASTNode` |
 | `@binary` | `BinaryASTNode` |
 | `@assignment` | `AssignmentASTNode` |

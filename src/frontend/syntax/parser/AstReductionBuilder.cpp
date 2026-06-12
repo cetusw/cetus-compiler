@@ -24,6 +24,8 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildFloatLiteral(values);
 	case SemanticTag::STRING_LITERAL:
 		return BuildStringLiteral(values);
+	case SemanticTag::ARRAY_LITERAL:
+		return BuildArrayLiteral(std::move(values));
 	case SemanticTag::IDENTIFIER:
 		return BuildIdentifier(values);
 	case SemanticTag::ADDRESS_OF:
@@ -197,6 +199,17 @@ AstSemanticValue AstReductionBuilder::BuildStringLiteral(const std::vector<AstSe
 {
 	RequireValueCount(values, 1, "String literal reduction");
 	return { std::make_unique<StringLiteralASTNode>(TakeToken(values, 0).lexeme), std::nullopt };
+}
+
+AstSemanticValue AstReductionBuilder::BuildArrayLiteral(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 4, "Array literal reduction");
+	return {
+		std::make_unique<ArrayLiteralASTNode>(
+			TakeType(values, 0),
+			TakeExpressionList(values, 2)),
+		std::nullopt
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildIdentifier(const std::vector<AstSemanticValue>& values)

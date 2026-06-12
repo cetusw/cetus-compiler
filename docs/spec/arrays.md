@@ -211,6 +211,14 @@ Live grammar поддерживает array type:
 ~Type~ -> LBRACKET RBRACKET ~Type~ @slice_type
 ```
 
+Live grammar поддерживает array/slice literal с непустым списком элементов:
+
+```text
+~ArrayLiteralType~ -> LBRACKET INT_LIT RBRACKET ~Type~ @array_type
+~ArrayLiteralType~ -> LBRACKET RBRACKET ~Type~ @slice_type
+~Exp2~ -> ~ArrayLiteralType~ LBRACE ~ExpressionList~ RBRACE @array_literal
+```
+
 Live grammar поддерживает assignable targets для assignment:
 
 ```text
@@ -220,14 +228,4 @@ Live grammar поддерживает assignable targets для assignment:
 ~SimpleStmt~ -> ~AssignableList~ EQUAL ~ExpressionList~ @assignment
 ```
 
-Для полного синтаксиса массивов grammar должна быть расширена отдельной реализационной фазой. Целевая форма оставшихся правил:
-
-```text
-~ArrayLiteral~ -> ~Type~ LBRACE ~ExpressionList~ RBRACE @array_literal
-~Exp2~ -> ~ArrayLiteral~ @pass_expr
-```
-
-После добавления этих правил:
-
-- array literal сможет создавать значения массивов;
-- typed initialized declarations смогут принимать array literal.
+Ограничение: empty literal вида `[]int{}` пока не поддержан grammar.

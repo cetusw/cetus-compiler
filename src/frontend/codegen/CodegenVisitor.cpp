@@ -101,6 +101,24 @@ void CodegenVisitor::Visit(const StringLiteralASTNode& expr)
 	CurrentEmitter().EmitConstant(Value(std::make_shared<ObjString>(expr.GetValue())));
 }
 
+void CodegenVisitor::Visit(const ArrayLiteralASTNode& expr)
+{
+	if (!EnsureTyped(expr))
+	{
+		return;
+	}
+
+	for (const ASTNodePtr& element : expr.GetElements())
+	{
+		element->Accept(*this);
+		if (m_error.has_value())
+		{
+			return;
+		}
+	}
+	CurrentEmitter().EmitArray(static_cast<int>(expr.GetElements().size()));
+}
+
 void CodegenVisitor::Visit(const IdentifierASTNode& expr)
 {
 	if (!EnsureTyped(expr))

@@ -135,6 +135,7 @@ run_positive_output "${ROOT_DIR}/tests/smoke/positive/for_break_continue.cetus" 
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/ref_parameter.cetus" "2"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/runtime_numbers.cetus" $'1\n1.5\n1\n3\n3.5'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/semicolon_insertion.cetus" "3"
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/slice_literal.cetus" $'3\n34\n3'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_literal.cetus" "hello"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_operations.cetus" $'abc\ntrue\ntrue\n3'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/method_basic.cetus" "5"
@@ -147,6 +148,8 @@ run_parse_positive "${ROOT_DIR}/tests/smoke/typecheck/struct_declaration.cetus"
 run_typecheck_positive "${ROOT_DIR}/tests/smoke/typecheck/struct_type_symbol.cetus"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/array_index_non_int.cetus" "Array index must have int type"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/array_assignment_type.cetus" "Cannot assign value of different type to assignment target"
+run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/array_literal_type_mismatch.cetus" "Array literal element type does not match literal element type"
+run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/array_literal_length_mismatch.cetus" "Array literal element count does not match array length"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/increment_non_int.cetus" "Increment target must have int type"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/decrement_non_int.cetus" "Decrement target must have int type"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/struct_duplicate_field.cetus" "Struct field is already declared"

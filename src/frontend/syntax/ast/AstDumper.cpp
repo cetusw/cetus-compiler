@@ -97,6 +97,15 @@ void AstDumper::Visit(const AssignmentASTNode& expr)
 	}
 }
 
+void AstDumper::Visit(const ArrayLiteralASTNode& expr)
+{
+	DumpLine("ArrayLiteralASTNode(" + expr.GetType().ToString() + ")");
+	for (const ASTNodePtr& element : expr.GetElements())
+	{
+		DumpChild(*element);
+	}
+}
+
 void AstDumper::Visit(const IncrementASTNode& expr)
 {
 	DumpLine("IncrementASTNode");

@@ -16,6 +16,7 @@ enum class SemanticTag
 	INT_LITERAL,
 	FLOAT_LITERAL,
 	STRING_LITERAL,
+	ARRAY_LITERAL,
 	IDENTIFIER,
 	ADDRESS_OF,
 	IDENTIFIER_LIST,
@@ -85,6 +86,7 @@ enum class SemanticTag
 	if (value == "int_literal") return SemanticTag::INT_LITERAL;
 	if (value == "float_literal") return SemanticTag::FLOAT_LITERAL;
 	if (value == "string_literal") return SemanticTag::STRING_LITERAL;
+	if (value == "array_literal") return SemanticTag::ARRAY_LITERAL;
 	if (value == "identifier") return SemanticTag::IDENTIFIER;
 	if (value == "address_of") return SemanticTag::ADDRESS_OF;
 	if (value == "identifier_list") return SemanticTag::IDENTIFIER_LIST;

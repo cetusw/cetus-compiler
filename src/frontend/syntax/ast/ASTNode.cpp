@@ -72,6 +72,27 @@ void StringLiteralASTNode::Accept(ASTNodeVisitor& visitor) const
 	visitor.Visit(*this);
 }
 
+ArrayLiteralASTNode::ArrayLiteralASTNode(TypeDescriptor type, std::vector<ASTNodePtr> elements)
+	: m_type(std::move(type))
+	, m_elements(std::move(elements))
+{
+}
+
+const TypeDescriptor& ArrayLiteralASTNode::GetType() const
+{
+	return m_type;
+}
+
+const std::vector<ASTNodePtr>& ArrayLiteralASTNode::GetElements() const
+{
+	return m_elements;
+}
+
+void ArrayLiteralASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}
+
 IdentifierASTNode::IdentifierASTNode(std::string name)
 	: m_name(std::move(name))
 {

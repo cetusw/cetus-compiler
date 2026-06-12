@@ -32,6 +32,7 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildIntLiteral(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildFloatLiteral(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildStringLiteral(const std::vector<AstSemanticValue>& values);
+	[[nodiscard]] static AstSemanticValue BuildArrayLiteral(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildIdentifier(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildAddressOf(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildIdentifierList(std::vector<AstSemanticValue> values);

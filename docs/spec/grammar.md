@@ -84,6 +84,9 @@
 ~Type~ -> LBRACKET INT_LIT RBRACKET ~Type~ @array_type
 ~Type~ -> LBRACKET RBRACKET ~Type~ @slice_type
 
+~ArrayLiteralType~ -> LBRACKET INT_LIT RBRACKET ~Type~ @array_type
+~ArrayLiteralType~ -> LBRACKET RBRACKET ~Type~ @slice_type
+
 ~ParamList~ -> ~ParamList~ COMMA ~Param~ @param_list
 ~ParamList~ -> ~Param~ @param_list_single
 
@@ -116,6 +119,7 @@
 ~Exp2~ -> IDENTIFIER LPAREN ~ExpressionList~ RPAREN @call
 ~Exp2~ -> ~LargId~ DOT IDENTIFIER LPAREN RPAREN @method_call_no_args
 ~Exp2~ -> ~LargId~ DOT IDENTIFIER LPAREN ~ExpressionList~ RPAREN @method_call
+~Exp2~ -> ~ArrayLiteralType~ LBRACE ~ExpressionList~ RBRACE @array_literal
 ~Exp2~ -> MINUS ~Exp2~ @unary
 ~Exp2~ -> BIT_AND ~LargId~ @address_of
 ~Exp2~ -> ~LargId~ @pass_expr
@@ -168,12 +172,13 @@ Live grammar поддерживает assignable targets для assignment:
 ~SimpleStmt~ -> ~AssignableList~ EQUAL ~ExpressionList~ @assignment
 ```
 
-Для полной поддержки массивов grammar ещё должна быть расширена array literal:
+Live grammar поддерживает array/slice literal с непустым списком элементов:
 
 ```text
-~ArrayLiteral~ -> ~Type~ LBRACE ~ExpressionList~ RBRACE @array_literal
-~Exp2~ -> ~ArrayLiteral~ @pass_expr
+~Exp2~ -> ~ArrayLiteralType~ LBRACE ~ExpressionList~ RBRACE @array_literal
 ```
+
+Ограничение: empty literal вида `[]int{}` пока не поддержан grammar.
 
 `~Type~` используется в return type функции, typed variable declaration и параметрах функции. Assignment принимает plain identifiers и index access targets.
 
