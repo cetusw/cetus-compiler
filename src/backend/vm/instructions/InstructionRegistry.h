@@ -17,6 +17,7 @@
 #include "NegateInstruction.h"
 #include "NotInstruction.h"
 #include "PopInstruction.h"
+#include "PointerInstruction.h"
 #include "RefGlobalInstruction.h"
 #include "RefLocalInstruction.h"
 #include "ReturnInstruction.h"
@@ -69,6 +70,7 @@ public:
 		m_table[OP_GET_INDEX] = std::make_unique<GetIndexInstruction>();
 		m_table[OP_SET_INDEX] = std::make_unique<SetIndexInstruction>();
 		m_table[OP_STRUCT] = std::make_unique<StructInstruction>();
+		m_table[OP_POINTER] = std::make_unique<PointerInstruction>();
 		m_table[OP_GET_MEMBER] = std::make_unique<GetMemberInstruction>();
 		m_table[OP_SET_MEMBER] = std::make_unique<SetMemberInstruction>();
 

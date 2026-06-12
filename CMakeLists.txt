@@ -77,6 +77,7 @@ add_library(cetus_backend_vm STATIC
         src/backend/vm/types/Value.cpp
         src/backend/vm/objects/Obj.cpp
         src/backend/vm/objects/ObjArray.cpp
+        src/backend/vm/objects/ObjPointer.cpp
         src/backend/vm/objects/ObjRef.cpp
         src/backend/vm/objects/ObjString.cpp
         src/backend/vm/objects/ObjSlice.cpp
@@ -98,6 +99,7 @@ add_library(cetus_backend_vm STATIC
         src/backend/vm/instructions/NegateInstruction.cpp
         src/backend/vm/instructions/NotInstruction.cpp
         src/backend/vm/instructions/PopInstruction.cpp
+        src/backend/vm/instructions/PointerInstruction.cpp
         src/backend/vm/instructions/RefGlobalInstruction.cpp
         src/backend/vm/instructions/RefLocalInstruction.cpp
         src/backend/vm/instructions/ReturnInstruction.cpp

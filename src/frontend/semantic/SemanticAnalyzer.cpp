@@ -20,6 +20,25 @@ bool IsAddressOfExpression(const ASTNode& node)
 {
 	return dynamic_cast<const AddressOfASTNode*>(&node) != nullptr;
 }
+
+const StructLiteralASTNode* GetAddressedStructLiteral(const ASTNode& node)
+{
+	const auto* addressOf = dynamic_cast<const AddressOfASTNode*>(&node);
+	if (!addressOf)
+	{
+		return nullptr;
+	}
+	return dynamic_cast<const StructLiteralASTNode*>(&addressOf->GetTarget());
+}
+
+TypeDescriptor ResolveNamedStructBaseType(TypeDescriptor type)
+{
+	if (type.IsPointer())
+	{
+		type = type.GetPointeeType();
+	}
+	return type;
+}
 } // namespace
 
 SemanticAnalyzer::SemanticAnalyzer(SymbolTable symbols)
@@ -186,6 +205,19 @@ void SemanticAnalyzer::Visit(const IdentifierASTNode& node)
 
 void SemanticAnalyzer::Visit(const AddressOfASTNode& node)
 {
+	if (const StructLiteralASTNode* structLiteral = GetAddressedStructLiteral(node))
+	{
+		const TypeDescriptor targetType = AnalyzeChild(*structLiteral);
+		if (!ValidateValueExpression(targetType, "address-of target"))
+		{
+			SetCurrentType(node, Type::ERROR);
+			return;
+		}
+
+		SetCurrentType(node, TypeDescriptor::Pointer(targetType));
+		return;
+	}
+
 	if (GetAddressedIdentifier(node) == nullptr)
 	{
 		AddDiagnostic("Address-of operator expects assignable identifier.");
@@ -391,9 +423,15 @@ void SemanticAnalyzer::TypeCheckMethodCall(
 	if (method.receiverIsPointer)
 	{
 		const ASTNode* receiver = node.GetReceiver();
-		if (!receiver || dynamic_cast<const IdentifierASTNode*>(receiver) == nullptr)
+		if (!receiver)
 		{
 			AddDiagnostic("Pointer method receiver expects assignable identifier receiver: " + receiverType.ToString() + "." + node.GetCalleeName());
+			hasError = true;
+		}
+		else if (!receiverType.IsPointer() && dynamic_cast<const IdentifierASTNode*>(receiver) == nullptr)
+		{
+			AddDiagnostic("Pointer method receiver expects pointer value or assignable identifier receiver: "
+				+ receiverType.ToString() + "." + node.GetCalleeName());
 			hasError = true;
 		}
 	}
@@ -607,9 +645,25 @@ bool SemanticAnalyzer::ValidateTypeReference(const TypeDescriptor& type, const c
 	{
 		return false;
 	}
+	if (type.IsPointer())
+	{
+		return ValidateTypeReference(type.GetPointeeType(), context);
+	}
 	if (type.IsSequence())
 	{
 		return ValidateTypeReference(type.GetElementType(), context);
+	}
+	if (type.IsTuple())
+	{
+		bool isValid = true;
+		for (const TypeDescriptor& elementType : type.GetTupleElements())
+		{
+			if (!ValidateTypeReference(elementType, context))
+			{
+				isValid = false;
+			}
+		}
+		return isValid;
 	}
 	if (!type.IsNamed())
 	{
@@ -648,12 +702,13 @@ bool SemanticAnalyzer::ValidateStructFields(const StructDeclarationASTNode& node
 
 const FieldSignature* SemanticAnalyzer::ResolveField(const TypeDescriptor& objectType, const std::string& fieldName) const
 {
-	if (!objectType.IsNamed())
+	const TypeDescriptor baseType = ResolveNamedStructBaseType(objectType);
+	if (!baseType.IsNamed())
 	{
 		return nullptr;
 	}
 
-	const SemanticSymbol* symbol = m_symbolTable.Resolve(objectType.GetName());
+	const SemanticSymbol* symbol = m_symbolTable.Resolve(baseType.GetName());
 	if (!symbol || symbol->kind != SemanticSymbolKind::TYPE)
 	{
 		return nullptr;
@@ -672,12 +727,13 @@ const FieldSignature* SemanticAnalyzer::ResolveField(const TypeDescriptor& objec
 
 const MethodSignature* SemanticAnalyzer::ResolveMethod(const TypeDescriptor& objectType, const std::string& methodName) const
 {
-	if (!objectType.IsNamed())
+	const TypeDescriptor baseType = ResolveNamedStructBaseType(objectType);
+	if (!baseType.IsNamed())
 	{
 		return nullptr;
 	}
 
-	const SemanticSymbol* symbol = m_symbolTable.Resolve(objectType.GetName());
+	const SemanticSymbol* symbol = m_symbolTable.Resolve(baseType.GetName());
 	if (!symbol || symbol->kind != SemanticSymbolKind::TYPE)
 	{
 		return nullptr;
@@ -1198,7 +1254,10 @@ void SemanticAnalyzer::Visit(const FunctionDeclarationASTNode& node)
 	bool hasParameterError = false;
 	if (const FunctionParameter* receiver = node.GetReceiver())
 	{
-		if (!receiver->type.IsNamed() || !ValidateTypeReference(receiver->type, "method receiver"))
+		const TypeDescriptor receiverValueType = receiver->isPointer
+			? TypeDescriptor::Pointer(receiver->type)
+			: receiver->type;
+		if (!receiver->type.IsNamed() || !ValidateTypeReference(receiverValueType, "method receiver"))
 		{
 			AddDiagnostic("Method receiver must use declared struct type: " + node.GetName());
 			hasParameterError = true;
@@ -1214,7 +1273,7 @@ void SemanticAnalyzer::Visit(const FunctionDeclarationASTNode& node)
 		}
 		else
 		{
-			m_symbolTable.Define(SemanticSymbol{ receiver->name, receiver->type, SemanticSymbolKind::VARIABLE, {}, {}, {} });
+			m_symbolTable.Define(SemanticSymbol{ receiver->name, receiverValueType, SemanticSymbolKind::VARIABLE, {}, {}, {} });
 		}
 	}
 	for (const FunctionParameter& parameter : node.GetParameters())

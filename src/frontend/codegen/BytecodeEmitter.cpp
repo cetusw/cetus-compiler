@@ -169,6 +169,11 @@ void BytecodeEmitter::EmitStruct(const std::string& typeName, const std::vector<
 	}
 }
 
+void BytecodeEmitter::EmitPointer() const
+{
+	EmitOpcode(OP_POINTER);
+}
+
 void BytecodeEmitter::EmitMemberLoad(const std::string& fieldName) const
 {
 	EmitOpcode(OP_GET_MEMBER);

@@ -1,0 +1,20 @@
+type Counter struct {
+    value int;
+}
+
+func NewCounter() *Counter {
+    return &Counter{
+        value: 0,
+    };
+}
+
+func (c *Counter) Add(delta int) {
+    c.value = c.value + delta;
+}
+
+func main() {
+    counter := NewCounter();
+    counter.Add(3);
+    counter.Add(4);
+    printf(counter.value);
+}

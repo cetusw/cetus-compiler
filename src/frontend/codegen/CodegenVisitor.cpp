@@ -4,6 +4,7 @@
 #include "src/backend/vm/objects/ObjFunction.h"
 #include "src/backend/vm/objects/ObjString.h"
 #include "src/frontend/syntax/ast/ASTNode.h"
+#include <unordered_map>
 
 namespace
 {
@@ -18,6 +19,25 @@ const IdentifierASTNode* GetAddressedIdentifier(const ASTNode& node)
 		return nullptr;
 	}
 	return dynamic_cast<const IdentifierASTNode*>(&addressOf->GetTarget());
+}
+
+const StructLiteralASTNode* GetAddressedStructLiteral(const ASTNode& node)
+{
+	const auto* addressOf = dynamic_cast<const AddressOfASTNode*>(&node);
+	if (!addressOf)
+	{
+		return nullptr;
+	}
+	return dynamic_cast<const StructLiteralASTNode*>(&addressOf->GetTarget());
+}
+
+TypeDescriptor ResolveNamedStructBaseType(TypeDescriptor type)
+{
+	if (type.IsPointer())
+	{
+		type = type.GetPointeeType();
+	}
+	return type;
 }
 
 std::string ResolveBuiltinRuntimeName(const std::string& sourceName)
@@ -124,9 +144,42 @@ void CodegenVisitor::Visit(const ArrayLiteralASTNode& expr)
 	CurrentEmitter().EmitArray(static_cast<int>(expr.GetElements().size()));
 }
 
-void CodegenVisitor::Visit(const StructLiteralASTNode&)
+void CodegenVisitor::Visit(const StructLiteralASTNode& expr)
 {
-	Fail("Struct literal code generation is not implemented yet.");
+	const SemanticSymbol* symbol = m_symbols.Resolve(expr.GetTypeName());
+	if (!symbol || symbol->kind != SemanticSymbolKind::TYPE)
+	{
+		Fail("Unknown struct type during code generation: " + expr.GetTypeName());
+		return;
+	}
+
+	std::unordered_map<std::string, const ASTNode*> initializers;
+	for (const StructFieldInitializer& initializer : expr.GetInitializers())
+	{
+		initializers[initializer.name] = initializer.expression.get();
+	}
+
+	std::vector<std::string> fieldNames;
+	fieldNames.reserve(symbol->fields.size());
+	for (const FieldSignature& field : symbol->fields)
+	{
+		const auto it = initializers.find(field.name);
+		if (it != initializers.end())
+		{
+			it->second->Accept(*this);
+		}
+		else
+		{
+			EmitDefault(field.type);
+		}
+		if (m_error.has_value())
+		{
+			return;
+		}
+		fieldNames.push_back(field.name);
+	}
+
+	CurrentEmitter().EmitStruct(expr.GetTypeName(), fieldNames);
 }
 
 void CodegenVisitor::Visit(const IdentifierASTNode& expr)
@@ -145,9 +198,27 @@ void CodegenVisitor::Visit(const IdentifierASTNode& expr)
 	CurrentEmitter().EmitGlobalLoad(expr.GetName());
 }
 
-void CodegenVisitor::Visit(const AddressOfASTNode&)
+void CodegenVisitor::Visit(const AddressOfASTNode& expr)
 {
-	Fail("Address-of expression can only be used as argument for pointer parameter.");
+	if (const StructLiteralASTNode* structLiteral = GetAddressedStructLiteral(expr))
+	{
+		structLiteral->Accept(*this);
+		if (m_error.has_value())
+		{
+			return;
+		}
+		CurrentEmitter().EmitPointer();
+		return;
+	}
+
+	const IdentifierASTNode* identifier = GetAddressedIdentifier(expr);
+	if (identifier)
+	{
+		EmitIdentifierRef(*identifier);
+		return;
+	}
+
+	Fail("Address-of expression can only target struct literal or assignable identifier.");
 }
 
 void CodegenVisitor::Visit(const UnaryASTNode& expr)
@@ -291,7 +362,7 @@ void CodegenVisitor::Visit(const CallExpressionASTNode& expr)
 			return;
 		}
 
-		const std::string targetName = receiver->GetInferredType()->ToString() + "." + expr.GetCalleeName();
+		const std::string targetName = ResolveNamedStructBaseType(*receiver->GetInferredType()).ToString() + "." + expr.GetCalleeName();
 		const MethodSignature* method = ResolveMethod(*receiver->GetInferredType(), expr.GetCalleeName());
 		if (!method)
 		{
@@ -302,13 +373,19 @@ void CodegenVisitor::Visit(const CallExpressionASTNode& expr)
 		CurrentEmitter().EmitGlobalLoad(targetName);
 		if (method->receiverIsPointer)
 		{
-			const auto* identifier = dynamic_cast<const IdentifierASTNode*>(receiver);
-			if (!identifier)
+			if (receiver->GetInferredType()->IsPointer())
 			{
-				Fail("Pointer method receiver code generation expects identifier receiver.");
+				receiver->Accept(*this);
+			}
+			else if (const auto* identifier = dynamic_cast<const IdentifierASTNode*>(receiver))
+			{
+				EmitIdentifierRef(*identifier);
+			}
+			else
+			{
+				Fail("Pointer method receiver code generation expects pointer value or identifier receiver.");
 				return;
 			}
-			EmitIdentifierRef(*identifier);
 		}
 		else
 		{
@@ -1000,12 +1077,13 @@ void CodegenVisitor::EmitIdentifierRef(const IdentifierASTNode& expr)
 
 const MethodSignature* CodegenVisitor::ResolveMethod(const TypeDescriptor& receiverType, const std::string& methodName) const
 {
-	if (!receiverType.IsNamed())
+	const TypeDescriptor baseType = ResolveNamedStructBaseType(receiverType);
+	if (!baseType.IsNamed())
 	{
 		return nullptr;
 	}
 
-	const SemanticSymbol* typeSymbol = m_symbols.Resolve(receiverType.GetName());
+	const SemanticSymbol* typeSymbol = m_symbols.Resolve(baseType.GetName());
 	if (!typeSymbol || typeSymbol->kind != SemanticSymbolKind::TYPE)
 	{
 		return nullptr;

@@ -9,6 +9,7 @@
 class ObjFunction;
 class ObjNative;
 class ObjRef;
+class ObjPointer;
 class ObjArray;
 class ObjSlice;
 class ObjStruct;
@@ -27,11 +28,13 @@ public:
 	[[nodiscard]] bool IsFloat() const;
 	[[nodiscard]] bool IsNumber() const;
 	[[nodiscard]] bool IsBool() const;
+	[[nodiscard]] bool IsHeapObject() const;
 	[[nodiscard]] bool IsString() const;
 	[[nodiscard]] bool IsFalsey() const;
 	[[nodiscard]] bool IsFunction() const;
 	[[nodiscard]] bool IsNative() const;
 	[[nodiscard]] bool IsRef() const;
+	[[nodiscard]] bool IsPointer() const;
 	[[nodiscard]] bool IsArray() const;
 	[[nodiscard]] bool IsSlice() const;
 	[[nodiscard]] bool IsSequence() const;
@@ -46,9 +49,11 @@ public:
 	[[nodiscard]] std::shared_ptr<ObjFunction> AsFunction() const;
 	[[nodiscard]] std::shared_ptr<ObjNative> AsNative() const;
 	[[nodiscard]] std::shared_ptr<ObjRef> AsRef() const;
+	[[nodiscard]] std::shared_ptr<ObjPointer> AsPointer() const;
 	[[nodiscard]] std::shared_ptr<ObjArray> AsArray() const;
 	[[nodiscard]] std::shared_ptr<ObjSlice> AsSlice() const;
 	[[nodiscard]] std::shared_ptr<ObjStruct> AsStruct() const;
+	[[nodiscard]] HeapObject AsHeapObject() const;
 	[[nodiscard]] Value Dereference() const;
 
 	void Print() const;

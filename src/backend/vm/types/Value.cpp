@@ -1,6 +1,7 @@
 #include "Value.h"
 #include "../objects/ObjArray.h"
 #include "../objects/ObjFunction.h"
+#include "../objects/ObjPointer.h"
 #include "../objects/ObjRef.h"
 #include "../objects/ObjString.h"
 #include "../objects/ObjSlice.h"
@@ -80,9 +81,14 @@ bool Value::IsBool() const
 	return std::holds_alternative<RuntimeBool>(m_data);
 }
 
+bool Value::IsHeapObject() const
+{
+	return std::holds_alternative<HeapObject>(m_data) && std::get<HeapObject>(m_data) != nullptr;
+}
+
 bool Value::IsString() const
 {
-	return std::holds_alternative<HeapObject>(m_data) && std::get<HeapObject>(m_data)->GetType() == ObjType::STRING;
+	return IsHeapObject() && std::get<HeapObject>(m_data)->GetType() == ObjType::STRING;
 }
 
 bool Value::IsFalsey() const
@@ -104,27 +110,32 @@ bool Value::IsFalsey() const
 
 bool Value::IsFunction() const
 {
-	return std::holds_alternative<HeapObject>(m_data) && std::get<HeapObject>(m_data)->GetType() == ObjType::FUNCTION;
+	return IsHeapObject() && std::get<HeapObject>(m_data)->GetType() == ObjType::FUNCTION;
 }
 
 bool Value::IsNative() const
 {
-	return std::holds_alternative<HeapObject>(m_data) && std::get<HeapObject>(m_data)->GetType() == ObjType::NATIVE;
+	return IsHeapObject() && std::get<HeapObject>(m_data)->GetType() == ObjType::NATIVE;
 }
 
 bool Value::IsRef() const
 {
-	return std::holds_alternative<HeapObject>(m_data) && std::get<HeapObject>(m_data)->GetType() == ObjType::REF;
+	return IsHeapObject() && std::get<HeapObject>(m_data)->GetType() == ObjType::REF;
+}
+
+bool Value::IsPointer() const
+{
+	return IsHeapObject() && std::get<HeapObject>(m_data)->GetType() == ObjType::POINTER;
 }
 
 bool Value::IsArray() const
 {
-	return std::holds_alternative<HeapObject>(m_data) && std::get<HeapObject>(m_data)->GetType() == ObjType::ARRAY;
+	return IsHeapObject() && std::get<HeapObject>(m_data)->GetType() == ObjType::ARRAY;
 }
 
 bool Value::IsSlice() const
 {
-	return std::holds_alternative<HeapObject>(m_data) && std::get<HeapObject>(m_data)->GetType() == ObjType::SLICE;
+	return IsHeapObject() && std::get<HeapObject>(m_data)->GetType() == ObjType::SLICE;
 }
 
 bool Value::IsSequence() const
@@ -139,7 +150,7 @@ bool Value::IsIndexable() const
 
 bool Value::IsStruct() const
 {
-	return std::holds_alternative<HeapObject>(m_data) && std::get<HeapObject>(m_data)->GetType() == ObjType::STRUCT;
+	return IsHeapObject() && std::get<HeapObject>(m_data)->GetType() == ObjType::STRUCT;
 }
 
 RuntimeInt Value::AsInt() const
@@ -190,6 +201,12 @@ std::shared_ptr<ObjRef> Value::AsRef() const
 	return std::static_pointer_cast<ObjRef>(obj);
 }
 
+std::shared_ptr<ObjPointer> Value::AsPointer() const
+{
+	const auto obj = std::get<HeapObject>(m_data);
+	return std::static_pointer_cast<ObjPointer>(obj);
+}
+
 std::shared_ptr<ObjArray> Value::AsArray() const
 {
 	const auto obj = std::get<HeapObject>(m_data);
@@ -206,6 +223,11 @@ std::shared_ptr<ObjStruct> Value::AsStruct() const
 {
 	const auto obj = std::get<HeapObject>(m_data);
 	return std::static_pointer_cast<ObjStruct>(obj);
+}
+
+HeapObject Value::AsHeapObject() const
+{
+	return std::get<HeapObject>(m_data);
 }
 
 Value Value::Dereference() const
@@ -255,6 +277,23 @@ void Value::Print() const
 			else if (arg->GetType() == ObjType::REF)
 			{
 				std::printf("<ref>");
+			}
+			else if (arg->GetType() == ObjType::POINTER)
+			{
+				const auto pointer = std::static_pointer_cast<ObjPointer>(arg);
+				if (pointer->IsNil())
+				{
+					std::printf("<nil ptr>");
+				}
+				else if (pointer->GetTarget()->GetType() == ObjType::STRUCT)
+				{
+					const auto object = std::static_pointer_cast<ObjStruct>(pointer->GetTarget());
+					std::printf("<ptr %s>", object->GetTypeName().c_str());
+				}
+				else
+				{
+					std::printf("<ptr>");
+				}
 			}
 			else if (arg->GetType() == ObjType::ARRAY)
 			{

@@ -154,6 +154,7 @@ run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_index.cetus" $'a\nc
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_literal.cetus" "hello"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_operations.cetus" $'abc\ntrue\ntrue\n3'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/palindrome.cetus" "true"
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/pointer_struct_heap.cetus" "7"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/variadic_println_array.cetus" $'Before: [64, 34, 25]\n[[1, 2], [3, 4]]'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/var_typed_composite.cetus" $'[4, 9, 1, 7, 3]\n3'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/method_basic.cetus" "5"
