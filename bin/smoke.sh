@@ -159,6 +159,8 @@ run_positive_output "${ROOT_DIR}/tests/smoke/positive/variadic_println_array.cet
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/var_typed_composite.cetus" $'[4, 9, 1, 7, 3]\n3'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/method_basic.cetus" "5"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/method_ref_receiver.cetus" "5"
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/method_ref_receiver_member.cetus" "5"
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/method_ref_receiver_index.cetus" "5"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/struct_basic.cetus" "1"
 run_positive_output "${ROOT_DIR}/tests/programs/max.cetus" "9"
 run_positive_output "${ROOT_DIR}/tests/programs/linear_search.cetus" "2"
@@ -189,6 +191,5 @@ run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/struct_literal_duplica
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/struct_literal_type_mismatch.cetus" "Struct literal field initializer type does not match declared field type"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/method_unknown.cetus" "Method is not declared"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/method_duplicate.cetus" "Method is already declared"
-run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/method_ref_receiver_non_identifier.cetus" "Pointer method receiver expects assignable identifier receiver"
 
 echo "[smoke] ok"

@@ -376,14 +376,9 @@ void CodegenVisitor::Visit(const CallExpressionASTNode& expr)
 			{
 				receiver->Accept(*this);
 			}
-			else if (const auto* identifier = dynamic_cast<const IdentifierASTNode*>(receiver))
-			{
-				EmitIdentifierRef(*identifier);
-			}
 			else
 			{
-				Fail("Pointer method receiver code generation expects pointer value or identifier receiver.");
-				return;
+				EmitAddressableRef(*receiver);
 			}
 		}
 		else
@@ -1072,6 +1067,42 @@ void CodegenVisitor::EmitIdentifierRef(const IdentifierASTNode& expr)
 	}
 
 	CurrentEmitter().EmitGlobalRef(expr.GetName());
+}
+
+void CodegenVisitor::EmitAddressableRef(const ASTNode& expr)
+{
+	if (const auto* identifier = dynamic_cast<const IdentifierASTNode*>(&expr))
+	{
+		EmitIdentifierRef(*identifier);
+		return;
+	}
+	if (const auto* member = dynamic_cast<const MemberAccessASTNode*>(&expr))
+	{
+		member->GetObject().Accept(*this);
+		if (m_error.has_value())
+		{
+			return;
+		}
+		CurrentEmitter().EmitMemberRef(member->GetMember());
+		return;
+	}
+	if (const auto* index = dynamic_cast<const IndexASTNode*>(&expr))
+	{
+		index->GetObject().Accept(*this);
+		if (m_error.has_value())
+		{
+			return;
+		}
+		index->GetIndex().Accept(*this);
+		if (m_error.has_value())
+		{
+			return;
+		}
+		CurrentEmitter().EmitIndexRef();
+		return;
+	}
+
+	Fail("Addressable reference code generation expects identifier, member access or index access.");
 }
 
 const MethodSignature* CodegenVisitor::ResolveMethod(const TypeDescriptor& receiverType, const std::string& methodName) const

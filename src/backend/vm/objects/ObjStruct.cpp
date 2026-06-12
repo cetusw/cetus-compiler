@@ -28,6 +28,17 @@ const Value& ObjStruct::GetField(const std::string& name) const
 	return m_fields.at(name);
 }
 
+Value* ObjStruct::GetFieldAddress(const std::string& name)
+{
+	const auto it = m_fields.find(name);
+	if (it == m_fields.end())
+	{
+		return nullptr;
+	}
+
+	return &it->second;
+}
+
 void ObjStruct::SetField(const std::string& name, const Value& value)
 {
 	const auto it = m_fields.find(name);

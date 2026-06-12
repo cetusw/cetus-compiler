@@ -102,7 +102,9 @@ add_library(cetus_backend_vm STATIC
         src/backend/vm/instructions/PopInstruction.cpp
         src/backend/vm/instructions/PointerInstruction.cpp
         src/backend/vm/instructions/RefGlobalInstruction.cpp
+        src/backend/vm/instructions/RefIndexInstruction.cpp
         src/backend/vm/instructions/RefLocalInstruction.cpp
+        src/backend/vm/instructions/RefMemberInstruction.cpp
         src/backend/vm/instructions/ReturnInstruction.cpp
         src/backend/vm/instructions/SetGlobalInstruction.cpp
         src/backend/vm/instructions/SetIndexInstruction.cpp

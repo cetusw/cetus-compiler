@@ -85,6 +85,11 @@ const Value& ObjSlice::Get(const int index) const
 	return m_storage->Get(StorageIndex(index));
 }
 
+Value* ObjSlice::GetAddress(const int index) const
+{
+	return m_storage->GetAddress(StorageIndex(index));
+}
+
 void ObjSlice::Set(const int index, const Value& value) const
 {
 	m_storage->Set(StorageIndex(index), value);

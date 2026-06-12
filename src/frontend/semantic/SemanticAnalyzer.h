@@ -72,6 +72,7 @@ private:
 	void TypeCheckMethodCall(const CallExpressionASTNode& node, const TypeDescriptor& receiverType, const MethodSignature& method, const std::vector<TypeDescriptor>& argumentTypes);
 	[[nodiscard]] bool ValidateValueExpression(const TypeDescriptor& type, const char* context);
 	[[nodiscard]] bool ValidateTypeReference(const TypeDescriptor& type, const char* context);
+	[[nodiscard]] static bool IsAddressableExpression(const ASTNode& node);
 	[[nodiscard]] bool ValidateStructFields(const StructDeclarationASTNode& node);
 	[[nodiscard]] const FieldSignature* ResolveField(const TypeDescriptor& objectType, const std::string& fieldName) const;
 	[[nodiscard]] const MethodSignature* ResolveMethod(const TypeDescriptor& objectType, const std::string& methodName) const;

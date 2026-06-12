@@ -179,6 +179,18 @@ void BytecodeEmitter::EmitOver() const
 	EmitOpcode(OP_OVER);
 }
 
+void BytecodeEmitter::EmitMemberRef(const std::string& fieldName) const
+{
+	EmitOpcode(OP_REF_MEMBER);
+	const int constantIndex = m_chunk.AddConstant(Value(std::make_shared<ObjString>(fieldName)));
+	EmitOperandByte(constantIndex);
+}
+
+void BytecodeEmitter::EmitIndexRef() const
+{
+	EmitOpcode(OP_REF_INDEX);
+}
+
 void BytecodeEmitter::EmitMemberLoad(const std::string& fieldName) const
 {
 	EmitOpcode(OP_GET_MEMBER);

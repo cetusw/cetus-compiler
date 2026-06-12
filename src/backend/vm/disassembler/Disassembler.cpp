@@ -130,6 +130,10 @@ int DisassembleInstruction(const Chunk& chunk, const int offset)
 		return SimpleInstruction("OP_POINTER", offset);
 	case OP_OVER:
 		return SimpleInstruction("OP_OVER", offset);
+	case OP_REF_INDEX:
+		return SimpleInstruction("OP_REF_INDEX", offset);
+	case OP_REF_MEMBER:
+		return ConstantInstruction("OP_REF_MEMBER", chunk, offset);
 	case OP_GET_MEMBER:
 		return ConstantInstruction("OP_GET_MEMBER", chunk, offset);
 	case OP_SET_MEMBER:

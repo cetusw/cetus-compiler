@@ -14,6 +14,7 @@ public:
 	[[nodiscard]] int Length() const;
 	[[nodiscard]] int Capacity() const;
 	[[nodiscard]] const Value& Get(int index) const;
+	[[nodiscard]] Value* GetAddress(int index);
 	void Set(int index, const Value& value);
 	void Push(const Value& value);
 	void Reserve(int capacity);

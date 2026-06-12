@@ -23,6 +23,11 @@ const Value& ObjArray::Get(const int index) const
 	return m_elements.at(index);
 }
 
+Value* ObjArray::GetAddress(const int index)
+{
+	return &m_elements.at(index);
+}
+
 void ObjArray::Set(const int index, const Value& value)
 {
 	m_elements.at(index) = value;

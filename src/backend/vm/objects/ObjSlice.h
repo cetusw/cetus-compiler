@@ -16,6 +16,7 @@ public:
 	[[nodiscard]] int Length() const;
 	[[nodiscard]] int Capacity() const;
 	[[nodiscard]] const Value& Get(int index) const;
+	[[nodiscard]] Value* GetAddress(int index) const;
 	void Set(int index, const Value& value) const;
 	[[nodiscard]] std::shared_ptr<ObjSlice> SubSlice(int start, int end) const;
 	[[nodiscard]] std::shared_ptr<ObjSlice> Append(const std::vector<Value>& values) const;

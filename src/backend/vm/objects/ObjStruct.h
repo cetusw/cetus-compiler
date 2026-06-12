@@ -14,6 +14,7 @@ public:
 	[[nodiscard]] const std::string& GetTypeName() const;
 	[[nodiscard]] bool HasField(const std::string& name) const;
 	[[nodiscard]] const Value& GetField(const std::string& name) const;
+	[[nodiscard]] Value* GetFieldAddress(const std::string& name);
 	void SetField(const std::string& name, const Value& value);
 
 private:

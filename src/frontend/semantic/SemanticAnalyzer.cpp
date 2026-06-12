@@ -428,9 +428,9 @@ void SemanticAnalyzer::TypeCheckMethodCall(
 			AddDiagnostic("Pointer method receiver expects assignable identifier receiver: " + receiverType.ToString() + "." + node.GetCalleeName());
 			hasError = true;
 		}
-		else if (!receiverType.IsPointer() && dynamic_cast<const IdentifierASTNode*>(receiver) == nullptr)
+		else if (!receiverType.IsPointer() && !IsAddressableExpression(*receiver))
 		{
-			AddDiagnostic("Pointer method receiver expects pointer value or assignable identifier receiver: "
+			AddDiagnostic("Pointer method receiver expects pointer value or addressable receiver expression: "
 				+ receiverType.ToString() + "." + node.GetCalleeName());
 			hasError = true;
 		}
@@ -678,6 +678,24 @@ bool SemanticAnalyzer::ValidateTypeReference(const TypeDescriptor& type, const c
 	}
 
 	return true;
+}
+
+bool SemanticAnalyzer::IsAddressableExpression(const ASTNode& node)
+{
+	if (dynamic_cast<const IdentifierASTNode*>(&node))
+	{
+		return true;
+	}
+	if (const auto* member = dynamic_cast<const MemberAccessASTNode*>(&node))
+	{
+		return IsAddressableExpression(member->GetObject());
+	}
+	if (const auto* index = dynamic_cast<const IndexASTNode*>(&node))
+	{
+		return IsAddressableExpression(index->GetObject());
+	}
+
+	return false;
 }
 
 bool SemanticAnalyzer::ValidateStructFields(const StructDeclarationASTNode& node)

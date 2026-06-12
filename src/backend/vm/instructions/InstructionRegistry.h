@@ -20,7 +20,9 @@
 #include "PopInstruction.h"
 #include "PointerInstruction.h"
 #include "RefGlobalInstruction.h"
+#include "RefIndexInstruction.h"
 #include "RefLocalInstruction.h"
+#include "RefMemberInstruction.h"
 #include "ReturnInstruction.h"
 #include "SetGlobalInstruction.h"
 #include "SetIndexInstruction.h"
@@ -73,6 +75,8 @@ public:
 		m_table[OP_STRUCT] = std::make_unique<StructInstruction>();
 		m_table[OP_POINTER] = std::make_unique<PointerInstruction>();
 		m_table[OP_OVER] = std::make_unique<OverInstruction>();
+		m_table[OP_REF_INDEX] = std::make_unique<RefIndexInstruction>();
+		m_table[OP_REF_MEMBER] = std::make_unique<RefMemberInstruction>();
 		m_table[OP_GET_MEMBER] = std::make_unique<GetMemberInstruction>();
 		m_table[OP_SET_MEMBER] = std::make_unique<SetMemberInstruction>();
 
