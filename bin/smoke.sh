@@ -259,6 +259,7 @@ run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/array_literal_length_m
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/increment_non_int.cetus" "Increment target must have int type"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/decrement_non_int.cetus" "Decrement target must have int type"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/assert_non_bool.cetus" "Assert condition must have bool type"
+run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/duplicate_test_name.cetus" "Test is already declared: add"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/string_index_non_int.cetus" "Index must have int type"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/string_index_assignment.cetus" "Cannot assign to string index"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/struct_duplicate_field.cetus" "Struct field is already declared"

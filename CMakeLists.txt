@@ -57,6 +57,8 @@ add_library(cetus_frontend STATIC
         src/frontend/semantic/Type.cpp
         src/frontend/semantic/rules/TypeRules.cpp
         src/frontend/semantic/SemanticAnalyzer.cpp
+        src/frontend/testing/TestCoverageAnalyzer.cpp
+        src/frontend/testing/TestDiscovery.cpp
         src/frontend/syntax/parser/AstReductionBuilder.cpp
         src/frontend/syntax/storage/JsonPreparedGrammarStorage.cpp
         src/frontend/syntax/parser/TokenSymbolMapper.cpp

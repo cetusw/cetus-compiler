@@ -41,9 +41,8 @@ TypeDescriptor ResolveNamedStructBaseType(TypeDescriptor type)
 }
 } // namespace
 
-SemanticAnalyzer::SemanticAnalyzer(SymbolTable symbols, const bool requireTests)
+SemanticAnalyzer::SemanticAnalyzer(SymbolTable symbols)
 	: m_symbolTable(std::move(symbols))
-	, m_requireTests(requireTests)
 {
 }
 
@@ -53,7 +52,6 @@ TypeCheckResult SemanticAnalyzer::Analyze(const ASTNode& node)
 	m_diagnostics.clear();
 	m_predeclaredFunctions.clear();
 	m_predeclaredTypes.clear();
-	m_declaredTestNames.clear();
 	DefineBuiltinFunctions();
 	node.Accept(*this);
 	if (!m_diagnostics.empty())
@@ -1159,10 +1157,6 @@ void SemanticAnalyzer::Visit(const ProgramASTNode& node)
 	const std::size_t diagnosticCount = m_diagnostics.size();
 	ValidateEntryPoint();
 	const TypeDescriptor statementsType = AnalyzeChild(node.GetStatements());
-	if (m_requireTests)
-	{
-		ValidateTestCoverage(node.GetStatements());
-	}
 	SetCurrentType(node, statementsType == Type::ERROR || m_diagnostics.size() != diagnosticCount ? Type::ERROR : Type::VOID);
 }
 
@@ -1515,20 +1509,8 @@ void SemanticAnalyzer::Visit(const StructDeclarationASTNode& node)
 
 void SemanticAnalyzer::Visit(const TestDeclarationASTNode& node)
 {
-	bool hasError = false;
-	if (!m_declaredTestNames.insert(node.GetName()).second)
-	{
-		AddDiagnostic("Test is already declared: " + node.GetName());
-		hasError = true;
-	}
-
 	const TypeDescriptor bodyType = AnalyzeChild(node.GetBody());
-	if (bodyType == Type::ERROR)
-	{
-		hasError = true;
-	}
-
-	SetCurrentType(node, hasError ? Type::ERROR : Type::VOID);
+	SetCurrentType(node, bodyType == Type::ERROR ? Type::ERROR : Type::VOID);
 }
 
 void SemanticAnalyzer::PredeclareTopLevelTypes(const ASTNode& node)
@@ -1556,51 +1538,6 @@ void SemanticAnalyzer::PredeclareTopLevelTypes(const StatementListASTNode& node)
 		m_predeclaredTypes.insert(typeDeclaration);
 		const bool wasDefined = DefineTypeSymbol(*typeDeclaration);
 		(void)wasDefined;
-	}
-}
-
-void SemanticAnalyzer::ValidateTestCoverage(const ASTNode& node)
-{
-	const auto* statementList = dynamic_cast<const StatementListASTNode*>(&node);
-	if (!statementList)
-	{
-		return;
-	}
-
-	ValidateTestCoverage(*statementList);
-}
-
-void SemanticAnalyzer::ValidateTestCoverage(const StatementListASTNode& node)
-{
-	for (const ASTNodePtr& child : node.GetStatements())
-	{
-		const auto* function = dynamic_cast<const FunctionDeclarationASTNode*>(child.get());
-		if (!function)
-		{
-			continue;
-		}
-
-		if (!function->IsMethod() && function->GetName() == "main")
-		{
-			continue;
-		}
-
-		const std::string requiredTestName = function->IsMethod()
-			? function->GetQualifiedName()
-			: function->GetName();
-		if (m_declaredTestNames.contains(requiredTestName))
-		{
-			continue;
-		}
-
-		if (function->IsMethod())
-		{
-			AddDiagnostic("Missing test for method: " + requiredTestName);
-		}
-		else
-		{
-			AddDiagnostic("Missing test for function: " + requiredTestName);
-		}
 	}
 }
 

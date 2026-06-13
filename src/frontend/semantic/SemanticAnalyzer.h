@@ -12,7 +12,7 @@
 class SemanticAnalyzer final : public ASTNodeVisitor
 {
 public:
-	SemanticAnalyzer(SymbolTable symbols, bool requireTests = true);
+	explicit SemanticAnalyzer(SymbolTable symbols);
 
 	[[nodiscard]] TypeCheckResult Analyze(const ASTNode& node);
 
@@ -77,8 +77,6 @@ private:
 	void PredeclareFunction(const FunctionDeclarationASTNode& node);
 	void PredeclareTopLevelTypes(const ASTNode& node);
 	void PredeclareTopLevelTypes(const StatementListASTNode& node);
-	void ValidateTestCoverage(const ASTNode& node);
-	void ValidateTestCoverage(const StatementListASTNode& node);
 	void ValidateEntryPoint();
 	void DefineBuiltinFunctions();
 	void TypeCheckBuiltinCall(const CallExpressionASTNode& node, const std::vector<ExpandedValue>& argumentTypes);
@@ -109,12 +107,10 @@ private:
 	void AddDiagnostics(std::vector<SemanticDiagnostic> diagnostics);
 
 	SymbolTable m_symbolTable;
-	bool m_requireTests = true;
 	std::optional<TypeDescriptor> m_currentFunctionReturnType;
 	TypeDescriptor m_currentType = Type::ERROR;
 	std::vector<SemanticDiagnostic> m_diagnostics;
 	std::unordered_set<const FunctionDeclarationASTNode*> m_predeclaredFunctions;
 	std::unordered_set<const StructDeclarationASTNode*> m_predeclaredTypes;
-	std::unordered_set<std::string> m_declaredTestNames;
 	int m_loopDepth = 0;
 };
