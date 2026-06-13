@@ -58,7 +58,7 @@ private:
 	void EmitDefault(const TypeDescriptor& type);
 	void EmitStructDefault(const TypeDescriptor& type);
 	void EmitScalarDefault(Type type);
-	void EmitCallable(const std::string& name, int arity, int returnArity, const ASTNode& body, const std::vector<FunctionParameter>* parameters = nullptr, const FunctionParameter* receiver = nullptr, bool isTest = false);
+	void EmitCallable(const std::string& name, int arity, int returnArity, const ASTNode& body, const std::vector<FunctionParameter>* parameters = nullptr, const FunctionParameter* receiver = nullptr, const std::string* testName = nullptr);
 	void EmitAssignmentTarget(const ASTNode& target);
 	void EmitBinaryOperation(BinaryOperator op);
 	void EmitLogicalAnd(const BinaryASTNode& expr);
@@ -88,6 +88,5 @@ private:
 	ProgramContext m_programContext;
 	std::vector<FunctionContext> m_functionStack;
 	std::vector<LoopContext> m_loopStack;
-	std::optional<std::string> m_currentTestName;
 	std::optional<std::string> m_error;
 };

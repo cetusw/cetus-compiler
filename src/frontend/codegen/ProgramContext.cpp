@@ -8,7 +8,7 @@ void ProgramContext::Reset()
 {
 	m_functions.clear();
 	m_entryPoint.reset();
-	m_testFunctions.clear();
+	m_testManifest = {};
 }
 
 void ProgramContext::AddFunction(std::shared_ptr<ObjFunction> function)
@@ -21,10 +21,11 @@ void ProgramContext::AddFunction(std::shared_ptr<ObjFunction> function)
 	m_functions.push_back(std::move(function));
 }
 
-void ProgramContext::AddTestFunction(std::shared_ptr<ObjFunction> function)
+void ProgramContext::AddTestFunction(std::string testName, std::shared_ptr<ObjFunction> function)
 {
 	m_functions.push_back(function);
-	m_testFunctions.push_back(std::move(function));
+	m_testManifest.coveredSymbols.insert(testName);
+	m_testManifest.tests.push_back({ std::move(testName), std::move(function) });
 }
 
 bool ProgramContext::HasEntryPoint() const
@@ -34,5 +35,5 @@ bool ProgramContext::HasEntryPoint() const
 
 Program ProgramContext::Build()
 {
-	return Program{ std::move(m_functions), m_entryPoint, std::move(m_testFunctions) };
+	return Program{ std::move(m_functions), m_entryPoint, std::move(m_testManifest) };
 }

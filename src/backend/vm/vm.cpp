@@ -50,13 +50,16 @@ InterpretResult VM::InterpretProgram(const Program& program, const bool runTests
 
 	if (runTests)
 	{
-		for (const std::shared_ptr<ObjFunction>& testFunction : program.testFunctions)
+		for (const TestDescriptor& test : program.testManifest.tests)
 		{
-			if (InterpretFunction(testFunction) != InterpretResult::OK)
+			SetActiveTestName(test.name);
+			if (InterpretFunction(test.function) != InterpretResult::OK)
 			{
+				SetActiveTestName(std::nullopt);
 				return InterpretResult::RUNTIME_ERROR;
 			}
 		}
+		SetActiveTestName(std::nullopt);
 	}
 
 	return InterpretFunction(program.entryPoint);
@@ -206,6 +209,11 @@ Value* VM::GetGlobalAddress(const std::string& name)
 	return &it->second;
 }
 
+const std::optional<std::string>& VM::GetActiveTestName() const
+{
+	return m_activeTestName;
+}
+
 void VM::SetStack(const int index, const Value& value)
 {
 	GetCurrentFrame().slots[index] = value;
@@ -234,4 +242,9 @@ bool VM::SetGlobal(const std::string& name, const Value& value)
 	}
 	m_globals[name] = value;
 	return true;
+}
+
+void VM::SetActiveTestName(std::optional<std::string> testName)
+{
+	m_activeTestName = std::move(testName);
 }

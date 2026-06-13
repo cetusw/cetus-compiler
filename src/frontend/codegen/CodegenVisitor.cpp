@@ -9,7 +9,6 @@
 namespace
 {
 constexpr auto PRINTF_NATIVE_NAME = "println";
-constexpr auto TEST_FUNCTION_PREFIX = "<test:";
 
 // TODO избавиться от дубликата
 const IdentifierASTNode* GetAddressedIdentifier(const ASTNode& node)
@@ -52,7 +51,7 @@ std::string ResolveBuiltinRuntimeName(const std::string& sourceName)
 
 std::string MakeTestFunctionName(const std::string& testName)
 {
-	return std::string(TEST_FUNCTION_PREFIX) + testName + ">";
+	return "<test#" + testName + ">";
 }
 }
 
@@ -870,7 +869,7 @@ void CodegenVisitor::Visit(const TestDeclarationASTNode& expr)
 		return;
 	}
 
-	EmitCallable(MakeTestFunctionName(expr.GetName()), 0, 0, expr.GetBody(), nullptr, nullptr, true);
+	EmitCallable(MakeTestFunctionName(expr.GetName()), 0, 0, expr.GetBody(), nullptr, nullptr, &expr.GetName());
 }
 
 BytecodeEmitter& CodegenVisitor::CurrentEmitter()
@@ -893,7 +892,7 @@ void CodegenVisitor::EmitCallable(
 	const ASTNode& body,
 	const std::vector<FunctionParameter>* parameters,
 	const FunctionParameter* receiver,
-	const bool isTest)
+	const std::string* testName)
 {
 	auto function = std::make_shared<ObjFunction>();
 	function->name = std::make_shared<ObjString>(name);
@@ -901,12 +900,6 @@ void CodegenVisitor::EmitCallable(
 	function->returnArity = returnArity;
 
 	m_functionStack.emplace_back(function, m_error);
-	const std::optional<std::string> previousTestName = m_currentTestName;
-	if (isTest)
-	{
-		m_currentTestName = name;
-	}
-
 	int parameterSlot = 1;
 	if (receiver)
 	{
@@ -927,7 +920,6 @@ void CodegenVisitor::EmitCallable(
 	{
 		CurrentEmitter().EmitOpcode(OP_RETURN);
 	}
-	m_currentTestName = previousTestName;
 	m_functionStack.pop_back();
 
 	if (m_error.has_value())
@@ -935,9 +927,9 @@ void CodegenVisitor::EmitCallable(
 		return;
 	}
 
-	if (isTest)
+	if (testName)
 	{
-		m_programContext.AddTestFunction(std::move(function));
+		m_programContext.AddTestFunction(*testName, std::move(function));
 		return;
 	}
 

@@ -4,6 +4,7 @@
 #include "types/InterpretResult.h"
 #include "types/Program.h"
 #include "types/Value.h"
+#include <optional>
 #include <unordered_map>
 
 class InstructionRegistry;
@@ -36,12 +37,14 @@ public:
 	[[nodiscard]] int GetFrameCount() const;
 	Value GetGlobal(const std::string& name) const;
 	Value* GetGlobalAddress(const std::string& name);
+	[[nodiscard]] const std::optional<std::string>& GetActiveTestName() const;
 
 	void SetStack(int index, const Value& value);
 	void SetStackTop(Value* value);
 	void SetFrame(int index, const CallFrame& frame);
 	void SetFrameCount(int count);
 	bool SetGlobal(const std::string& name, const Value& value);
+	void SetActiveTestName(std::optional<std::string> testName);
 
 
 private:
@@ -51,6 +54,7 @@ private:
 	CallFrame m_frames[FRAMES_MAX];
 	int m_frameCount;
 	std::unordered_map<std::string, Value> m_globals;
+	std::optional<std::string> m_activeTestName;
 
 	InterpretResult Run();
 	void TraceExecution();
