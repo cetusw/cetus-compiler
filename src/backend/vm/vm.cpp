@@ -3,6 +3,7 @@
 #include "NativeRegistry.h"
 #include "disassembler/Disassembler.h"
 #include "instructions/InstructionRegistry.h"
+#include "testing/TestRunner.h"
 
 VM::VM()
 	: m_registry(std::make_unique<InstructionRegistry>())
@@ -50,16 +51,12 @@ InterpretResult VM::InterpretProgram(const Program& program, const bool runTests
 
 	if (runTests)
 	{
-		for (const TestDescriptor& test : program.testManifest.tests)
+		const TestRunner testRunner;
+		const TestRunResult testResult = testRunner.Run(program, *this);
+		if (testResult.failedCount > 0)
 		{
-			SetActiveTestName(test.name);
-			if (InterpretFunction(test.function) != InterpretResult::OK)
-			{
-				SetActiveTestName(std::nullopt);
-				return InterpretResult::RUNTIME_ERROR;
-			}
+			return InterpretResult::RUNTIME_ERROR;
 		}
-		SetActiveTestName(std::nullopt);
 	}
 
 	return InterpretFunction(program.entryPoint);

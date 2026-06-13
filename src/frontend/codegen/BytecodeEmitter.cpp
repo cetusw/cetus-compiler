@@ -205,9 +205,13 @@ void BytecodeEmitter::EmitMemberSet(const std::string& fieldName) const
 	EmitOperandByte(constantIndex);
 }
 
-void BytecodeEmitter::EmitAssert() const
+void BytecodeEmitter::EmitAssert(const int sourceLine, const std::string& sourceText) const
 {
 	EmitOpcode(OP_ASSERT);
+	const int lineIndex = m_chunk.AddConstant(Value(static_cast<RuntimeInt>(sourceLine)));
+	EmitOperandByte(lineIndex);
+	const int textIndex = m_chunk.AddConstant(Value(std::make_shared<ObjString>(sourceText)));
+	EmitOperandByte(textIndex);
 }
 
 void BytecodeEmitter::Fail(std::string message) const

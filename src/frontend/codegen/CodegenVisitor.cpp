@@ -614,7 +614,7 @@ void CodegenVisitor::Visit(const AssertStatementASTNode& expr)
 		return;
 	}
 
-	CurrentEmitter().EmitAssert();
+	CurrentEmitter().EmitAssert(expr.GetSourceLine(), expr.GetSourceText());
 }
 
 void CodegenVisitor::Visit(const EmptyStatementASTNode&)

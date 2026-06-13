@@ -45,6 +45,8 @@ private:
 
 using ASTNodePtr = std::unique_ptr<ASTNode>;
 
+[[nodiscard]] std::string DescribeExpression(const ASTNode& node);
+
 struct FunctionParameter
 {
 	std::string name;
@@ -358,13 +360,17 @@ private:
 class AssertStatementASTNode final : public StatementASTNode
 {
 public:
-	explicit AssertStatementASTNode(ASTNodePtr condition);
+	AssertStatementASTNode(ASTNodePtr condition, int sourceLine, std::string sourceText);
 
 	[[nodiscard]] const ASTNode& GetCondition() const;
+	[[nodiscard]] int GetSourceLine() const;
+	[[nodiscard]] const std::string& GetSourceText() const;
 	void Accept(ASTNodeVisitor& visitor) const override;
 
 private:
 	ASTNodePtr m_condition;
+	int m_sourceLine;
+	std::string m_sourceText;
 };
 
 class EmptyStatementASTNode final : public StatementASTNode

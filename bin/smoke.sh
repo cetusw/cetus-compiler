@@ -197,7 +197,7 @@ run_negative "${ROOT_DIR}/tests/smoke/negative/ref_temporary.cetus" "Pointer par
 run_negative "${ROOT_DIR}/tests/smoke/negative/function_arity.cetus" "Function call argument count does not match function parameters"
 run_negative "${ROOT_DIR}/tests/smoke/negative/array_bounds.cetus" "VM execution failed"
 run_negative "${ROOT_DIR}/tests/smoke/negative/string_index_bounds.cetus" "VM execution failed"
-run_negative_with_tests "${ROOT_DIR}/tests/smoke/negative/assert_failure.cetus" "Test failed: add"
+run_negative_with_tests "${ROOT_DIR}/tests/smoke/negative/assert_failure.cetus" "Assertion failed at line 6: add(2, 2) == 5"
 run_negative_with_tests "${ROOT_DIR}/tests/smoke/negative/missing_test_coverage.cetus" "Missing test for function: add"
 
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/array_basic.cetus" $'0\n7\n3\n5\n0'

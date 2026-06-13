@@ -39,6 +39,15 @@ static int StructInstruction(const Chunk& chunk, const int offset)
 	return offset + 3 + fieldCount;
 }
 
+static int AssertInstruction(const Chunk& chunk, const int offset)
+{
+	const auto& code = chunk.GetCode();
+	const uint8_t lineIndex = code[offset + 1];
+	const uint8_t textIndex = code[offset + 2];
+	std::printf("%-16s line:%4d expr:%4d\n", "OP_ASSERT", lineIndex, textIndex);
+	return offset + 3;
+}
+
 static int JumpInstruction(const std::string& name, const int sign, const Chunk& chunk, const int offset)
 {
 	auto jump = static_cast<uint16_t>(chunk.GetCode()[offset + 1] << 8);
@@ -139,7 +148,7 @@ int DisassembleInstruction(const Chunk& chunk, const int offset)
 	case OP_SET_MEMBER:
 		return ConstantInstruction("OP_SET_MEMBER", chunk, offset);
 	case OP_ASSERT:
-		return SimpleInstruction("OP_ASSERT", offset);
+		return AssertInstruction(chunk, offset);
 	case OP_DEFINE_GLOBAL:
 		return ConstantInstruction("OP_DEFINE_GLOBAL", chunk, offset);
 	case OP_GET_GLOBAL:

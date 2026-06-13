@@ -176,7 +176,7 @@ void AstDumper::Visit(const ExpressionStatementASTNode& expr)
 
 void AstDumper::Visit(const AssertStatementASTNode& expr)
 {
-	DumpLine("AssertStatementASTNode");
+	DumpLine("AssertStatementASTNode(line=" + std::to_string(expr.GetSourceLine()) + ")");
 	DumpChild(expr.GetCondition());
 }
 

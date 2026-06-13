@@ -879,7 +879,16 @@ AstSemanticValue AstReductionBuilder::BuildExpressionStatement(std::vector<AstSe
 AstSemanticValue AstReductionBuilder::BuildAssertStatement(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 5, "Assert statement reduction");
-	return { std::make_unique<AssertStatementASTNode>(TakeNode(values, 2)), std::nullopt };
+	Token assertToken = TakeToken(values, 0);
+	ASTNodePtr condition = TakeNode(values, 2);
+	std::string sourceText = DescribeExpression(*condition);
+	return {
+		std::make_unique<AssertStatementASTNode>(
+			std::move(condition),
+			assertToken.line,
+			std::move(sourceText)),
+		std::nullopt
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildEmptyStatement(const std::vector<AstSemanticValue>& values)

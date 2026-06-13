@@ -1,6 +1,86 @@
 #include "ASTNode.h"
 
+#include <sstream>
 #include <utility>
+
+std::string DescribeExpression(const ASTNode& node);
+
+namespace
+{
+std::string DescribeUnaryOperator(const UnaryOperator op)
+{
+	switch (op)
+	{
+	case UnaryOperator::NEGATE:
+		return "-";
+	case UnaryOperator::NOT:
+		return "!";
+	}
+	return "?";
+}
+
+std::string DescribeBinaryOperator(const BinaryOperator op)
+{
+	switch (op)
+	{
+	case BinaryOperator::OR:
+		return "||";
+	case BinaryOperator::AND:
+		return "&&";
+	case BinaryOperator::ADD:
+		return "+";
+	case BinaryOperator::SUBTRACT:
+		return "-";
+	case BinaryOperator::MULTIPLY:
+		return "*";
+	case BinaryOperator::DIVIDE:
+		return "/";
+	case BinaryOperator::MODULO:
+		return "%";
+	case BinaryOperator::LESS:
+		return "<";
+	case BinaryOperator::LESS_EQUAL:
+		return "<=";
+	case BinaryOperator::NOT_EQUAL:
+		return "!=";
+	case BinaryOperator::EQUAL:
+		return "==";
+	case BinaryOperator::GREATER:
+		return ">";
+	case BinaryOperator::GREATER_EQUAL:
+		return ">=";
+	}
+	return "?";
+}
+
+std::string DescribeFieldInitializers(const std::vector<StructFieldInitializer>& initializers)
+{
+	std::ostringstream stream;
+	for (std::size_t index = 0; index < initializers.size(); ++index)
+	{
+		if (index > 0)
+		{
+			stream << ", ";
+		}
+		stream << initializers[index].name << ": " << DescribeExpression(*initializers[index].expression);
+	}
+	return stream.str();
+}
+
+std::string DescribeExpressionList(const std::vector<ASTNodePtr>& expressions)
+{
+	std::ostringstream stream;
+	for (std::size_t index = 0; index < expressions.size(); ++index)
+	{
+		if (index > 0)
+		{
+			stream << ", ";
+		}
+		stream << DescribeExpression(*expressions[index]);
+	}
+	return stream.str();
+}
+} // namespace
 
 std::optional<TypeDescriptor> ASTNode::GetInferredType() const
 {
@@ -10,6 +90,91 @@ std::optional<TypeDescriptor> ASTNode::GetInferredType() const
 void ASTNode::SetInferredType(TypeDescriptor type) const
 {
 	m_inferredType = std::move(type);
+}
+
+// TODO вынести формирование сообщения об ошибке в одно место (в то самое пхпхпхпхп)
+std::string DescribeExpression(const ASTNode& node)
+{
+	if (const auto* boolLiteral = dynamic_cast<const BoolLiteralASTNode*>(&node))
+	{
+		return boolLiteral->GetValue() ? "true" : "false";
+	}
+	if (dynamic_cast<const NilLiteralASTNode*>(&node))
+	{
+		return "nil";
+	}
+	if (const auto* intLiteral = dynamic_cast<const IntLiteralASTNode*>(&node))
+	{
+		return intLiteral->GetValue();
+	}
+	if (const auto* floatLiteral = dynamic_cast<const FloatLiteralASTNode*>(&node))
+	{
+		return floatLiteral->GetValue();
+	}
+	if (const auto* stringLiteral = dynamic_cast<const StringLiteralASTNode*>(&node))
+	{
+		return "\"" + stringLiteral->GetValue() + "\"";
+	}
+	if (const auto* arrayLiteral = dynamic_cast<const ArrayLiteralASTNode*>(&node))
+	{
+		return arrayLiteral->GetType().ToString() + "{" + DescribeExpressionList(arrayLiteral->GetElements()) + "}";
+	}
+	if (const auto* structLiteral = dynamic_cast<const StructLiteralASTNode*>(&node))
+	{
+		return structLiteral->GetTypeName() + "{" + DescribeFieldInitializers(structLiteral->GetInitializers()) + "}";
+	}
+	if (const auto* identifier = dynamic_cast<const IdentifierASTNode*>(&node))
+	{
+		return identifier->GetName();
+	}
+	if (const auto* addressOf = dynamic_cast<const AddressOfASTNode*>(&node))
+	{
+		return "&" + DescribeExpression(addressOf->GetTarget());
+	}
+	if (const auto* unary = dynamic_cast<const UnaryASTNode*>(&node))
+	{
+		return DescribeUnaryOperator(unary->GetOperator()) + DescribeExpression(unary->GetOperand());
+	}
+	if (const auto* binary = dynamic_cast<const BinaryASTNode*>(&node))
+	{
+		return DescribeExpression(binary->GetLeft()) + " " + DescribeBinaryOperator(binary->GetOperator()) + " "
+			+ DescribeExpression(binary->GetRight());
+	}
+	if (const auto* memberAccess = dynamic_cast<const MemberAccessASTNode*>(&node))
+	{
+		return DescribeExpression(memberAccess->GetObject()) + "." + memberAccess->GetMember();
+	}
+	if (const auto* index = dynamic_cast<const IndexASTNode*>(&node))
+	{
+		return DescribeExpression(index->GetObject()) + "[" + DescribeExpression(index->GetIndex()) + "]";
+	}
+	if (const auto* slice = dynamic_cast<const SliceExpressionASTNode*>(&node))
+	{
+		std::string text = DescribeExpression(slice->GetObject()) + "[";
+		if (slice->HasStart())
+		{
+			text += DescribeExpression(*slice->GetStart());
+		}
+		text += ":";
+		if (slice->HasEnd())
+		{
+			text += DescribeExpression(*slice->GetEnd());
+		}
+		text += "]";
+		return text;
+	}
+	if (const auto* call = dynamic_cast<const CallExpressionASTNode*>(&node))
+	{
+		std::string text;
+		if (call->IsMethodCall())
+		{
+			text = DescribeExpression(*call->GetReceiver()) + ".";
+		}
+		text += call->GetCalleeName() + "(" + DescribeExpressionList(call->GetArguments()) + ")";
+		return text;
+	}
+
+	return "<expr>";
 }
 
 BoolLiteralASTNode::BoolLiteralASTNode(const bool value)
@@ -432,14 +597,26 @@ void ExpressionStatementASTNode::Accept(ASTNodeVisitor& visitor) const
 	visitor.Visit(*this);
 }
 
-AssertStatementASTNode::AssertStatementASTNode(ASTNodePtr condition)
+AssertStatementASTNode::AssertStatementASTNode(ASTNodePtr condition, const int sourceLine, std::string sourceText)
 	: m_condition(std::move(condition))
+	, m_sourceLine(sourceLine)
+	, m_sourceText(std::move(sourceText))
 {
 }
 
 const ASTNode& AssertStatementASTNode::GetCondition() const
 {
 	return *m_condition;
+}
+
+int AssertStatementASTNode::GetSourceLine() const
+{
+	return m_sourceLine;
+}
+
+const std::string& AssertStatementASTNode::GetSourceText() const
+{
+	return m_sourceText;
 }
 
 void AssertStatementASTNode::Accept(ASTNodeVisitor& visitor) const
