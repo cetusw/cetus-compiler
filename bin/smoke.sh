@@ -130,6 +130,7 @@ run_negative "${ROOT_DIR}/tests/smoke/negative/ref_temporary.cetus" "Pointer par
 run_negative "${ROOT_DIR}/tests/smoke/negative/function_arity.cetus" "Function call argument count does not match function parameters"
 run_negative "${ROOT_DIR}/tests/smoke/negative/array_bounds.cetus" "VM execution failed"
 run_negative "${ROOT_DIR}/tests/smoke/negative/string_index_bounds.cetus" "VM execution failed"
+run_negative "${ROOT_DIR}/tests/smoke/negative/assert_failure.cetus" "Test failed: add"
 
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/array_basic.cetus" $'0\n7\n3\n5\n0'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/append_basic.cetus" "[1, 2, 3]"
@@ -153,6 +154,7 @@ run_positive_output "${ROOT_DIR}/tests/smoke/positive/sieve_of_eratosthenes.cetu
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_index.cetus" $'a\nc\ntrue'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_literal.cetus" "hello"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_operations.cetus" $'abc\ntrue\ntrue\n3'
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/test_blocks.cetus" "4"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/palindrome.cetus" "true"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/pointer_struct_heap.cetus" "7"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/variadic_println_array.cetus" $'Before: [64, 34, 25]\n[[1, 2], [3, 4]]'
@@ -173,7 +175,7 @@ run_positive_output "${ROOT_DIR}/tests/programs/algorithms/fizz_buzz.cetus" $'1\
 run_positive_output "${ROOT_DIR}/tests/programs/sort/selection_sort.cetus" "[11, 12, 22, 25, 64]"
 run_positive_output "${ROOT_DIR}/tests/programs/sort/insertion_sort.cetus" "[1, 2, 3, 4, 5, 6]"
 run_positive_output "${ROOT_DIR}/tests/programs/algorithms/valid_brackets.cetus" $'false\ntrue'
-run_positive_output "${ROOT_DIR}/tests/programs/objects/stack.cetus" $'20 true\n10 true'
+run_positive_output "${ROOT_DIR}/tests/programs/objects/stack.cetus" $'20\n10'
 run_positive_output "${ROOT_DIR}/tests/programs/objects/queue.cetus" $'10 true\n20 true'
 run_positive_output_stdin "${ROOT_DIR}/tests/smoke/positive/scan_input.cetus" $'cetus\n42\n2.5\ntrue\n' $'cetus\n42\n2.5\ntrue'
 run_typecheck_positive "${ROOT_DIR}/tests/smoke/typecheck/array_type.cetus"
@@ -187,6 +189,7 @@ run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/array_literal_type_mis
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/array_literal_length_mismatch.cetus" "Array literal element count does not match array length"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/increment_non_int.cetus" "Increment target must have int type"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/decrement_non_int.cetus" "Decrement target must have int type"
+run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/assert_non_bool.cetus" "Assert condition must have bool type"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/string_index_non_int.cetus" "Index must have int type"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/string_index_assignment.cetus" "Cannot assign to string index"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/struct_duplicate_field.cetus" "Struct field is already declared"

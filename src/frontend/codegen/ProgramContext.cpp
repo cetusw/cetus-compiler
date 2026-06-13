@@ -8,6 +8,7 @@ void ProgramContext::Reset()
 {
 	m_functions.clear();
 	m_entryPoint.reset();
+	m_testFunctions.clear();
 }
 
 void ProgramContext::AddFunction(std::shared_ptr<ObjFunction> function)
@@ -20,6 +21,12 @@ void ProgramContext::AddFunction(std::shared_ptr<ObjFunction> function)
 	m_functions.push_back(std::move(function));
 }
 
+void ProgramContext::AddTestFunction(std::shared_ptr<ObjFunction> function)
+{
+	m_functions.push_back(function);
+	m_testFunctions.push_back(std::move(function));
+}
+
 bool ProgramContext::HasEntryPoint() const
 {
 	return m_entryPoint != nullptr;
@@ -27,5 +34,5 @@ bool ProgramContext::HasEntryPoint() const
 
 Program ProgramContext::Build()
 {
-	return Program{ std::move(m_functions), m_entryPoint };
+	return Program{ std::move(m_functions), m_entryPoint, std::move(m_testFunctions) };
 }

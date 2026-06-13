@@ -23,6 +23,8 @@ InterpretResult VM::InterpretFunction(const std::shared_ptr<ObjFunction>& functi
 		return InterpretResult::RUNTIME_ERROR;
 	}
 
+	m_stackTop = m_stack;
+	m_frameCount = 0;
 	Push(Value(function));
 	CallFrame frame;
 	frame.function = function;
@@ -44,6 +46,14 @@ InterpretResult VM::InterpretProgram(const Program& program)
 			return InterpretResult::RUNTIME_ERROR;
 		}
 		DefineGlobal(function->name->GetData(), Value(function));
+	}
+
+	for (const std::shared_ptr<ObjFunction>& testFunction : program.testFunctions)
+	{
+		if (InterpretFunction(testFunction) != InterpretResult::OK)
+		{
+			return InterpretResult::RUNTIME_ERROR;
+		}
 	}
 
 	return InterpretFunction(program.entryPoint);

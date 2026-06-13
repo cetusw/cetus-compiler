@@ -45,6 +45,7 @@ enum OpCode : uint8_t
 	OP_REF_MEMBER,
 	OP_GET_MEMBER,
 	OP_SET_MEMBER,
+	OP_ASSERT,
 
 	OP_RETURN,
 };

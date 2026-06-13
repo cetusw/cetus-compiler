@@ -21,6 +21,7 @@ class DecrementASTNode;
 class ShortVariableDeclarationASTNode;
 class VariableDeclarationASTNode;
 class ExpressionStatementASTNode;
+class AssertStatementASTNode;
 class EmptyStatementASTNode;
 class ProgramASTNode;
 class StatementListASTNode;
@@ -32,6 +33,7 @@ class ContinueASTNode;
 class ReturnASTNode;
 class FunctionDeclarationASTNode;
 class StructDeclarationASTNode;
+class TestDeclarationASTNode;
 
 class ASTNodeVisitor
 {
@@ -59,6 +61,7 @@ public:
 	virtual void Visit(const ShortVariableDeclarationASTNode& expr) = 0;
 	virtual void Visit(const VariableDeclarationASTNode& expr) = 0;
 	virtual void Visit(const ExpressionStatementASTNode& expr) = 0;
+	virtual void Visit(const AssertStatementASTNode& expr) = 0;
 	virtual void Visit(const EmptyStatementASTNode& expr) = 0;
 	virtual void Visit(const ProgramASTNode& expr) = 0;
 	virtual void Visit(const StatementListASTNode& expr) = 0;
@@ -70,4 +73,5 @@ public:
 	virtual void Visit(const ReturnASTNode& expr) = 0;
 	virtual void Visit(const FunctionDeclarationASTNode& expr) = 0;
 	virtual void Visit(const StructDeclarationASTNode& expr) = 0;
+	virtual void Visit(const TestDeclarationASTNode& expr) = 0;
 };

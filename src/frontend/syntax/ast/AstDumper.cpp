@@ -174,6 +174,12 @@ void AstDumper::Visit(const ExpressionStatementASTNode& expr)
 	DumpChild(expr.GetExpression());
 }
 
+void AstDumper::Visit(const AssertStatementASTNode& expr)
+{
+	DumpLine("AssertStatementASTNode");
+	DumpChild(expr.GetCondition());
+}
+
 void AstDumper::Visit(const EmptyStatementASTNode&)
 {
 	DumpLine("EmptyStatementASTNode");
@@ -267,6 +273,12 @@ void AstDumper::Visit(const StructDeclarationASTNode& expr)
 		DumpLine("StructField(" + FormatField(field) + ")");
 		m_indent -= 2;
 	}
+}
+
+void AstDumper::Visit(const TestDeclarationASTNode& expr)
+{
+	DumpLine("TestDeclarationASTNode(\"" + expr.GetName() + "\")");
+	DumpChild(expr.GetBody());
 }
 
 void AstDumper::DumpChild(const ASTNode& expr)

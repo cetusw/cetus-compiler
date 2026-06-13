@@ -205,6 +205,11 @@ void BytecodeEmitter::EmitMemberSet(const std::string& fieldName) const
 	EmitOperandByte(constantIndex);
 }
 
+void BytecodeEmitter::EmitAssert() const
+{
+	EmitOpcode(OP_ASSERT);
+}
+
 void BytecodeEmitter::Fail(std::string message) const
 {
 	if (!m_error.has_value())

@@ -138,6 +138,8 @@ int DisassembleInstruction(const Chunk& chunk, const int offset)
 		return ConstantInstruction("OP_GET_MEMBER", chunk, offset);
 	case OP_SET_MEMBER:
 		return ConstantInstruction("OP_SET_MEMBER", chunk, offset);
+	case OP_ASSERT:
+		return SimpleInstruction("OP_ASSERT", offset);
 	case OP_DEFINE_GLOBAL:
 		return ConstantInstruction("OP_DEFINE_GLOBAL", chunk, offset);
 	case OP_GET_GLOBAL:

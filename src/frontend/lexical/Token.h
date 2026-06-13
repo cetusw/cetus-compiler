@@ -68,6 +68,8 @@ enum class TokenType
     DEFAULT,            // default
     MATCH,              // match
     RETURN,             // return
+    TEST,               // test
+    ASSERT,             // assert
     DEFER,              // defer
     TRUE,               // true
     FALSE,              // false

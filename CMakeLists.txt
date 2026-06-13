@@ -85,6 +85,7 @@ add_library(cetus_backend_vm STATIC
         src/backend/vm/disassembler/Disassembler.cpp
         src/backend/vm/parser/BytecodeParser.cpp
         src/backend/vm/instructions/ArrayInstruction.cpp
+        src/backend/vm/instructions/AssertInstruction.cpp
         src/backend/vm/instructions/CallInstruction.cpp
         src/backend/vm/instructions/ConstantInstruction.cpp
         src/backend/vm/instructions/DefineGlobalInstruction.cpp

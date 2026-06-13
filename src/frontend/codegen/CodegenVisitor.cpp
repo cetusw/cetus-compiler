@@ -9,6 +9,7 @@
 namespace
 {
 constexpr auto PRINTF_NATIVE_NAME = "println";
+constexpr auto TEST_FUNCTION_PREFIX = "<test:";
 
 // TODO избавиться от дубликата
 const IdentifierASTNode* GetAddressedIdentifier(const ASTNode& node)
@@ -47,6 +48,11 @@ std::string ResolveBuiltinRuntimeName(const std::string& sourceName)
 		return PRINTF_NATIVE_NAME;
 	}
 	return sourceName;
+}
+
+std::string MakeTestFunctionName(const std::string& testName)
+{
+	return std::string(TEST_FUNCTION_PREFIX) + testName + ">";
 }
 }
 
@@ -596,6 +602,22 @@ void CodegenVisitor::Visit(const ExpressionStatementASTNode& expr)
 	CurrentEmitter().EmitOpcode(OP_POP);
 }
 
+void CodegenVisitor::Visit(const AssertStatementASTNode& expr)
+{
+	if (!EnsureTyped(expr))
+	{
+		return;
+	}
+
+	expr.GetCondition().Accept(*this);
+	if (m_error.has_value())
+	{
+		return;
+	}
+
+	CurrentEmitter().EmitAssert();
+}
+
 void CodegenVisitor::Visit(const EmptyStatementASTNode&)
 {
 }
@@ -828,41 +850,27 @@ void CodegenVisitor::Visit(const FunctionDeclarationASTNode& expr)
 		return;
 	}
 
-	auto function = std::make_shared<ObjFunction>();
-	function->name = std::make_shared<ObjString>(expr.GetQualifiedName());
-	function->arity = static_cast<int>(expr.GetParameters().size() + (expr.GetReceiver() ? 1 : 0));
-	function->returnArity = GetReturnArity(expr.GetReturnType());
-
-	m_functionStack.emplace_back(function, m_error);
-	int parameterSlot = 1;
-	if (const FunctionParameter* receiver = expr.GetReceiver())
-	{
-		m_functionStack.back().RegisterParameter(receiver->name, parameterSlot);
-		++parameterSlot;
-	}
-	for (const FunctionParameter& parameter : expr.GetParameters())
-	{
-		m_functionStack.back().RegisterParameter(parameter.name, parameterSlot);
-		++parameterSlot;
-	}
-
-	expr.GetBody().Accept(*this);
-	if (!m_error.has_value())
-	{
-		CurrentEmitter().EmitOpcode(OP_RETURN);
-	}
-	m_functionStack.pop_back();
-
-	if (m_error.has_value())
-	{
-		return;
-	}
-
-	m_programContext.AddFunction(std::move(function));
+	EmitCallable(
+		expr.GetQualifiedName(),
+		static_cast<int>(expr.GetParameters().size() + (expr.GetReceiver() ? 1 : 0)),
+		GetReturnArity(expr.GetReturnType()),
+		expr.GetBody(),
+		&expr.GetParameters(),
+		expr.GetReceiver());
 }
 
 void CodegenVisitor::Visit(const StructDeclarationASTNode&)
 {
+}
+
+void CodegenVisitor::Visit(const TestDeclarationASTNode& expr)
+{
+	if (!EnsureTyped(expr))
+	{
+		return;
+	}
+
+	EmitCallable(MakeTestFunctionName(expr.GetName()), 0, 0, expr.GetBody(), nullptr, nullptr, true);
 }
 
 BytecodeEmitter& CodegenVisitor::CurrentEmitter()
@@ -876,6 +884,64 @@ void CodegenVisitor::Fail(std::string message)
 	{
 		m_error = std::move(message);
 	}
+}
+
+void CodegenVisitor::EmitCallable(
+	const std::string& name,
+	const int arity,
+	const int returnArity,
+	const ASTNode& body,
+	const std::vector<FunctionParameter>* parameters,
+	const FunctionParameter* receiver,
+	const bool isTest)
+{
+	auto function = std::make_shared<ObjFunction>();
+	function->name = std::make_shared<ObjString>(name);
+	function->arity = arity;
+	function->returnArity = returnArity;
+
+	m_functionStack.emplace_back(function, m_error);
+	const std::optional<std::string> previousTestName = m_currentTestName;
+	if (isTest)
+	{
+		m_currentTestName = name;
+	}
+
+	int parameterSlot = 1;
+	if (receiver)
+	{
+		m_functionStack.back().RegisterParameter(receiver->name, parameterSlot);
+		++parameterSlot;
+	}
+	if (parameters)
+	{
+		for (const FunctionParameter& parameter : *parameters)
+		{
+			m_functionStack.back().RegisterParameter(parameter.name, parameterSlot);
+			++parameterSlot;
+		}
+	}
+
+	body.Accept(*this);
+	if (!m_error.has_value())
+	{
+		CurrentEmitter().EmitOpcode(OP_RETURN);
+	}
+	m_currentTestName = previousTestName;
+	m_functionStack.pop_back();
+
+	if (m_error.has_value())
+	{
+		return;
+	}
+
+	if (isTest)
+	{
+		m_programContext.AddTestFunction(std::move(function));
+		return;
+	}
+
+	m_programContext.AddFunction(std::move(function));
 }
 
 void CodegenVisitor::EmitDefault(const TypeDescriptor& type)

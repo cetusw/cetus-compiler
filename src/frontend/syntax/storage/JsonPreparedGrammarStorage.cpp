@@ -168,6 +168,7 @@ std::string JsonPreparedGrammarStorage::SerializeSemanticTag(const SemanticTag t
 	case SemanticTag::VAR_TYPED_COMPOSITE_DECLARATION: return "var_typed_composite_declaration";
 	case SemanticTag::VAR_TYPED_EMPTY_COMPOSITE_DECLARATION: return "var_typed_empty_composite_declaration";
 	case SemanticTag::EXPRESSION_STATEMENT: return "expression_statement";
+	case SemanticTag::ASSERT_STATEMENT: return "assert_statement";
 	case SemanticTag::EMPTY_STATEMENT: return "empty_statement";
 	case SemanticTag::PROGRAM: return "program";
 	case SemanticTag::PROGRAM_EMPTY: return "program_empty";
@@ -181,6 +182,7 @@ std::string JsonPreparedGrammarStorage::SerializeSemanticTag(const SemanticTag t
 	case SemanticTag::CONTINUE: return "continue";
 	case SemanticTag::RETURN_VOID: return "return_void";
 	case SemanticTag::RETURN_VALUE: return "return_value";
+	case SemanticTag::TEST_DECLARATION: return "test_declaration";
 	case SemanticTag::FUNCTION_VOID_NO_PARAMS: return "function_void_no_params";
 	case SemanticTag::FUNCTION_RETURN_NO_PARAMS: return "function_return_no_params";
 	case SemanticTag::FUNCTION_VOID: return "function_void";

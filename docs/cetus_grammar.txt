@@ -6,6 +6,7 @@
 
 ~TopLevelDecl~ -> ~FunctionDecl~ @pass_expr
 ~TopLevelDecl~ -> ~TypeDecl~ @pass_expr
+~TopLevelDecl~ -> ~TestDecl~ @pass_expr
 ~TopLevelDecl~ -> SEMICOLON @empty_statement
 
 ~TypeDecl~ -> TYPE IDENTIFIER STRUCT LBRACE ~StructFieldList~ RBRACE @struct_declaration
@@ -30,6 +31,7 @@
 ~Stmt~ -> ~SimpleStmt~ SEMICOLON @pass_expr
 ~Stmt~ -> ~VarDecl~ SEMICOLON @pass_expr
 ~Stmt~ -> SEMICOLON @empty_statement
+~Stmt~ -> ASSERT LPAREN ~Con~ RPAREN SEMICOLON @assert_statement
 ~Stmt~ -> RETURN SEMICOLON @return_void
 ~Stmt~ -> RETURN ~ExpressionList~ SEMICOLON @return_value
 ~Stmt~ -> ~IfStmt~ @pass_expr
@@ -59,6 +61,8 @@
 
 ~Block~ -> LBRACE ~StmtList~ RBRACE @block
 ~Block~ -> LBRACE RBRACE @block_empty
+
+~TestDecl~ -> TEST STRING ~Block~ @test_declaration
 
 ~IdentifierList~ -> ~IdentifierList~ COMMA IDENTIFIER @identifier_list
 ~IdentifierList~ -> IDENTIFIER @identifier_list_single

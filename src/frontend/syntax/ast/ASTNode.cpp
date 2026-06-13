@@ -432,6 +432,21 @@ void ExpressionStatementASTNode::Accept(ASTNodeVisitor& visitor) const
 	visitor.Visit(*this);
 }
 
+AssertStatementASTNode::AssertStatementASTNode(ASTNodePtr condition)
+	: m_condition(std::move(condition))
+{
+}
+
+const ASTNode& AssertStatementASTNode::GetCondition() const
+{
+	return *m_condition;
+}
+
+void AssertStatementASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}
+
 void EmptyStatementASTNode::Accept(ASTNodeVisitor& visitor) const
 {
 	visitor.Visit(*this);
@@ -668,6 +683,27 @@ const std::vector<StructField>& StructDeclarationASTNode::GetFields() const
 }
 
 void StructDeclarationASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}
+
+TestDeclarationASTNode::TestDeclarationASTNode(std::string name, ASTNodePtr body)
+	: m_name(std::move(name))
+	, m_body(std::move(body))
+{
+}
+
+const std::string& TestDeclarationASTNode::GetName() const
+{
+	return m_name;
+}
+
+const ASTNode& TestDeclarationASTNode::GetBody() const
+{
+	return *m_body;
+}
+
+void TestDeclarationASTNode::Accept(ASTNodeVisitor& visitor) const
 {
 	visitor.Visit(*this);
 }

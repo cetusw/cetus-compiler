@@ -21,6 +21,8 @@ const std::unordered_map<std::string_view, TokenType> LexicalAnalyzer::m_keyword
 	{ "default", TokenType::DEFAULT },
 	{ "match", TokenType::MATCH },
 	{ "return", TokenType::RETURN },
+	{ "test", TokenType::TEST },
+	{ "assert", TokenType::ASSERT },
 	{ "defer", TokenType::DEFER },
 	{ "true", TokenType::TRUE },
 	{ "false", TokenType::FALSE },

@@ -28,6 +28,7 @@ public:
 	void Visit(const ShortVariableDeclarationASTNode& expr) override;
 	void Visit(const VariableDeclarationASTNode& expr) override;
 	void Visit(const ExpressionStatementASTNode& expr) override;
+	void Visit(const AssertStatementASTNode& expr) override;
 	void Visit(const EmptyStatementASTNode& expr) override;
 	void Visit(const ProgramASTNode& expr) override;
 	void Visit(const StatementListASTNode& expr) override;
@@ -39,6 +40,7 @@ public:
 	void Visit(const ReturnASTNode& expr) override;
 	void Visit(const FunctionDeclarationASTNode& expr) override;
 	void Visit(const StructDeclarationASTNode& expr) override;
+	void Visit(const TestDeclarationASTNode& expr) override;
 
 private:
 	explicit AstDumper(std::ostream& output);

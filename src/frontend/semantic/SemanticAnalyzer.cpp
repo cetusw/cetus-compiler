@@ -52,6 +52,7 @@ TypeCheckResult SemanticAnalyzer::Analyze(const ASTNode& node)
 	m_diagnostics.clear();
 	m_predeclaredFunctions.clear();
 	m_predeclaredTypes.clear();
+	m_declaredTestNames.clear();
 	DefineBuiltinFunctions();
 	node.Accept(*this);
 	if (!m_diagnostics.empty())
@@ -961,6 +962,24 @@ void SemanticAnalyzer::Visit(const ExpressionStatementASTNode& node)
 	SetCurrentType(node, Type::VOID);
 }
 
+void SemanticAnalyzer::Visit(const AssertStatementASTNode& node)
+{
+	const TypeDescriptor conditionType = AnalyzeChild(node.GetCondition());
+	if (!ValidateValueExpression(conditionType, "assert condition"))
+	{
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+	if (conditionType != Type::BOOL)
+	{
+		AddDiagnostic("Assert condition must have bool type.");
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+
+	SetCurrentType(node, Type::VOID);
+}
+
 void SemanticAnalyzer::Visit(const EmptyStatementASTNode& node)
 {
 	SetCurrentType(node, Type::VOID);
@@ -1482,6 +1501,24 @@ void SemanticAnalyzer::Visit(const StructDeclarationASTNode& node)
 		hasError = true;
 	}
 	if (!ValidateStructFields(node))
+	{
+		hasError = true;
+	}
+
+	SetCurrentType(node, hasError ? Type::ERROR : Type::VOID);
+}
+
+void SemanticAnalyzer::Visit(const TestDeclarationASTNode& node)
+{
+	bool hasError = false;
+	if (!m_declaredTestNames.insert(node.GetName()).second)
+	{
+		AddDiagnostic("Test is already declared: " + node.GetName());
+		hasError = true;
+	}
+
+	const TypeDescriptor bodyType = AnalyzeChild(node.GetBody());
+	if (bodyType == Type::ERROR)
 	{
 		hasError = true;
 	}

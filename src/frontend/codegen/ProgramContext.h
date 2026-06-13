@@ -10,10 +10,12 @@ class ProgramContext
 public:
 	void Reset();
 	void AddFunction(std::shared_ptr<ObjFunction> function);
+	void AddTestFunction(std::shared_ptr<ObjFunction> function);
 	[[nodiscard]] bool HasEntryPoint() const;
 	[[nodiscard]] Program Build();
 
 private:
 	std::vector<std::shared_ptr<ObjFunction>> m_functions;
 	std::shared_ptr<ObjFunction> m_entryPoint;
+	std::vector<std::shared_ptr<ObjFunction>> m_testFunctions;
 };

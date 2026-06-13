@@ -38,6 +38,7 @@ public:
 	void Visit(const ShortVariableDeclarationASTNode& expr) override;
 	void Visit(const VariableDeclarationASTNode& expr) override;
 	void Visit(const ExpressionStatementASTNode& expr) override;
+	void Visit(const AssertStatementASTNode& expr) override;
 	void Visit(const EmptyStatementASTNode& expr) override;
 	void Visit(const ProgramASTNode& expr) override;
 	void Visit(const StatementListASTNode& expr) override;
@@ -49,6 +50,7 @@ public:
 	void Visit(const ReturnASTNode& expr) override;
 	void Visit(const FunctionDeclarationASTNode& expr) override;
 	void Visit(const StructDeclarationASTNode& expr) override;
+	void Visit(const TestDeclarationASTNode& expr) override;
 
 private:
 	[[nodiscard]] BytecodeEmitter& CurrentEmitter();
@@ -56,6 +58,7 @@ private:
 	void EmitDefault(const TypeDescriptor& type);
 	void EmitStructDefault(const TypeDescriptor& type);
 	void EmitScalarDefault(Type type);
+	void EmitCallable(const std::string& name, int arity, int returnArity, const ASTNode& body, const std::vector<FunctionParameter>* parameters = nullptr, const FunctionParameter* receiver = nullptr, bool isTest = false);
 	void EmitAssignmentTarget(const ASTNode& target);
 	void EmitBinaryOperation(BinaryOperator op);
 	void EmitLogicalAnd(const BinaryASTNode& expr);
@@ -85,5 +88,6 @@ private:
 	ProgramContext m_programContext;
 	std::vector<FunctionContext> m_functionStack;
 	std::vector<LoopContext> m_loopStack;
+	std::optional<std::string> m_currentTestName;
 	std::optional<std::string> m_error;
 };

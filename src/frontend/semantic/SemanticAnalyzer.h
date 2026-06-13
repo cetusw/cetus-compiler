@@ -37,6 +37,7 @@ public:
 	void Visit(const ShortVariableDeclarationASTNode& node) override;
 	void Visit(const VariableDeclarationASTNode& node) override;
 	void Visit(const ExpressionStatementASTNode& node) override;
+	void Visit(const AssertStatementASTNode& node) override;
 	void Visit(const EmptyStatementASTNode& node) override;
 	void Visit(const ProgramASTNode& node) override;
 	void Visit(const StatementListASTNode& node) override;
@@ -48,6 +49,7 @@ public:
 	void Visit(const ReturnASTNode& node) override;
 	void Visit(const FunctionDeclarationASTNode& node) override;
 	void Visit(const StructDeclarationASTNode& node) override;
+	void Visit(const TestDeclarationASTNode& node) override;
 
 private:
 	struct ExpandedValue
@@ -110,5 +112,6 @@ private:
 	std::vector<SemanticDiagnostic> m_diagnostics;
 	std::unordered_set<const FunctionDeclarationASTNode*> m_predeclaredFunctions;
 	std::unordered_set<const StructDeclarationASTNode*> m_predeclaredTypes;
+	std::unordered_set<std::string> m_declaredTestNames;
 	int m_loopDepth = 0;
 };

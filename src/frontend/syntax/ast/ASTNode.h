@@ -355,6 +355,18 @@ private:
 	ASTNodePtr m_expression;
 };
 
+class AssertStatementASTNode final : public StatementASTNode
+{
+public:
+	explicit AssertStatementASTNode(ASTNodePtr condition);
+
+	[[nodiscard]] const ASTNode& GetCondition() const;
+	void Accept(ASTNodeVisitor& visitor) const override;
+
+private:
+	ASTNodePtr m_condition;
+};
+
 class EmptyStatementASTNode final : public StatementASTNode
 {
 public:
@@ -502,4 +514,18 @@ public:
 private:
 	std::string m_name;
 	std::vector<StructField> m_fields;
+};
+
+class TestDeclarationASTNode final : public StatementASTNode
+{
+public:
+	TestDeclarationASTNode(std::string name, ASTNodePtr body);
+
+	[[nodiscard]] const std::string& GetName() const;
+	[[nodiscard]] const ASTNode& GetBody() const;
+	void Accept(ASTNodeVisitor& visitor) const override;
+
+private:
+	std::string m_name;
+	ASTNodePtr m_body;
 };

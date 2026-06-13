@@ -136,6 +136,8 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildVarTypedEmptyCompositeDeclaration(std::move(values));
 	case SemanticTag::EXPRESSION_STATEMENT:
 		return BuildExpressionStatement(std::move(values));
+	case SemanticTag::ASSERT_STATEMENT:
+		return BuildAssertStatement(std::move(values));
 	case SemanticTag::EMPTY_STATEMENT:
 		return BuildEmptyStatement(values);
 	case SemanticTag::PROGRAM:
@@ -162,6 +164,8 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildReturnVoid(values);
 	case SemanticTag::RETURN_VALUE:
 		return BuildReturnValue(std::move(values));
+	case SemanticTag::TEST_DECLARATION:
+		return BuildTestDeclaration(std::move(values));
 	case SemanticTag::FUNCTION_VOID_NO_PARAMS:
 		return BuildVoidFunctionNoParams(std::move(values));
 	case SemanticTag::FUNCTION_RETURN_NO_PARAMS:
@@ -872,6 +876,12 @@ AstSemanticValue AstReductionBuilder::BuildExpressionStatement(std::vector<AstSe
 	return { std::make_unique<ExpressionStatementASTNode>(TakeNode(values, 0)), std::nullopt };
 }
 
+AstSemanticValue AstReductionBuilder::BuildAssertStatement(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 5, "Assert statement reduction");
+	return { std::make_unique<AssertStatementASTNode>(TakeNode(values, 2)), std::nullopt };
+}
+
 AstSemanticValue AstReductionBuilder::BuildEmptyStatement(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 1, "Empty statement reduction");
@@ -1007,6 +1017,17 @@ AstSemanticValue AstReductionBuilder::BuildReturnValue(std::vector<AstSemanticVa
 {
 	RequireValueCount(values, 3, "Return value reduction");
 	return { std::make_unique<ReturnASTNode>(TakeExpressionList(values, 1)), std::nullopt };
+}
+
+AstSemanticValue AstReductionBuilder::BuildTestDeclaration(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 3, "Test declaration reduction");
+	return {
+		std::make_unique<TestDeclarationASTNode>(
+			TakeToken(values, 1).lexeme,
+			TakeNode(values, 2)),
+		std::nullopt
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildVoidFunctionNoParams(std::vector<AstSemanticValue> values)

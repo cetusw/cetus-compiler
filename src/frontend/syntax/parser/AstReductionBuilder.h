@@ -92,6 +92,7 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildVarTypedCompositeDeclaration(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildVarTypedEmptyCompositeDeclaration(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildExpressionStatement(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildAssertStatement(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildEmptyStatement(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildProgram(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildEmptyProgram(const std::vector<AstSemanticValue>& values);
@@ -107,6 +108,7 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildContinue(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildReturnVoid(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildReturnValue(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildTestDeclaration(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildVoidFunctionNoParams(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildReturnFunctionNoParams(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildVoidFunction(std::vector<AstSemanticValue> values);

@@ -39,6 +39,7 @@ public:
 	void EmitIndexRef() const;
 	void EmitMemberLoad(const std::string& fieldName) const;
 	void EmitMemberSet(const std::string& fieldName) const;
+	void EmitAssert() const;
 
 private:
 	static constexpr int DEFAULT_LINE = 1;

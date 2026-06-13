@@ -72,6 +72,7 @@ enum class SemanticTag
 	VAR_TYPED_COMPOSITE_DECLARATION,
 	VAR_TYPED_EMPTY_COMPOSITE_DECLARATION,
 	EXPRESSION_STATEMENT,
+	ASSERT_STATEMENT,
 	EMPTY_STATEMENT,
 	PROGRAM,
 	PROGRAM_EMPTY,
@@ -85,6 +86,7 @@ enum class SemanticTag
 	CONTINUE,
 	RETURN_VOID,
 	RETURN_VALUE,
+	TEST_DECLARATION,
 	FUNCTION_VOID_NO_PARAMS,
 	FUNCTION_RETURN_NO_PARAMS,
 	FUNCTION_VOID,
@@ -165,6 +167,7 @@ enum class SemanticTag
 	if (value == "var_typed_composite_declaration") return SemanticTag::VAR_TYPED_COMPOSITE_DECLARATION;
 	if (value == "var_typed_empty_composite_declaration") return SemanticTag::VAR_TYPED_EMPTY_COMPOSITE_DECLARATION;
 	if (value == "expression_statement") return SemanticTag::EXPRESSION_STATEMENT;
+	if (value == "assert_statement") return SemanticTag::ASSERT_STATEMENT;
 	if (value == "empty_statement") return SemanticTag::EMPTY_STATEMENT;
 	if (value == "program") return SemanticTag::PROGRAM;
 	if (value == "program_empty") return SemanticTag::PROGRAM_EMPTY;
@@ -178,6 +181,7 @@ enum class SemanticTag
 	if (value == "continue") return SemanticTag::CONTINUE;
 	if (value == "return_void") return SemanticTag::RETURN_VOID;
 	if (value == "return_value") return SemanticTag::RETURN_VALUE;
+	if (value == "test_declaration") return SemanticTag::TEST_DECLARATION;
 	if (value == "function_void_no_params") return SemanticTag::FUNCTION_VOID_NO_PARAMS;
 	if (value == "function_return_no_params") return SemanticTag::FUNCTION_RETURN_NO_PARAMS;
 	if (value == "function_void") return SemanticTag::FUNCTION_VOID;

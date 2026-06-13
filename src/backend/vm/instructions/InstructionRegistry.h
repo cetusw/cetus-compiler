@@ -1,5 +1,6 @@
 #pragma once
 #include "../types/OpCode.h"
+#include "AssertInstruction.h"
 #include "ArrayInstruction.h"
 #include "BinaryInstruction.h"
 #include "CallInstruction.h"
@@ -79,6 +80,7 @@ public:
 		m_table[OP_REF_MEMBER] = std::make_unique<RefMemberInstruction>();
 		m_table[OP_GET_MEMBER] = std::make_unique<GetMemberInstruction>();
 		m_table[OP_SET_MEMBER] = std::make_unique<SetMemberInstruction>();
+		m_table[OP_ASSERT] = std::make_unique<AssertInstruction>();
 
 		m_table[OP_RETURN] = std::make_unique<ReturnInstruction>();
 	}
