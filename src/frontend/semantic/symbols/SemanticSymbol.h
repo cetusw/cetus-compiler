@@ -44,6 +44,8 @@ struct SemanticSymbol
 	std::string name;
 	TypeDescriptor type = Type::ERROR;
 	SemanticSymbolKind kind = SemanticSymbolKind::VARIABLE;
+	bool isStackBacked = false;
+	bool isBorrowedReference = false;
 	std::vector<ParameterSignature> parameters;
 	std::vector<FieldSignature> fields;
 	std::vector<MethodSignature> methods;

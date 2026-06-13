@@ -84,6 +84,9 @@ private:
 	[[nodiscard]] bool ValidateTypeReference(const TypeDescriptor& type, const char* context);
 	[[nodiscard]] static bool IsAddressableExpression(const ASTNode& node);
 	[[nodiscard]] bool ValidateStructFields(const StructDeclarationASTNode& node);
+	[[nodiscard]] const SemanticSymbol* ResolveVariableSymbol(const IdentifierASTNode& node) const;
+	[[nodiscard]] bool IsUnsafeStackAddressEscape(const ASTNode& node) const;
+	[[nodiscard]] bool IsBorrowedReferenceEscape(const ASTNode& node) const;
 	[[nodiscard]] const FieldSignature* ResolveField(const TypeDescriptor& objectType, const std::string& fieldName) const;
 	[[nodiscard]] const MethodSignature* ResolveMethod(const TypeDescriptor& objectType, const std::string& methodName) const;
 	[[nodiscard]] bool ValidateUserDefinedName(const std::string& name, const char* declarationKind);

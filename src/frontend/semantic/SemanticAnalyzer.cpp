@@ -229,6 +229,12 @@ void SemanticAnalyzer::Visit(const AddressOfASTNode& node)
 		SetCurrentType(node, Type::ERROR);
 		return;
 	}
+	if (IsBorrowedReferenceEscape(node))
+	{
+		AddDiagnostic("Cannot take address of borrowed stack-backed reference.");
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
 
 	SetCurrentType(node, AnalyzeChild(node.GetTarget()));
 }
@@ -730,6 +736,45 @@ bool SemanticAnalyzer::ValidateStructFields(const StructDeclarationASTNode& node
 	return !hasError;
 }
 
+const SemanticSymbol* SemanticAnalyzer::ResolveVariableSymbol(const IdentifierASTNode& node) const
+{
+	const SemanticSymbol* symbol = m_symbolTable.Resolve(node.GetName());
+	if (!symbol || symbol->kind != SemanticSymbolKind::VARIABLE)
+	{
+		return nullptr;
+	}
+
+	return symbol;
+}
+
+bool SemanticAnalyzer::IsUnsafeStackAddressEscape(const ASTNode& node) const
+{
+	const IdentifierASTNode* identifier = GetAddressedIdentifier(node);
+	if (!identifier)
+	{
+		return false;
+	}
+
+	const SemanticSymbol* symbol = ResolveVariableSymbol(*identifier);
+	return symbol && symbol->isStackBacked;
+}
+
+bool SemanticAnalyzer::IsBorrowedReferenceEscape(const ASTNode& node) const
+{
+	const IdentifierASTNode* identifier = dynamic_cast<const IdentifierASTNode*>(&node);
+	if (!identifier)
+	{
+		identifier = GetAddressedIdentifier(node);
+	}
+	if (!identifier)
+	{
+		return false;
+	}
+
+	const SemanticSymbol* symbol = ResolveVariableSymbol(*identifier);
+	return symbol && symbol->isBorrowedReference;
+}
+
 const FieldSignature* SemanticAnalyzer::ResolveField(const TypeDescriptor& objectType, const std::string& fieldName) const
 {
 	const TypeDescriptor baseType = ResolveNamedStructBaseType(objectType);
@@ -1016,7 +1061,15 @@ void SemanticAnalyzer::DefineShortVariables(const std::vector<std::string>& name
 			continue;
 		}
 
-		m_symbolTable.Define(SemanticSymbol{ names[index], valueTypes[index].type, SemanticSymbolKind::VARIABLE, {}, {}, {} });
+		m_symbolTable.Define(SemanticSymbol{
+			names[index],
+			valueTypes[index].type,
+			SemanticSymbolKind::VARIABLE,
+			true,
+			false,
+			{},
+			{},
+			{} });
 	}
 }
 
@@ -1067,7 +1120,15 @@ void SemanticAnalyzer::DefineVariables(
 			continue;
 		}
 
-		m_symbolTable.Define(SemanticSymbol{ names[index], symbolType, SemanticSymbolKind::VARIABLE, {}, {}, {} });
+		m_symbolTable.Define(SemanticSymbol{
+			names[index],
+			symbolType,
+			SemanticSymbolKind::VARIABLE,
+			true,
+			false,
+			{},
+			{},
+			{} });
 	}
 }
 
@@ -1243,6 +1304,22 @@ void SemanticAnalyzer::Visit(const ReturnASTNode& node)
 	const TypeDescriptor expectedReturnType = *m_currentFunctionReturnType;
 	if (node.HasValues())
 	{
+		for (const ASTNodePtr& value : node.GetValues())
+		{
+			if (IsUnsafeStackAddressEscape(*value))
+			{
+				AddDiagnostic("Address of stack-backed variable cannot escape function return.");
+				SetCurrentType(node, Type::ERROR);
+				return;
+			}
+			if (IsBorrowedReferenceEscape(*value))
+			{
+				AddDiagnostic("Borrowed stack-backed reference cannot escape function return.");
+				SetCurrentType(node, Type::ERROR);
+				return;
+			}
+		}
+
 		if (expectedReturnType == Type::VOID)
 		{
 			AddDiagnostic("Void function cannot return a value.");
@@ -1343,7 +1420,15 @@ void SemanticAnalyzer::Visit(const FunctionDeclarationASTNode& node)
 		}
 		else
 		{
-			m_symbolTable.Define(SemanticSymbol{ receiver->name, receiverValueType, SemanticSymbolKind::VARIABLE, {}, {}, {} });
+			m_symbolTable.Define(SemanticSymbol{
+				receiver->name,
+				receiverValueType,
+				SemanticSymbolKind::VARIABLE,
+				true,
+				receiver->isPointer,
+				{},
+				{},
+				{} });
 		}
 	}
 	for (const FunctionParameter& parameter : node.GetParameters())
@@ -1365,7 +1450,15 @@ void SemanticAnalyzer::Visit(const FunctionDeclarationASTNode& node)
 			continue;
 		}
 
-		m_symbolTable.Define(SemanticSymbol{ parameter.name, parameter.type, SemanticSymbolKind::VARIABLE, {}, {}, {} });
+		m_symbolTable.Define(SemanticSymbol{
+			parameter.name,
+			parameter.type,
+			SemanticSymbolKind::VARIABLE,
+			true,
+			parameter.isPointer,
+			{},
+			{},
+			{} });
 	}
 	const TypeDescriptor bodyType = AnalyzeChild(node.GetBody());
 	m_symbolTable.ExitScope();
@@ -1487,12 +1580,12 @@ void SemanticAnalyzer::DefineBuiltinFunctions()
 		return;
 	}
 
-	m_symbolTable.Define(SemanticSymbol{ "printf", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, false } }, {}, {} });
-	m_symbolTable.Define(SemanticSymbol{ "print", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, false } }, {}, {} });
-	m_symbolTable.Define(SemanticSymbol{ "println", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, false } }, {}, {} });
-	m_symbolTable.Define(SemanticSymbol{ "append", Type::ERROR, SemanticSymbolKind::BUILTIN_FUNCTION, {}, {}, {} });
-	m_symbolTable.Define(SemanticSymbol{ "len", Type::INT, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::STRING, false } }, {}, {} });
-	m_symbolTable.Define(SemanticSymbol{ "scan", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, { ParameterSignature{ Type::ERROR, true } }, {}, {} });
+	m_symbolTable.Define(SemanticSymbol{ "printf", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, false, false, { ParameterSignature{ Type::ERROR, false } }, {}, {} });
+	m_symbolTable.Define(SemanticSymbol{ "print", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, false, false, { ParameterSignature{ Type::ERROR, false } }, {}, {} });
+	m_symbolTable.Define(SemanticSymbol{ "println", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, false, false, { ParameterSignature{ Type::ERROR, false } }, {}, {} });
+	m_symbolTable.Define(SemanticSymbol{ "append", Type::ERROR, SemanticSymbolKind::BUILTIN_FUNCTION, false, false, {}, {}, {} });
+	m_symbolTable.Define(SemanticSymbol{ "len", Type::INT, SemanticSymbolKind::BUILTIN_FUNCTION, false, false, { ParameterSignature{ Type::STRING, false } }, {}, {} });
+	m_symbolTable.Define(SemanticSymbol{ "scan", Type::VOID, SemanticSymbolKind::BUILTIN_FUNCTION, false, false, { ParameterSignature{ Type::ERROR, true } }, {}, {} });
 }
 
 bool SemanticAnalyzer::DefineFunctionSymbol(const FunctionDeclarationASTNode& node)
@@ -1546,6 +1639,8 @@ bool SemanticAnalyzer::DefineFunctionSymbol(const FunctionDeclarationASTNode& no
 		symbolName,
 		node.GetReturnType(),
 		SemanticSymbolKind::FUNCTION,
+		false,
+		false,
 		BuildCallableParameterSignatures(node),
 		{},
 		{} });
@@ -1569,6 +1664,8 @@ bool SemanticAnalyzer::DefineTypeSymbol(const StructDeclarationASTNode& node)
 		node.GetName(),
 		TypeDescriptor::Named(node.GetName()),
 		SemanticSymbolKind::TYPE,
+		false,
+		false,
 		{},
 		BuildFieldSignatures(node),
 		{} });

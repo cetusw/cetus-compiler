@@ -199,5 +199,8 @@ run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/method_unknown.cetus" 
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/method_duplicate.cetus" "Method is already declared"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/multiple_return_single_binding.cetus" "Short variable declaration expects the same number of names and values"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/nil_invalid_assignment.cetus" "Variable initializer type does not match declared type"
+run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/return_address_of_local.cetus" "Address of stack-backed variable cannot escape function return"
+run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/address_of_borrowed_ref.cetus" "Cannot take address of borrowed stack-backed reference"
+run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/return_borrowed_receiver.cetus" "Borrowed stack-backed reference cannot escape function return"
 
 echo "[smoke] ok"
