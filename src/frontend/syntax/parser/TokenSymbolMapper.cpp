@@ -51,6 +51,8 @@ std::string_view TokenTypeToGrammarTerminal(const TokenType type)
 		return "TRUE";
 	case TokenType::FALSE:
 		return "FALSE";
+	case TokenType::NIL:
+		return "NIL";
 	case TokenType::PLUS:
 		return "PLUS";
 	case TokenType::PLUS_PLUS:

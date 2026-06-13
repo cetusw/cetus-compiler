@@ -41,6 +41,10 @@ inline Value NativeLen(int argc, Value* args)
 	{
 		return {};
 	}
+	if (args[0].IsNull())
+	{
+		return Value(static_cast<RuntimeInt>(0));
+	}
 	if (args[0].IsString())
 	{
 		return Value(static_cast<RuntimeInt>(args[0].AsString().length()));
@@ -54,12 +58,26 @@ inline Value NativeLen(int argc, Value* args)
 
 inline Value NativeAppend(int argc, Value* args)
 {
-	if (argc < 2 || !args[0].IsSlice())
+	if (argc < 2)
 	{
 		return {};
 	}
 
-	const auto slice = args[0].AsSlice();
+	std::shared_ptr<ObjSlice> slice;
+	if (args[0].IsNull())
+	{
+		auto storage = std::make_shared<ObjArray>(std::vector<Value>{});
+		slice = std::make_shared<ObjSlice>(storage, 0, 0, 0);
+	}
+	else if (args[0].IsSlice())
+	{
+		slice = args[0].AsSlice();
+	}
+	else
+	{
+		return {};
+	}
+
 	std::vector<Value> values;
 	values.reserve(static_cast<std::size_t>(argc - 1));
 	for (int index = 1; index < argc; ++index)

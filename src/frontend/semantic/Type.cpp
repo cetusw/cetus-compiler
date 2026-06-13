@@ -233,6 +233,7 @@ std::string TypeDescriptor::ToString() const
 	case Type::FLOAT: return "float";
 	case Type::BOOL: return "bool";
 	case Type::STRING: return "string";
+	case Type::NIL: return "nil";
 	case Type::VOID: return "void";
 	case Type::ERROR: return "error";
 	}

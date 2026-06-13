@@ -91,6 +91,16 @@ void CodegenVisitor::Visit(const BoolLiteralASTNode& expr)
 	CurrentEmitter().EmitConstant(Value(expr.GetValue()));
 }
 
+void CodegenVisitor::Visit(const NilLiteralASTNode& expr)
+{
+	if (!EnsureTyped(expr))
+	{
+		return;
+	}
+
+	CurrentEmitter().EmitConstant(Value());
+}
+
 void CodegenVisitor::Visit(const IntLiteralASTNode& expr)
 {
 	if (!EnsureTyped(expr))
@@ -887,6 +897,11 @@ void CodegenVisitor::EmitDefault(const TypeDescriptor& type)
 	if (type.IsSlice())
 	{
 		CurrentEmitter().EmitSlice(0);
+		return;
+	}
+	if (type.IsPointer())
+	{
+		CurrentEmitter().EmitConstant(Value());
 		return;
 	}
 	if (type.IsNamed())

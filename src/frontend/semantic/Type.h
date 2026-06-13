@@ -10,6 +10,7 @@ enum class Type
 	FLOAT,
 	BOOL,
 	STRING,
+	NIL,
 	VOID,
 	ERROR
 };

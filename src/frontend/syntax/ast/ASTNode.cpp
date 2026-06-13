@@ -27,6 +27,11 @@ void BoolLiteralASTNode::Accept(ASTNodeVisitor& visitor) const
 	visitor.Visit(*this);
 }
 
+void NilLiteralASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}
+
 IntLiteralASTNode::IntLiteralASTNode(std::string value)
 	: m_value(std::move(value))
 {

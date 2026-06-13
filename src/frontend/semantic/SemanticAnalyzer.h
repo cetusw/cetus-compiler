@@ -17,6 +17,7 @@ public:
 	[[nodiscard]] TypeCheckResult Analyze(const ASTNode& node);
 
 	void Visit(const BoolLiteralASTNode& node) override;
+	void Visit(const NilLiteralASTNode& node) override;
 	void Visit(const IntLiteralASTNode& node) override;
 	void Visit(const FloatLiteralASTNode& node) override;
 	void Visit(const StringLiteralASTNode& node) override;
@@ -61,6 +62,7 @@ private:
 	[[nodiscard]] static bool IsFalsey(TypeDescriptor type);
 	[[nodiscard]] static bool HasError(const std::vector<TypeDescriptor>& types);
 	[[nodiscard]] static bool HasError(const std::vector<ExpandedValue>& values);
+	[[nodiscard]] static bool IsTypeAssignable(const TypeDescriptor& expected, const TypeDescriptor& actual);
 	void ValidateAssignment(const std::vector<ASTNodePtr>& targets, const std::vector<ExpandedValue>& valueTypes);
 	[[nodiscard]] TypeDescriptor AnalyzeAssignmentTarget(const ASTNode& target);
 	void DefineShortVariables(const std::vector<std::string>& names, const std::vector<ExpandedValue>& valueTypes);

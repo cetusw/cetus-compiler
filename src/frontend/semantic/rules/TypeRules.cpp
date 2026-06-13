@@ -129,9 +129,19 @@ bool TypeRules::IsFalsey(const TypeDescriptor& type)
 	return type == Type::BOOL || IsNumeric(type);
 }
 
+bool TypeRules::IsAssignable(const TypeDescriptor& expected, const TypeDescriptor& actual)
+{
+	if (expected == actual)
+	{
+		return true;
+	}
+
+	return actual == Type::NIL && expected.IsNullable();
+}
+
 bool TypeRules::AreComparable(const TypeDescriptor& left, const TypeDescriptor& right)
 {
-	if (left == right)
+	if (IsAssignable(left, right) || IsAssignable(right, left))
 	{
 		return true;
 	}

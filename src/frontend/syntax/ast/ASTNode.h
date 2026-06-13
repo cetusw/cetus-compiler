@@ -84,6 +84,12 @@ private:
 	bool m_value;
 };
 
+class NilLiteralASTNode final : public ExpressionASTNode
+{
+public:
+	void Accept(ASTNodeVisitor& visitor) const override;
+};
+
 class IntLiteralASTNode final : public ExpressionASTNode
 {
 public:

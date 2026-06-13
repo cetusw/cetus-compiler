@@ -163,6 +163,8 @@ run_positive_output "${ROOT_DIR}/tests/smoke/positive/method_ref_receiver_member
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/method_ref_receiver_index.cetus" "5"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/multiple_return_binding.cetus" "7 true"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/multiple_return_forward.cetus" "11 true"
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/nil_pointer.cetus" $'true\nfalse'
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/nil_slice.cetus" $'true\n0\nfalse\n[3, 4]'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/struct_basic.cetus" "1"
 run_positive_output "${ROOT_DIR}/tests/programs/algorithms/max.cetus" "9"
 run_positive_output "${ROOT_DIR}/tests/programs/search/linear_search.cetus" "2"
@@ -196,5 +198,6 @@ run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/struct_literal_type_mi
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/method_unknown.cetus" "Method is not declared"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/method_duplicate.cetus" "Method is already declared"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/multiple_return_single_binding.cetus" "Short variable declaration expects the same number of names and values"
+run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/nil_invalid_assignment.cetus" "Variable initializer type does not match declared type"
 
 echo "[smoke] ok"

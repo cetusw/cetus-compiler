@@ -19,6 +19,11 @@ void AstDumper::Visit(const BoolLiteralASTNode& expr)
 	DumpLine(std::string("BoolLiteralASTNode(") + (expr.GetValue() ? "true" : "false") + ")");
 }
 
+void AstDumper::Visit(const NilLiteralASTNode&)
+{
+	DumpLine("NilLiteralASTNode");
+}
+
 void AstDumper::Visit(const IntLiteralASTNode& expr)
 {
 	DumpLine("IntLiteralASTNode(" + expr.GetValue() + ")");

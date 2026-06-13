@@ -67,6 +67,11 @@ void SemanticAnalyzer::Visit(const BoolLiteralASTNode& node)
 	SetCurrentType(node, Type::BOOL);
 }
 
+void SemanticAnalyzer::Visit(const NilLiteralASTNode& node)
+{
+	SetCurrentType(node, Type::NIL);
+}
+
 void SemanticAnalyzer::Visit(const IntLiteralASTNode& node)
 {
 	SetCurrentType(node, Type::INT);
@@ -112,7 +117,7 @@ void SemanticAnalyzer::Visit(const ArrayLiteralASTNode& node)
 			hasError = true;
 			continue;
 		}
-		if (elementType != Type::ERROR && actualType != elementType)
+		if (elementType != Type::ERROR && !IsTypeAssignable(elementType, actualType))
 		{
 			AddDiagnostic("Array literal element type does not match literal element type.");
 			hasError = true;
@@ -166,7 +171,7 @@ void SemanticAnalyzer::Visit(const StructLiteralASTNode& node)
 			continue;
 		}
 
-		if (actualType != field->type)
+		if (!IsTypeAssignable(field->type, actualType))
 		{
 			AddDiagnostic("Struct literal field initializer type does not match declared field type: "
 				+ node.GetTypeName() + "." + initializer.name);
@@ -450,7 +455,7 @@ void SemanticAnalyzer::TypeCheckMethodCall(
 			continue;
 		}
 		const ParameterSignature& parameter = method.parameters[index];
-		if (argumentTypes[index].type != parameter.type)
+		if (!IsTypeAssignable(parameter.type, argumentTypes[index].type))
 		{
 			AddDiagnostic("Method call argument type does not match parameter type: " + receiverType.ToString() + "." + node.GetCalleeName());
 			hasError = true;
@@ -515,7 +520,7 @@ void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, c
 				hasError = true;
 				continue;
 			}
-			if (argumentTypes[index].type != elementType)
+			if (!IsTypeAssignable(elementType, argumentTypes[index].type))
 			{
 				AddDiagnostic("append element type does not match slice element type.");
 				hasError = true;
@@ -550,9 +555,11 @@ void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, c
 				&& argumentTypes[index].type != Type::FLOAT
 				&& argumentTypes[index].type != Type::BOOL
 				&& argumentTypes[index].type != Type::STRING
+				&& argumentTypes[index].type != Type::NIL
+				&& !argumentTypes[index].type.IsPointer()
 				&& !argumentTypes[index].type.IsSequence())
 			{
-				AddDiagnostic(calleeName + " expects int, float, bool, string, array or slice argument.");
+				AddDiagnostic(calleeName + " expects int, float, bool, string, nil, pointer, array or slice argument.");
 				hasError = true;
 			}
 		}
@@ -811,7 +818,7 @@ void SemanticAnalyzer::TypeCheckFunctionCall(
 			continue;
 		}
 		const ParameterSignature& parameter = symbol.parameters[index];
-		if (argumentTypes[index].type != parameter.type)
+		if (!IsTypeAssignable(parameter.type, argumentTypes[index].type))
 		{
 			AddDiagnostic("Function call argument type does not match parameter type: " + node.GetCalleeName());
 			hasError = true;
@@ -934,7 +941,7 @@ void SemanticAnalyzer::ValidateAssignment(const std::vector<ASTNodePtr>& targets
 		{
 			continue;
 		}
-		if (targetType != valueTypes[index].type)
+		if (!IsTypeAssignable(targetType, valueTypes[index].type))
 		{
 			AddDiagnostic("Cannot assign value of different type to assignment target.");
 		}
@@ -1050,7 +1057,7 @@ void SemanticAnalyzer::DefineVariables(
 			continue;
 		}
 		const TypeDescriptor symbolType = declaredType.has_value() ? *declaredType : valueTypes[index].type;
-		if (!valueTypes.empty() && symbolType != valueTypes[index].type)
+		if (!valueTypes.empty() && !IsTypeAssignable(symbolType, valueTypes[index].type))
 		{
 			AddDiagnostic("Variable initializer type does not match declared type for: " + names[index]);
 			continue;
@@ -1260,7 +1267,7 @@ void SemanticAnalyzer::Visit(const ReturnASTNode& node)
 			}
 			for (std::size_t index = 0; index < expectedTypes.size(); ++index)
 			{
-				if (valueTypes[index].type != expectedTypes[index])
+				if (!IsTypeAssignable(expectedTypes[index], valueTypes[index].type))
 				{
 					AddDiagnostic("Return value type does not match function return type.");
 					SetCurrentType(node, Type::ERROR);
@@ -1276,7 +1283,7 @@ void SemanticAnalyzer::Visit(const ReturnASTNode& node)
 				SetCurrentType(node, Type::ERROR);
 				return;
 			}
-			if (valueTypes.front().type != expectedReturnType)
+			if (!IsTypeAssignable(expectedReturnType, valueTypes.front().type))
 			{
 				AddDiagnostic("Return value type does not match function return type.");
 				SetCurrentType(node, Type::ERROR);
@@ -1719,6 +1726,11 @@ bool SemanticAnalyzer::HasError(const std::vector<ExpandedValue>& values)
 		}
 	}
 	return false;
+}
+
+bool SemanticAnalyzer::IsTypeAssignable(const TypeDescriptor& expected, const TypeDescriptor& actual)
+{
+	return TypeRules::IsAssignable(expected, actual);
 }
 
 void SemanticAnalyzer::SetCurrentType(const ASTNode& node, const TypeDescriptor& type)

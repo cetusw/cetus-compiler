@@ -1,6 +1,7 @@
 #pragma once
 
 class BoolLiteralASTNode;
+class NilLiteralASTNode;
 class IntLiteralASTNode;
 class FloatLiteralASTNode;
 class StringLiteralASTNode;
@@ -38,6 +39,7 @@ public:
 	virtual ~ASTNodeVisitor() = default;
 
 	virtual void Visit(const BoolLiteralASTNode& expr) = 0;
+	virtual void Visit(const NilLiteralASTNode& expr) = 0;
 	virtual void Visit(const IntLiteralASTNode& expr) = 0;
 	virtual void Visit(const FloatLiteralASTNode& expr) = 0;
 	virtual void Visit(const StringLiteralASTNode& expr) = 0;

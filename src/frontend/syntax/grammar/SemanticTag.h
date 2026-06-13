@@ -13,6 +13,7 @@ enum class SemanticTag
 	UNARY,
 	BINARY,
 	BOOL_LITERAL,
+	NIL_LITERAL,
 	INT_LITERAL,
 	FLOAT_LITERAL,
 	STRING_LITERAL,
@@ -105,6 +106,7 @@ enum class SemanticTag
 	if (value == "unary") return SemanticTag::UNARY;
 	if (value == "binary") return SemanticTag::BINARY;
 	if (value == "bool_literal") return SemanticTag::BOOL_LITERAL;
+	if (value == "nil_literal") return SemanticTag::NIL_LITERAL;
 	if (value == "int_literal") return SemanticTag::INT_LITERAL;
 	if (value == "float_literal") return SemanticTag::FLOAT_LITERAL;
 	if (value == "string_literal") return SemanticTag::STRING_LITERAL;

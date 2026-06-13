@@ -18,6 +18,8 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildBinary(std::move(values));
 	case SemanticTag::BOOL_LITERAL:
 		return BuildBoolLiteral(values);
+	case SemanticTag::NIL_LITERAL:
+		return BuildNilLiteral(values);
 	case SemanticTag::INT_LITERAL:
 		return BuildIntLiteral(values);
 	case SemanticTag::FLOAT_LITERAL:
@@ -225,6 +227,12 @@ AstSemanticValue AstReductionBuilder::BuildBoolLiteral(const std::vector<AstSema
 	RequireValueCount(values, 1, "Bool literal reduction");
 	// TODO сделать что-то с такими длинными объявлениями
 	return { std::make_unique<BoolLiteralASTNode>(TakeToken(values, 0).type == TokenType::TRUE), std::nullopt };
+}
+
+AstSemanticValue AstReductionBuilder::BuildNilLiteral(const std::vector<AstSemanticValue>& values)
+{
+	RequireValueCount(values, 1, "Nil literal reduction");
+	return { std::make_unique<NilLiteralASTNode>(), std::nullopt };
 }
 
 AstSemanticValue AstReductionBuilder::BuildIntLiteral(const std::vector<AstSemanticValue>& values)

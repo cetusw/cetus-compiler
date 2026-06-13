@@ -109,6 +109,7 @@ std::string JsonPreparedGrammarStorage::SerializeSemanticTag(const SemanticTag t
 	case SemanticTag::UNARY: return "unary";
 	case SemanticTag::BINARY: return "binary";
 	case SemanticTag::BOOL_LITERAL: return "bool_literal";
+	case SemanticTag::NIL_LITERAL: return "nil_literal";
 	case SemanticTag::INT_LITERAL: return "int_literal";
 	case SemanticTag::FLOAT_LITERAL: return "float_literal";
 	case SemanticTag::STRING_LITERAL: return "string_literal";

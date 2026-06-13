@@ -8,6 +8,7 @@ class AstDumper final : public ASTNodeVisitor
 public:
 	static void Dump(const ASTNode& expr, std::ostream& output);
 	void Visit(const BoolLiteralASTNode& expr) override;
+	void Visit(const NilLiteralASTNode& expr) override;
 	void Visit(const IntLiteralASTNode& expr) override;
 	void Visit(const FloatLiteralASTNode& expr) override;
 	void Visit(const StringLiteralASTNode& expr) override;

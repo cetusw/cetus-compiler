@@ -130,6 +130,7 @@
 ~Exp2~ -> MINUS ~Exp2~ @unary
 ~Exp2~ -> BIT_AND ~PostfixExp~ @address_of
 ~Exp2~ -> ~PostfixExp~ @pass_expr
+~Exp2~ -> NIL @nil_literal
 ~Exp2~ -> INT_LIT @int_literal
 ~Exp2~ -> FLOAT_LIT @float_literal
 ~Exp2~ -> STRING @string_literal

@@ -11,6 +11,7 @@ public:
 	[[nodiscard]] static TypeCheckResult CheckUnaryOperator(UnaryOperator op, const TypeDescriptor& operandType);
 	[[nodiscard]] static TypeCheckResult CheckBinaryOperator(BinaryOperator op, const TypeDescriptor& leftType, const TypeDescriptor& rightType);
 	[[nodiscard]] static std::string ToString(const TypeDescriptor& type);
+	[[nodiscard]] static bool IsAssignable(const TypeDescriptor& expected, const TypeDescriptor& actual);
 
 private:
 	[[nodiscard]] static TypeCheckResult CheckLogicalOperator(const TypeDescriptor& leftType, const TypeDescriptor& rightType);

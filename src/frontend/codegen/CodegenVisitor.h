@@ -18,6 +18,7 @@ public:
 	[[nodiscard]] CodegenResult Generate(const ASTNode& expr);
 
 	void Visit(const BoolLiteralASTNode& expr) override;
+	void Visit(const NilLiteralASTNode& expr) override;
 	void Visit(const IntLiteralASTNode& expr) override;
 	void Visit(const FloatLiteralASTNode& expr) override;
 	void Visit(const StringLiteralASTNode& expr) override;
