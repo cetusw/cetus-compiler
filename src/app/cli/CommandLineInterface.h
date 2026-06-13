@@ -8,7 +8,8 @@ enum class CompilerMode
 	PARSE,
 	PARSE_AST,
 	TYPECHECK,
-	RUN_EXPR,
+	RUN_SRC,
+	TEST,
 	GENERATE_TABLE,
 	RUN_VM,
 	HELP

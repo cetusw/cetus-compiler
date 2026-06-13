@@ -13,19 +13,24 @@ mkdir -p "${SMOKE_OUT_DIR}"
 
 normalize_stdout() {
     sed -E 's/\[ <fn.*$//' "${SMOKE_STDOUT}" \
+        | grep -v -E '^(--- Trace Execution ---|[0-9]{4} OP_|ok |fail |tests:|$)' || true
+}
+
+normalize_test_stdout() {
+    sed -E 's/\[ <fn.*$//' "${SMOKE_STDOUT}" \
         | grep -v -E '^(--- Trace Execution ---|[0-9]{4} OP_|$)' || true
 }
 
 run_positive() {
     local file="$1"
     echo "[smoke] positive: ${file#${ROOT_DIR}/}"
-    "${CETUS_BIN}" --run-expr "$file" --no-tests >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"
+    "${CETUS_BIN}" --run-src "$file" --no-tests >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"
 }
 
 run_positive_with_tests() {
     local file="$1"
     echo "[smoke] positive: ${file#${ROOT_DIR}/}"
-    "${CETUS_BIN}" --run-expr "$file" >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"
+    "${CETUS_BIN}" --run-src "$file" >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"
 }
 
 run_positive_output() {
@@ -66,12 +71,32 @@ run_positive_output_with_tests() {
     fi
 }
 
+run_test_output() {
+    local file="$1"
+    local expected="$2"
+    echo "[smoke] test: ${file#${ROOT_DIR}/}"
+    "${CETUS_BIN}" --test "$file" >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"
+
+    local actual
+    actual="$(normalize_test_stdout)"
+    if [[ "${actual}" != "${expected}" ]]; then
+        echo "Unexpected test stdout for: $file" >&2
+        echo "expected:" >&2
+        printf '%s\n' "${expected}" >&2
+        echo "actual:" >&2
+        printf '%s\n' "${actual}" >&2
+        echo "stderr:" >&2
+        cat "${SMOKE_STDERR}" >&2
+        exit 1
+    fi
+}
+
 run_positive_output_stdin() {
     local file="$1"
     local input="$2"
     local expected="$3"
     echo "[smoke] positive: ${file#${ROOT_DIR}/}"
-    printf '%s' "${input}" | "${CETUS_BIN}" --run-expr "$file" --no-tests >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"
+    printf '%s' "${input}" | "${CETUS_BIN}" --run-src "$file" --no-tests >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"
 
     local actual
     actual="$(normalize_stdout)"
@@ -91,7 +116,7 @@ run_negative() {
     local file="$1"
     local expected="$2"
     echo "[smoke] negative: ${file#${ROOT_DIR}/}"
-    if "${CETUS_BIN}" --run-expr "$file" --no-tests >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"; then
+    if "${CETUS_BIN}" --run-src "$file" --no-tests >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"; then
         echo "Expected failure, but command succeeded: $file" >&2
         cat "${SMOKE_STDOUT}" >&2
         cat "${SMOKE_STDERR}" >&2
@@ -112,7 +137,7 @@ run_negative_with_tests() {
     local file="$1"
     local expected="$2"
     echo "[smoke] negative: ${file#${ROOT_DIR}/}"
-    if "${CETUS_BIN}" --run-expr "$file" >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"; then
+    if "${CETUS_BIN}" --run-src "$file" >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"; then
         echo "Expected failure, but command succeeded: $file" >&2
         cat "${SMOKE_STDOUT}" >&2
         cat "${SMOKE_STDERR}" >&2
@@ -237,6 +262,8 @@ run_positive_output "${ROOT_DIR}/tests/smoke/positive/nil_slice.cetus" $'true\n0
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/struct_basic.cetus" "1"
 run_positive_output_with_tests "${ROOT_DIR}/tests/smoke/positive/test_blocks.cetus" "4"
 run_positive_output_with_tests "${ROOT_DIR}/tests/smoke/positive/test_method_blocks.cetus" "5"
+run_test_output "${ROOT_DIR}/tests/smoke/positive/test_blocks.cetus" $'ok add\ntests: 1 passed, 0 failed'
+run_test_output "${ROOT_DIR}/tests/smoke/positive/test_method_blocks.cetus" $'ok Point.Sum\ntests: 1 passed, 0 failed'
 run_positive_output "${ROOT_DIR}/tests/programs/algorithms/max.cetus" "9"
 run_positive_output "${ROOT_DIR}/tests/programs/search/linear_search.cetus" "2"
 run_positive_output "${ROOT_DIR}/tests/programs/search/binary_search.cetus" "4"

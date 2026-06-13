@@ -1,4 +1,4 @@
-#include "RunExpressionDriver.h"
+#include "TestDriver.h"
 
 #include "src/app/cli/testing/TestReporter.h"
 #include "src/backend/vm/testing/TestRunner.h"
@@ -34,7 +34,6 @@ ParseResult ParseSourceFile(const Configuration& configuration)
 	return syntaxAnalyzer.Analyze(lexerResult.tokens);
 }
 
-// TODO вынести эту логику отсюда. драйвер не должен отвечать за проверку узлов
 const ProgramASTNode& RequireProgramAst(const ASTNode& ast)
 {
 	const auto* program = dynamic_cast<const ProgramASTNode*>(&ast);
@@ -46,11 +45,11 @@ const ProgramASTNode& RequireProgramAst(const ASTNode& ast)
 }
 }
 
-void RunExpressionDriver::Execute(const Configuration& configuration)
+void TestDriver::Execute(const Configuration& configuration)
 {
 	if (configuration.inputFilePath.empty())
 	{
-		throw std::runtime_error("Input source file path is required for source execution.");
+		throw std::runtime_error("Input source file path is required for test execution.");
 	}
 
 	const ParseResult parseResult = ParseSourceFile(configuration);
@@ -97,17 +96,10 @@ void RunExpressionDriver::Execute(const Configuration& configuration)
 
 	VM vm;
 	vm.LoadProgram(codegenResult.program);
-	if (configuration.requireTests)
+	const TestRunResult result = TestRunner::Run(codegenResult.program, vm);
+	TestReporter::Print(result, std::cout);
+	if (result.failedCount > 0)
 	{
-		const TestRunResult result = TestRunner::Run(codegenResult.program, vm);
-		TestReporter::Print(result, std::cout);
-		if (result.failedCount > 0)
-		{
-			throw std::runtime_error("Test execution failed.");
-		}
-	}
-	if (vm.InterpretProgram(codegenResult.program) != InterpretResult::OK)
-	{
-		throw std::runtime_error("VM execution failed.");
+		throw std::runtime_error("Test execution failed.");
 	}
 }

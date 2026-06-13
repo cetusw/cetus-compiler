@@ -128,7 +128,9 @@ add_library(cetus_app_cli STATIC
         src/app/cli/commands/ParserDriver.cpp
         src/app/cli/commands/RunExpressionDriver.cpp
         src/app/cli/commands/TableGeneratorDriver.cpp
+        src/app/cli/commands/TestDriver.cpp
         src/app/cli/commands/TypeCheckDriver.cpp
+        src/app/cli/testing/TestReporter.cpp
         ${CETUS_APP_CLI_HEADERS}
 )
 

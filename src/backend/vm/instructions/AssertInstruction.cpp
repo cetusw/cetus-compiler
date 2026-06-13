@@ -3,6 +3,7 @@
 #include "../objects/ObjAssertionMetadata.h"
 #include "../vm.h"
 #include <cstdio>
+#include <string>
 
 InterpretResult AssertInstruction::Execute(VM& vm) const
 {
@@ -21,18 +22,20 @@ InterpretResult AssertInstruction::Execute(VM& vm) const
 	}
 
 	const AssertionDescriptor& descriptor = metadataValue.AsAssertionMetadata()->GetDescriptor();
+	std::string failureDiagnostic = "Assertion failed at line " + std::to_string(descriptor.sourceLine);
+	if (!descriptor.sourceText.empty())
+	{
+		failureDiagnostic += ": " + descriptor.sourceText;
+	}
 	if (const std::optional<std::string>& activeTestName = vm.GetActiveTestName(); activeTestName.has_value())
 	{
+		vm.AddRuntimeDiagnostic(failureDiagnostic);
 		std::fprintf(stderr, "Test failed: %s\n", activeTestName->c_str());
-		std::fprintf(stderr, "Assertion failed at line %d", descriptor.sourceLine);
-		if (!descriptor.sourceText.empty())
-		{
-			std::fprintf(stderr, ": %s", descriptor.sourceText.c_str());
-		}
-		std::fprintf(stderr, "\n");
+		std::fprintf(stderr, "%s\n", failureDiagnostic.c_str());
 		return InterpretResult::RUNTIME_ERROR;
 	}
 
+	vm.AddRuntimeDiagnostic(failureDiagnostic);
 	std::fprintf(stderr, "Assertion failed in %s at line %d", function->name->GetData().c_str(),
 		descriptor.sourceLine);
 	if (!descriptor.sourceText.empty())

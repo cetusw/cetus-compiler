@@ -3,6 +3,7 @@
 #include "src/app/cli/commands/ParserDriver.h"
 #include "src/app/cli/commands/RunExpressionDriver.h"
 #include "src/app/cli/commands/TableGeneratorDriver.h"
+#include "src/app/cli/commands/TestDriver.h"
 #include "src/app/cli/commands/TypeCheckDriver.h"
 #include <iostream>
 
@@ -24,8 +25,11 @@ int main(const int argc, char* argv[])
 		case CompilerMode::TYPECHECK:
 			TypeCheckDriver::Execute(configuration);
 			break;
-		case CompilerMode::RUN_EXPR:
+		case CompilerMode::RUN_SRC:
 			RunExpressionDriver::Execute(configuration);
+			break;
+		case CompilerMode::TEST:
+			TestDriver::Execute(configuration);
 			break;
 		case CompilerMode::GENERATE_TABLE:
 			TableGeneratorDriver::Execute(configuration);

@@ -6,6 +6,7 @@
 #include "types/Value.h"
 #include <optional>
 #include <unordered_map>
+#include <vector>
 
 class InstructionRegistry;
 class VM
@@ -16,8 +17,9 @@ public:
 	VM();
 	~VM();
 
+	void LoadProgram(const Program& program);
 	InterpretResult InterpretFunction(const std::shared_ptr<ObjFunction>& function);
-	InterpretResult InterpretProgram(const Program& program, bool runTests = true);
+	InterpretResult InterpretProgram(const Program& program);
 	uint8_t ReadByte();
 	Value ReadConstant();
 
@@ -43,6 +45,7 @@ public:
 	Value GetGlobal(const std::string& name) const;
 	Value* GetGlobalAddress(const std::string& name);
 	[[nodiscard]] const std::optional<std::string>& GetActiveTestName() const;
+	[[nodiscard]] std::vector<std::string> ConsumeRuntimeDiagnostics();
 
 	void SetStack(int index, const Value& value);
 	void SetStackTop(Value* value);
@@ -50,6 +53,8 @@ public:
 	void SetFrameCount(int count);
 	bool SetGlobal(const std::string& name, const Value& value);
 	void SetActiveTestName(std::optional<std::string> testName);
+	void AddRuntimeDiagnostic(std::string diagnostic);
+	void ClearRuntimeDiagnostics();
 
 
 private:
@@ -61,6 +66,7 @@ private:
 	std::unordered_map<std::string, Value> m_immutableGlobals;
 	std::unordered_map<std::string, Value> m_mutableGlobals;
 	std::optional<std::string> m_activeTestName;
+	std::vector<std::string> m_runtimeDiagnostics;
 
 	InterpretResult Run();
 	void TraceExecution();

@@ -27,9 +27,13 @@ Configuration CommandLineInterface::ParseArguments(const int argumentCount, char
 	{
 		configuration.mode = CompilerMode::TYPECHECK;
 	}
-	else if (command == "--run-expr")
+	else if (command == "--run-src")
 	{
-		configuration.mode = CompilerMode::RUN_EXPR;
+		configuration.mode = CompilerMode::RUN_SRC;
+	}
+	else if (command == "--test")
+	{
+		configuration.mode = CompilerMode::TEST;
 	}
 	else if (command == "--table")
 	{
@@ -75,11 +79,12 @@ void CommandLineInterface::PrintHelp()
 			  << "  --parse <file>     Check syntax only\n"
 			  << "  --parse-ast <file> Check syntax and print AST\n"
 			  << "  --typecheck <file> Check syntax and infer expression type\n"
-			  << "  --run-expr <file>  Execute source expression through frontend and VM\n"
+			  << "  --run-src <file>   Execute source through frontend and VM\n"
+			  << "  --test <file>      Compile source and run tests without main\n"
 			  << "  --table <file>     Generate SLR(1) table from grammar\n"
 			  << "  --run <file>       Execute bytecode in VM\n"
 			  << "  --regen-table     Regenerate and save parser table before parsing\n"
-			  << "  --no-tests        Disable test coverage requirement and skip test execution\n";
+			  << "  --no-tests        Disable test coverage requirement and skip test execution in source modes\n";
 }
 
 Configuration CommandLineInterface::MakeHelpConfiguration()

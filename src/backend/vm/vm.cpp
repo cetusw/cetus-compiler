@@ -3,7 +3,6 @@
 #include "NativeRegistry.h"
 #include "disassembler/Disassembler.h"
 #include "instructions/InstructionRegistry.h"
-#include "testing/TestRunner.h"
 
 VM::VM()
 	: m_registry(std::make_unique<InstructionRegistry>())
@@ -17,6 +16,17 @@ VM::VM()
 
 VM::~VM() = default;
 
+void VM::LoadProgram(const Program& program)
+{
+	for (const std::shared_ptr<ObjFunction>& function : program.functions)
+	{
+		if (function && function->name)
+		{
+			RegisterImmutableGlobal(function->name->GetData(), Value(function));
+		}
+	}
+}
+
 InterpretResult VM::InterpretFunction(const std::shared_ptr<ObjFunction>& function)
 {
 	if (!function)
@@ -24,6 +34,7 @@ InterpretResult VM::InterpretFunction(const std::shared_ptr<ObjFunction>& functi
 		return InterpretResult::RUNTIME_ERROR;
 	}
 
+	ClearRuntimeDiagnostics();
 	m_stackTop = m_stack;
 	m_frameCount = 0;
 	Push(Value(function));
@@ -38,22 +49,12 @@ InterpretResult VM::InterpretFunction(const std::shared_ptr<ObjFunction>& functi
 	return Run();
 }
 
-InterpretResult VM::InterpretProgram(const Program& program, const bool runTests)
+InterpretResult VM::InterpretProgram(const Program& program)
 {
+	LoadProgram(program);
 	for (const std::shared_ptr<ObjFunction>& function : program.functions)
 	{
 		if (!function || !function->name)
-		{
-			return InterpretResult::RUNTIME_ERROR;
-		}
-		RegisterImmutableGlobal(function->name->GetData(), Value(function));
-	}
-
-	if (runTests)
-	{
-		const TestRunner testRunner;
-		const TestRunResult testResult = testRunner.Run(program, *this);
-		if (testResult.failedCount > 0)
 		{
 			return InterpretResult::RUNTIME_ERROR;
 		}
@@ -237,6 +238,13 @@ const std::optional<std::string>& VM::GetActiveTestName() const
 	return m_activeTestName;
 }
 
+std::vector<std::string> VM::ConsumeRuntimeDiagnostics()
+{
+	std::vector<std::string> diagnostics = std::move(m_runtimeDiagnostics);
+	m_runtimeDiagnostics.clear();
+	return diagnostics;
+}
+
 void VM::SetStack(const int index, const Value& value)
 {
 	GetCurrentFrame().slots[index] = value;
@@ -270,4 +278,14 @@ bool VM::SetGlobal(const std::string& name, const Value& value)
 void VM::SetActiveTestName(std::optional<std::string> testName)
 {
 	m_activeTestName = std::move(testName);
+}
+
+void VM::AddRuntimeDiagnostic(std::string diagnostic)
+{
+	m_runtimeDiagnostics.push_back(std::move(diagnostic));
+}
+
+void VM::ClearRuntimeDiagnostics()
+{
+	m_runtimeDiagnostics.clear();
 }
