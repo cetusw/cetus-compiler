@@ -79,6 +79,7 @@ add_library(cetus_backend_vm STATIC
         src/backend/vm/types/Value.cpp
         src/backend/vm/objects/Obj.cpp
         src/backend/vm/objects/ObjArray.cpp
+        src/backend/vm/objects/ObjAssertionMetadata.cpp
         src/backend/vm/objects/ObjPointer.cpp
         src/backend/vm/objects/ObjRef.cpp
         src/backend/vm/objects/ObjString.cpp

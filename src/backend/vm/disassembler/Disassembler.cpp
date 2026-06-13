@@ -41,11 +41,9 @@ static int StructInstruction(const Chunk& chunk, const int offset)
 
 static int AssertInstruction(const Chunk& chunk, const int offset)
 {
-	const auto& code = chunk.GetCode();
-	const uint8_t lineIndex = code[offset + 1];
-	const uint8_t textIndex = code[offset + 2];
-	std::printf("%-16s line:%4d expr:%4d\n", "OP_ASSERT", lineIndex, textIndex);
-	return offset + 3;
+	const uint8_t metadataIndex = chunk.GetCode()[offset + 1];
+	std::printf("%-16s meta:%4d\n", "OP_ASSERT", metadataIndex);
+	return offset + 2;
 }
 
 static int JumpInstruction(const std::string& name, const int sign, const Chunk& chunk, const int offset)

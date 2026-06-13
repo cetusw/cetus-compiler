@@ -12,6 +12,7 @@ public:
 	ObjStruct(std::string typeName, std::vector<std::pair<std::string, Value>> fields);
 
 	[[nodiscard]] const std::string& GetTypeName() const;
+	[[nodiscard]] const std::unordered_map<std::string, Value>& GetFields() const;
 	[[nodiscard]] bool HasField(const std::string& name) const;
 	[[nodiscard]] const Value& GetField(const std::string& name) const;
 	[[nodiscard]] Value* GetFieldAddress(const std::string& name);

@@ -15,6 +15,8 @@ public:
 
 	[[nodiscard]] int Length() const;
 	[[nodiscard]] int Capacity() const;
+	[[nodiscard]] int Offset() const;
+	[[nodiscard]] const std::shared_ptr<ObjArray>& GetStorage() const;
 	[[nodiscard]] const Value& Get(int index) const;
 	[[nodiscard]] Value* GetAddress(int index) const;
 	void Set(int index, const Value& value) const;

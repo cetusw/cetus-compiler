@@ -11,6 +11,8 @@ class InstructionRegistry;
 class VM
 {
 public:
+	using GlobalSnapshot = std::unordered_map<std::string, Value>;
+
 	VM();
 	~VM();
 
@@ -27,7 +29,10 @@ public:
 	[[nodiscard]] Value Peek(int distance) const;
 
 	void DefineGlobal(const std::string& name, const Value& value);
+	void RegisterImmutableGlobal(const std::string& name, const Value& value);
 	bool HasGlobal(const std::string& name) const;
+	[[nodiscard]] GlobalSnapshot SnapshotMutableGlobals() const;
+	void RestoreMutableGlobals(GlobalSnapshot globals);
 
 	[[nodiscard]] Value GetStack(int index);
 	[[nodiscard]] Value* GetStackAddress(int index);
@@ -53,7 +58,8 @@ private:
 	std::unique_ptr<InstructionRegistry> m_registry;
 	CallFrame m_frames[FRAMES_MAX];
 	int m_frameCount;
-	std::unordered_map<std::string, Value> m_globals;
+	std::unordered_map<std::string, Value> m_immutableGlobals;
+	std::unordered_map<std::string, Value> m_mutableGlobals;
 	std::optional<std::string> m_activeTestName;
 
 	InterpretResult Run();

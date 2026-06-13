@@ -46,7 +46,7 @@ InterpretResult VM::InterpretProgram(const Program& program, const bool runTests
 		{
 			return InterpretResult::RUNTIME_ERROR;
 		}
-		DefineGlobal(function->name->GetData(), Value(function));
+		RegisterImmutableGlobal(function->name->GetData(), Value(function));
 	}
 
 	if (runTests)
@@ -153,12 +153,33 @@ Value VM::Peek(const int distance) const
 
 void VM::DefineGlobal(const std::string& name, const Value& value)
 {
-	m_globals[name] = value;
+	m_mutableGlobals[name] = value;
+}
+
+void VM::RegisterImmutableGlobal(const std::string& name, const Value& value)
+{
+	m_immutableGlobals[name] = value;
 }
 
 bool VM::HasGlobal(const std::string& name) const
 {
-	return m_globals.contains(name);
+	return m_mutableGlobals.contains(name) || m_immutableGlobals.contains(name);
+}
+
+VM::GlobalSnapshot VM::SnapshotMutableGlobals() const
+{
+	GlobalSnapshot snapshot;
+	HeapCloneCache cache;
+	for (const auto& [name, value] : m_mutableGlobals)
+	{
+		snapshot.emplace(name, value.Clone(cache));
+	}
+	return snapshot;
+}
+
+void VM::RestoreMutableGlobals(GlobalSnapshot globals)
+{
+	m_mutableGlobals = std::move(globals);
 }
 
 Value VM::GetStack(const int index)
@@ -193,13 +214,18 @@ int VM::GetFrameCount() const
 
 Value VM::GetGlobal(const std::string& name) const
 {
-	return m_globals.at(name);
+	const auto mutableIt = m_mutableGlobals.find(name);
+	if (mutableIt != m_mutableGlobals.end())
+	{
+		return mutableIt->second;
+	}
+	return m_immutableGlobals.at(name);
 }
 
 Value* VM::GetGlobalAddress(const std::string& name)
 {
-	const auto it = m_globals.find(name);
-	if (it == m_globals.end())
+	const auto it = m_mutableGlobals.find(name);
+	if (it == m_mutableGlobals.end())
 	{
 		return nullptr;
 	}
@@ -233,11 +259,11 @@ void VM::SetFrameCount(const int count)
 
 bool VM::SetGlobal(const std::string& name, const Value& value)
 {
-	if (!m_globals.contains(name))
+	if (!m_mutableGlobals.contains(name))
 	{
 		return false;
 	}
-	m_globals[name] = value;
+	m_mutableGlobals[name] = value;
 	return true;
 }
 

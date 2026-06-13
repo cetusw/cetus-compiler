@@ -21,6 +21,16 @@ int ObjSlice::Capacity() const
 	return m_capacity;
 }
 
+int ObjSlice::Offset() const
+{
+	return m_offset;
+}
+
+const std::shared_ptr<ObjArray>& ObjSlice::GetStorage() const
+{
+	return m_storage;
+}
+
 int ObjSlice::NewLength(const std::vector<Value>& values) const
 {
 	return m_length + static_cast<int>(values.size());

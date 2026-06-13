@@ -11,6 +11,7 @@ enum class ObjType
 	ARRAY,
 	SLICE,
 	STRUCT,
+	ASSERTION_METADATA,
 };
 
 class Obj

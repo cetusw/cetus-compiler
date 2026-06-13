@@ -18,6 +18,11 @@ const std::string& ObjStruct::GetTypeName() const
 	return m_typeName;
 }
 
+const std::unordered_map<std::string, Value>& ObjStruct::GetFields() const
+{
+	return m_fields;
+}
+
 bool ObjStruct::HasField(const std::string& name) const
 {
 	return m_fields.contains(name);

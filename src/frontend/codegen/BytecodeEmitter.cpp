@@ -1,5 +1,6 @@
 #include "BytecodeEmitter.h"
 
+#include "src/backend/vm/objects/ObjAssertionMetadata.h"
 #include "src/backend/vm/objects/ObjString.h"
 #include "src/backend/vm/types/Chunk.h"
 #include <limits>
@@ -208,10 +209,9 @@ void BytecodeEmitter::EmitMemberSet(const std::string& fieldName) const
 void BytecodeEmitter::EmitAssert(const int sourceLine, const std::string& sourceText) const
 {
 	EmitOpcode(OP_ASSERT);
-	const int lineIndex = m_chunk.AddConstant(Value(static_cast<RuntimeInt>(sourceLine)));
-	EmitOperandByte(lineIndex);
-	const int textIndex = m_chunk.AddConstant(Value(std::make_shared<ObjString>(sourceText)));
-	EmitOperandByte(textIndex);
+	const AssertionDescriptor descriptor{ sourceLine, sourceText, std::nullopt };
+	const int metadataIndex = m_chunk.AddConstant(Value(std::make_shared<ObjAssertionMetadata>(descriptor)));
+	EmitOperandByte(metadataIndex);
 }
 
 void BytecodeEmitter::Fail(std::string message) const

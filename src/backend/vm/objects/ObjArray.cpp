@@ -18,6 +18,11 @@ int ObjArray::Capacity() const
 	return static_cast<int>(m_elements.capacity());
 }
 
+const std::vector<Value>& ObjArray::GetElements() const
+{
+	return m_elements;
+}
+
 const Value& ObjArray::Get(const int index) const
 {
 	return m_elements.at(index);

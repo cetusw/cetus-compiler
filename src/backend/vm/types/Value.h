@@ -4,6 +4,7 @@
 #include "src/backend/vm/types/RuntimeTypes.h"
 #include <cstddef>
 #include <string>
+#include <unordered_map>
 #include <variant>
 
 class ObjFunction;
@@ -13,6 +14,9 @@ class ObjPointer;
 class ObjArray;
 class ObjSlice;
 class ObjStruct;
+class ObjAssertionMetadata;
+
+using HeapCloneCache = std::unordered_map<const Obj*, HeapObject>;
 
 class Value
 {
@@ -40,6 +44,7 @@ public:
 	[[nodiscard]] bool IsSequence() const;
 	[[nodiscard]] bool IsIndexable() const;
 	[[nodiscard]] bool IsStruct() const;
+	[[nodiscard]] bool IsAssertionMetadata() const;
 
 	[[nodiscard]] RuntimeInt AsInt() const;
 	[[nodiscard]] RuntimeFloat AsFloat() const;
@@ -53,8 +58,11 @@ public:
 	[[nodiscard]] std::shared_ptr<ObjArray> AsArray() const;
 	[[nodiscard]] std::shared_ptr<ObjSlice> AsSlice() const;
 	[[nodiscard]] std::shared_ptr<ObjStruct> AsStruct() const;
+	[[nodiscard]] std::shared_ptr<ObjAssertionMetadata> AsAssertionMetadata() const;
 	[[nodiscard]] HeapObject AsHeapObject() const;
 	[[nodiscard]] Value Dereference() const;
+	[[nodiscard]] Value Clone() const;
+	[[nodiscard]] Value Clone(HeapCloneCache& cache) const;
 
 	void Print() const;
 

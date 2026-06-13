@@ -1,5 +1,6 @@
 #include "Value.h"
 #include "../objects/ObjArray.h"
+#include "../objects/ObjAssertionMetadata.h"
 #include "../objects/ObjFunction.h"
 #include "../objects/ObjPointer.h"
 #include "../objects/ObjRef.h"
@@ -153,6 +154,11 @@ bool Value::IsStruct() const
 	return IsHeapObject() && std::get<HeapObject>(m_data)->GetType() == ObjType::STRUCT;
 }
 
+bool Value::IsAssertionMetadata() const
+{
+	return IsHeapObject() && std::get<HeapObject>(m_data)->GetType() == ObjType::ASSERTION_METADATA;
+}
+
 RuntimeInt Value::AsInt() const
 {
 	return std::get<RuntimeInt>(m_data);
@@ -225,6 +231,12 @@ std::shared_ptr<ObjStruct> Value::AsStruct() const
 	return std::static_pointer_cast<ObjStruct>(obj);
 }
 
+std::shared_ptr<ObjAssertionMetadata> Value::AsAssertionMetadata() const
+{
+	const auto obj = std::get<HeapObject>(m_data);
+	return std::static_pointer_cast<ObjAssertionMetadata>(obj);
+}
+
 HeapObject Value::AsHeapObject() const
 {
 	return std::get<HeapObject>(m_data);
@@ -237,6 +249,106 @@ Value Value::Dereference() const
 		return AsRef()->Get();
 	}
 	return *this;
+}
+
+Value Value::Clone() const
+{
+	HeapCloneCache cache;
+	return Clone(cache);
+}
+
+Value Value::Clone(HeapCloneCache& cache) const
+{
+	if (!IsHeapObject())
+	{
+		return *this;
+	}
+
+	const HeapObject object = AsHeapObject();
+	if (!object)
+	{
+		return Value();
+	}
+
+	if (const auto it = cache.find(object.get()); it != cache.end())
+	{
+		return Value(it->second);
+	}
+
+	switch (object->GetType())
+	{
+	case ObjType::STRING:
+	{
+		auto clone = std::make_shared<ObjString>(AsString());
+		cache.emplace(object.get(), clone);
+		return Value(clone);
+	}
+	case ObjType::FUNCTION:
+	case ObjType::NATIVE:
+	case ObjType::REF:
+		return *this;
+	case ObjType::POINTER:
+	{
+		const std::shared_ptr<ObjPointer> pointer = AsPointer();
+		auto clone = std::make_shared<ObjPointer>(pointer->IsNil() ? nullptr : pointer->GetTarget());
+		cache.emplace(object.get(), clone);
+		if (!pointer->IsNil() && pointer->GetTarget())
+		{
+			clone = std::make_shared<ObjPointer>(Value(pointer->GetTarget()).Clone(cache).AsHeapObject());
+			cache[object.get()] = clone;
+		}
+		return Value(clone);
+	}
+	case ObjType::ARRAY:
+	{
+		std::vector<Value> elements;
+		elements.reserve(static_cast<std::size_t>(AsArray()->Length()));
+		auto clone = std::make_shared<ObjArray>(std::vector<Value>{});
+		cache.emplace(object.get(), clone);
+		for (const Value& element : AsArray()->GetElements())
+		{
+			elements.push_back(element.Clone(cache));
+		}
+		clone = std::make_shared<ObjArray>(std::move(elements));
+		cache[object.get()] = clone;
+		return Value(clone);
+	}
+	case ObjType::SLICE:
+	{
+		const std::shared_ptr<ObjSlice> slice = AsSlice();
+		const Value clonedStorage = Value(std::static_pointer_cast<Obj>(slice->GetStorage())).Clone(cache);
+		auto clone = std::make_shared<ObjSlice>(
+			std::static_pointer_cast<ObjArray>(clonedStorage.AsHeapObject()),
+			slice->Offset(),
+			slice->Length(),
+			slice->Capacity());
+		cache.emplace(object.get(), clone);
+		return Value(clone);
+	}
+	case ObjType::STRUCT:
+	{
+		std::vector<std::pair<std::string, Value>> fields;
+		fields.reserve(AsStruct()->GetFields().size());
+		auto clone = std::make_shared<ObjStruct>(AsStruct()->GetTypeName(), std::vector<std::pair<std::string, Value>>{});
+		cache.emplace(object.get(), clone);
+		for (const auto& [name, value] : AsStruct()->GetFields())
+		{
+			fields.emplace_back(name, value.Clone(cache));
+		}
+		clone = std::make_shared<ObjStruct>(AsStruct()->GetTypeName(), std::move(fields));
+		cache[object.get()] = clone;
+		return Value(clone);
+	}
+	case ObjType::ASSERTION_METADATA:
+	{
+		auto clone = std::make_shared<ObjAssertionMetadata>(AsAssertionMetadata()->GetDescriptor());
+		cache.emplace(object.get(), clone);
+		return Value(clone);
+	}
+	}
+
+	assert(false && "Unhandled object clone type.");
+	return Value();
 }
 
 // TODO to refactor
@@ -307,6 +419,10 @@ void Value::Print() const
 			{
 				const auto obj = std::static_pointer_cast<ObjStruct>(arg);
 				std::printf("<%s>", obj->GetTypeName().c_str());
+			}
+			else if (arg->GetType() == ObjType::ASSERTION_METADATA)
+			{
+				std::printf("<assertion>");
 			}
 		}
 	},
