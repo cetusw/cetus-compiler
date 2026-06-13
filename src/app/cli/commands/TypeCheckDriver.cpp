@@ -3,6 +3,8 @@
 #include "../../../frontend/semantic/rules/TypeRules.h"
 #include "src/frontend/lexical/LexicalAnalyzer.h"
 #include "src/frontend/semantic/SemanticAnalyzer.h"
+#include "src/frontend/testing/TestCoverageAnalyzer.h"
+#include "src/frontend/testing/TestDiscovery.h"
 #include "src/frontend/syntax/GrammarPreparator.h"
 #include "src/frontend/syntax/SyntaxAnalyzer.h"
 #include "src/support/io/FileReader.h"
@@ -27,6 +29,16 @@ ParseResult ParseSourceFile(const Configuration& configuration)
 	const SyntaxAnalyzer syntaxAnalyzer(preparator.Prepare(configuration.regenerateTable));
 	return syntaxAnalyzer.Analyze(lexerResult.tokens);
 }
+
+const ProgramASTNode& RequireProgramAst(const ASTNode& ast)
+{
+	const auto* program = dynamic_cast<const ProgramASTNode*>(&ast);
+	if (!program)
+	{
+		throw std::runtime_error("Top-level AST is not ProgramASTNode.");
+	}
+	return *program;
+}
 }
 
 void TypeCheckDriver::Execute(const Configuration& configuration)
@@ -46,11 +58,28 @@ void TypeCheckDriver::Execute(const Configuration& configuration)
 		throw std::runtime_error("AST was not produced for parsed input.");
 	}
 
-	SemanticAnalyzer checker{ SymbolTable(), configuration.requireTests };
-	const TypeCheckResult typeResult = checker.Analyze(*parseResult.ast);
+	const ProgramASTNode& program = RequireProgramAst(*parseResult.ast);
+	const TestDiscovery discovery;
+	const TestDiscoveryResult discoveryResult = discovery.Discover(program);
+	if (!discoveryResult.diagnostics.empty())
+	{
+		throw std::runtime_error(discoveryResult.diagnostics.front().message);
+	}
+
+	SemanticAnalyzer checker{ SymbolTable() };
+	const TypeCheckResult typeResult = checker.Analyze(program);
 	if (const std::optional<std::string> error = typeResult.GetErrorMessage())
 	{
 		throw std::runtime_error(*error);
+	}
+	if (configuration.requireTests)
+	{
+		const TestCoverageAnalyzer coverageAnalyzer;
+		const std::vector<SemanticDiagnostic> coverageDiagnostics = coverageAnalyzer.Analyze(program, discoveryResult);
+		if (!coverageDiagnostics.empty())
+		{
+			throw std::runtime_error(coverageDiagnostics.front().message);
+		}
 	}
 
 	std::cout << "Type: " << TypeRules::ToString(typeResult.type) << std::endl;
