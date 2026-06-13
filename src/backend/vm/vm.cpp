@@ -37,7 +37,7 @@ InterpretResult VM::InterpretFunction(const std::shared_ptr<ObjFunction>& functi
 	return Run();
 }
 
-InterpretResult VM::InterpretProgram(const Program& program)
+InterpretResult VM::InterpretProgram(const Program& program, const bool runTests)
 {
 	for (const std::shared_ptr<ObjFunction>& function : program.functions)
 	{
@@ -48,11 +48,14 @@ InterpretResult VM::InterpretProgram(const Program& program)
 		DefineGlobal(function->name->GetData(), Value(function));
 	}
 
-	for (const std::shared_ptr<ObjFunction>& testFunction : program.testFunctions)
+	if (runTests)
 	{
-		if (InterpretFunction(testFunction) != InterpretResult::OK)
+		for (const std::shared_ptr<ObjFunction>& testFunction : program.testFunctions)
 		{
-			return InterpretResult::RUNTIME_ERROR;
+			if (InterpretFunction(testFunction) != InterpretResult::OK)
+			{
+				return InterpretResult::RUNTIME_ERROR;
+			}
 		}
 	}
 

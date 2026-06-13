@@ -48,7 +48,7 @@ void RunExpressionDriver::Execute(const Configuration& configuration)
 	}
 
 	const SymbolTable symbols;
-	SemanticAnalyzer checker(symbols);
+	SemanticAnalyzer checker(symbols, configuration.requireTests);
 	const TypeCheckResult typeResult = checker.Analyze(*parseResult.ast);
 	if (const std::optional<std::string> error = typeResult.GetErrorMessage())
 	{
@@ -63,7 +63,7 @@ void RunExpressionDriver::Execute(const Configuration& configuration)
 	}
 
 	VM vm;
-	if (vm.InterpretProgram(codegenResult.program) != InterpretResult::OK)
+	if (vm.InterpretProgram(codegenResult.program, configuration.requireTests) != InterpretResult::OK)
 	{
 		throw std::runtime_error("VM execution failed.");
 	}

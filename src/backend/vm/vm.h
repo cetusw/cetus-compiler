@@ -14,7 +14,7 @@ public:
 	~VM();
 
 	InterpretResult InterpretFunction(const std::shared_ptr<ObjFunction>& function);
-	InterpretResult InterpretProgram(const Program& program);
+	InterpretResult InterpretProgram(const Program& program, bool runTests = true);
 	uint8_t ReadByte();
 	Value ReadConstant();
 

@@ -19,6 +19,12 @@ normalize_stdout() {
 run_positive() {
     local file="$1"
     echo "[smoke] positive: ${file#${ROOT_DIR}/}"
+    "${CETUS_BIN}" --run-expr "$file" --no-tests >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"
+}
+
+run_positive_with_tests() {
+    local file="$1"
+    echo "[smoke] positive: ${file#${ROOT_DIR}/}"
     "${CETUS_BIN}" --run-expr "$file" >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"
 }
 
@@ -41,12 +47,31 @@ run_positive_output() {
     fi
 }
 
+run_positive_output_with_tests() {
+    local file="$1"
+    local expected="$2"
+    run_positive_with_tests "$file"
+
+    local actual
+    actual="$(normalize_stdout)"
+    if [[ "${actual}" != "${expected}" ]]; then
+        echo "Unexpected stdout for: $file" >&2
+        echo "expected:" >&2
+        printf '%s\n' "${expected}" >&2
+        echo "actual:" >&2
+        printf '%s\n' "${actual}" >&2
+        echo "stderr:" >&2
+        cat "${SMOKE_STDERR}" >&2
+        exit 1
+    fi
+}
+
 run_positive_output_stdin() {
     local file="$1"
     local input="$2"
     local expected="$3"
     echo "[smoke] positive: ${file#${ROOT_DIR}/}"
-    printf '%s' "${input}" | "${CETUS_BIN}" --run-expr "$file" >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"
+    printf '%s' "${input}" | "${CETUS_BIN}" --run-expr "$file" --no-tests >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"
 
     local actual
     actual="$(normalize_stdout)"
@@ -63,6 +88,27 @@ run_positive_output_stdin() {
 }
 
 run_negative() {
+    local file="$1"
+    local expected="$2"
+    echo "[smoke] negative: ${file#${ROOT_DIR}/}"
+    if "${CETUS_BIN}" --run-expr "$file" --no-tests >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"; then
+        echo "Expected failure, but command succeeded: $file" >&2
+        cat "${SMOKE_STDOUT}" >&2
+        cat "${SMOKE_STDERR}" >&2
+        exit 1
+    fi
+
+    if ! grep -q "$expected" "${SMOKE_STDERR}" "${SMOKE_STDOUT}"; then
+        echo "Expected diagnostic not found: $expected" >&2
+        echo "stdout:" >&2
+        cat "${SMOKE_STDOUT}" >&2
+        echo "stderr:" >&2
+        cat "${SMOKE_STDERR}" >&2
+        exit 1
+    fi
+}
+
+run_negative_with_tests() {
     local file="$1"
     local expected="$2"
     echo "[smoke] negative: ${file#${ROOT_DIR}/}"
@@ -86,7 +132,7 @@ run_negative() {
 run_typecheck_positive() {
     local file="$1"
     echo "[smoke] typecheck positive: ${file#${ROOT_DIR}/}"
-    "${CETUS_BIN}" --typecheck "$file" >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"
+    "${CETUS_BIN}" --typecheck "$file" --no-tests >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"
 }
 
 run_parse_positive() {
@@ -96,6 +142,27 @@ run_parse_positive() {
 }
 
 run_typecheck_negative() {
+    local file="$1"
+    local expected="$2"
+    echo "[smoke] typecheck negative: ${file#${ROOT_DIR}/}"
+    if "${CETUS_BIN}" --typecheck "$file" --no-tests >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"; then
+        echo "Expected typecheck failure, but command succeeded: $file" >&2
+        cat "${SMOKE_STDOUT}" >&2
+        cat "${SMOKE_STDERR}" >&2
+        exit 1
+    fi
+
+    if ! grep -q "$expected" "${SMOKE_STDERR}" "${SMOKE_STDOUT}"; then
+        echo "Expected diagnostic not found: $expected" >&2
+        echo "stdout:" >&2
+        cat "${SMOKE_STDOUT}" >&2
+        echo "stderr:" >&2
+        cat "${SMOKE_STDERR}" >&2
+        exit 1
+    fi
+}
+
+run_typecheck_negative_with_tests() {
     local file="$1"
     local expected="$2"
     echo "[smoke] typecheck negative: ${file#${ROOT_DIR}/}"
@@ -130,7 +197,8 @@ run_negative "${ROOT_DIR}/tests/smoke/negative/ref_temporary.cetus" "Pointer par
 run_negative "${ROOT_DIR}/tests/smoke/negative/function_arity.cetus" "Function call argument count does not match function parameters"
 run_negative "${ROOT_DIR}/tests/smoke/negative/array_bounds.cetus" "VM execution failed"
 run_negative "${ROOT_DIR}/tests/smoke/negative/string_index_bounds.cetus" "VM execution failed"
-run_negative "${ROOT_DIR}/tests/smoke/negative/assert_failure.cetus" "Test failed: add"
+run_negative_with_tests "${ROOT_DIR}/tests/smoke/negative/assert_failure.cetus" "Test failed: add"
+run_negative_with_tests "${ROOT_DIR}/tests/smoke/negative/missing_test_coverage.cetus" "Missing test for function: add"
 
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/array_basic.cetus" $'0\n7\n3\n5\n0'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/append_basic.cetus" "[1, 2, 3]"
@@ -154,7 +222,6 @@ run_positive_output "${ROOT_DIR}/tests/smoke/positive/sieve_of_eratosthenes.cetu
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_index.cetus" $'a\nc\ntrue'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_literal.cetus" "hello"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/string_operations.cetus" $'abc\ntrue\ntrue\n3'
-run_positive_output "${ROOT_DIR}/tests/smoke/positive/test_blocks.cetus" "4"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/palindrome.cetus" "true"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/pointer_struct_heap.cetus" "7"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/variadic_println_array.cetus" $'Before: [64, 34, 25]\n[[1, 2], [3, 4]]'
@@ -168,6 +235,8 @@ run_positive_output "${ROOT_DIR}/tests/smoke/positive/multiple_return_forward.ce
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/nil_pointer.cetus" $'true\nfalse'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/nil_slice.cetus" $'true\n0\nfalse\n[3, 4]'
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/struct_basic.cetus" "1"
+run_positive_output_with_tests "${ROOT_DIR}/tests/smoke/positive/test_blocks.cetus" "4"
+run_positive_output_with_tests "${ROOT_DIR}/tests/smoke/positive/test_method_blocks.cetus" "5"
 run_positive_output "${ROOT_DIR}/tests/programs/algorithms/max.cetus" "9"
 run_positive_output "${ROOT_DIR}/tests/programs/search/linear_search.cetus" "2"
 run_positive_output "${ROOT_DIR}/tests/programs/search/binary_search.cetus" "4"
@@ -205,5 +274,6 @@ run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/nil_invalid_assignment
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/return_address_of_local.cetus" "Address of stack-backed variable cannot escape function return"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/address_of_borrowed_ref.cetus" "Cannot take address of borrowed stack-backed reference"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/return_borrowed_receiver.cetus" "Borrowed stack-backed reference cannot escape function return"
+run_typecheck_negative_with_tests "${ROOT_DIR}/tests/smoke/typecheck/missing_test_for_method.cetus" "Missing test for method: Point.Sum"
 
 echo "[smoke] ok"

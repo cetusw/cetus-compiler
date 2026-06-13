@@ -46,7 +46,7 @@ void TypeCheckDriver::Execute(const Configuration& configuration)
 		throw std::runtime_error("AST was not produced for parsed input.");
 	}
 
-	SemanticAnalyzer checker{ SymbolTable() };
+	SemanticAnalyzer checker{ SymbolTable(), configuration.requireTests };
 	const TypeCheckResult typeResult = checker.Analyze(*parseResult.ast);
 	if (const std::optional<std::string> error = typeResult.GetErrorMessage())
 	{

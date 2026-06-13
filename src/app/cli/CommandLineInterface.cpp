@@ -51,6 +51,10 @@ Configuration CommandLineInterface::ParseArguments(const int argumentCount, char
 		{
 			configuration.regenerateTable = true;
 		}
+		else if (argument == "--no-tests")
+		{
+			configuration.requireTests = false;
+		}
 		else if (configuration.inputFilePath.empty())
 		{
 			configuration.inputFilePath = argument;
@@ -74,7 +78,8 @@ void CommandLineInterface::PrintHelp()
 			  << "  --run-expr <file>  Execute source expression through frontend and VM\n"
 			  << "  --table <file>     Generate SLR(1) table from grammar\n"
 			  << "  --run <file>       Execute bytecode in VM\n"
-			  << "  --regen-table     Regenerate and save parser table before parsing\n";
+			  << "  --regen-table     Regenerate and save parser table before parsing\n"
+			  << "  --no-tests        Disable test coverage requirement and skip test execution\n";
 }
 
 Configuration CommandLineInterface::MakeHelpConfiguration()
