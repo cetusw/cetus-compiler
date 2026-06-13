@@ -49,17 +49,25 @@ public:
 	void Visit(const StructDeclarationASTNode& node) override;
 
 private:
+	struct ExpandedValue
+	{
+		const ASTNode* expression = nullptr;
+		TypeDescriptor type = Type::ERROR;
+	};
+
 	[[nodiscard]] TypeDescriptor AnalyzeChild(const ASTNode& node);
 	[[nodiscard]] std::vector<TypeDescriptor> AnalyzeValues(const std::vector<ASTNodePtr>& values);
+	[[nodiscard]] std::vector<ExpandedValue> AnalyzeExpandedValues(const std::vector<ASTNodePtr>& values);
 	[[nodiscard]] static bool IsFalsey(TypeDescriptor type);
 	[[nodiscard]] static bool HasError(const std::vector<TypeDescriptor>& types);
-	void ValidateAssignment(const std::vector<ASTNodePtr>& targets, const std::vector<TypeDescriptor>& valueTypes);
+	[[nodiscard]] static bool HasError(const std::vector<ExpandedValue>& values);
+	void ValidateAssignment(const std::vector<ASTNodePtr>& targets, const std::vector<ExpandedValue>& valueTypes);
 	[[nodiscard]] TypeDescriptor AnalyzeAssignmentTarget(const ASTNode& target);
-	void DefineShortVariables(const std::vector<std::string>& names, const std::vector<TypeDescriptor>& valueTypes);
+	void DefineShortVariables(const std::vector<std::string>& names, const std::vector<ExpandedValue>& valueTypes);
 	void DefineVariables(
 		const std::vector<std::string>& names,
 		const std::optional<TypeDescriptor>& declaredType,
-		const std::vector<TypeDescriptor>& valueTypes);
+		const std::vector<ExpandedValue>& valueTypes);
 	void PredeclareTopLevelFunctions(const ASTNode& node);
 	void PredeclareTopLevelFunctions(const StatementListASTNode& node);
 	void PredeclareFunction(const FunctionDeclarationASTNode& node);
@@ -67,9 +75,9 @@ private:
 	void PredeclareTopLevelTypes(const StatementListASTNode& node);
 	void ValidateEntryPoint();
 	void DefineBuiltinFunctions();
-	void TypeCheckBuiltinCall(const CallExpressionASTNode& node, const std::vector<TypeDescriptor>& argumentTypes);
-	void TypeCheckFunctionCall(const CallExpressionASTNode& node, const SemanticSymbol& symbol, const std::vector<TypeDescriptor>& argumentTypes);
-	void TypeCheckMethodCall(const CallExpressionASTNode& node, const TypeDescriptor& receiverType, const MethodSignature& method, const std::vector<TypeDescriptor>& argumentTypes);
+	void TypeCheckBuiltinCall(const CallExpressionASTNode& node, const std::vector<ExpandedValue>& argumentTypes);
+	void TypeCheckFunctionCall(const CallExpressionASTNode& node, const SemanticSymbol& symbol, const std::vector<ExpandedValue>& argumentTypes);
+	void TypeCheckMethodCall(const CallExpressionASTNode& node, const TypeDescriptor& receiverType, const MethodSignature& method, const std::vector<ExpandedValue>& argumentTypes);
 	[[nodiscard]] bool ValidateValueExpression(const TypeDescriptor& type, const char* context);
 	[[nodiscard]] bool ValidateTypeReference(const TypeDescriptor& type, const char* context);
 	[[nodiscard]] static bool IsAddressableExpression(const ASTNode& node);

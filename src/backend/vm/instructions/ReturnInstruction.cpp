@@ -3,7 +3,12 @@
 
 InterpretResult ReturnInstruction::Execute(VM& vm) const
 {
-	const Value result = vm.Pop();
+	const int returnArity = vm.GetCurrentFrame().function->returnArity;
+	std::vector<Value> results(static_cast<std::size_t>(returnArity));
+	for (int index = returnArity - 1; index >= 0; --index)
+	{
+		results[static_cast<std::size_t>(index)] = vm.Pop();
+	}
 	Value* calleeSlot = vm.GetCurrentFrame().slots;
 
 	const int newFrameCount = vm.GetFrameCount() - 1;
@@ -16,7 +21,10 @@ InterpretResult ReturnInstruction::Execute(VM& vm) const
 
 	vm.SetStackTop(calleeSlot);
 
-	vm.Push(result);
+	for (const Value& result : results)
+	{
+		vm.Push(result);
+	}
 
 	return InterpretResult::OK;
 }

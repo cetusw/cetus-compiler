@@ -441,13 +441,15 @@ public:
 class ReturnASTNode final : public StatementASTNode
 {
 public:
-	explicit ReturnASTNode(ASTNodePtr value = nullptr);
+	ReturnASTNode();
+	explicit ReturnASTNode(std::vector<ASTNodePtr> values);
 
-	[[nodiscard]] const ASTNode* GetValue() const;
+	[[nodiscard]] bool HasValues() const;
+	[[nodiscard]] const std::vector<ASTNodePtr>& GetValues() const;
 	void Accept(ASTNodeVisitor& visitor) const override;
 
 private:
-	ASTNodePtr m_value;
+	std::vector<ASTNodePtr> m_values;
 };
 
 class FunctionDeclarationASTNode final : public StatementASTNode

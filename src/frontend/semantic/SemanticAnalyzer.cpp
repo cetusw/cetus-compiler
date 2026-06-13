@@ -385,7 +385,7 @@ void SemanticAnalyzer::Visit(const CallExpressionASTNode& node)
 			return;
 		}
 
-		TypeCheckMethodCall(node, receiverType, *method, AnalyzeValues(node.GetArguments()));
+		TypeCheckMethodCall(node, receiverType, *method, AnalyzeExpandedValues(node.GetArguments()));
 		return;
 	}
 
@@ -403,7 +403,7 @@ void SemanticAnalyzer::Visit(const CallExpressionASTNode& node)
 		return;
 	}
 
-	const std::vector<TypeDescriptor> argumentTypes = AnalyzeValues(node.GetArguments());
+	const std::vector<ExpandedValue> argumentTypes = AnalyzeExpandedValues(node.GetArguments());
 	if (symbol->kind == SemanticSymbolKind::BUILTIN_FUNCTION)
 	{
 		TypeCheckBuiltinCall(node, argumentTypes);
@@ -417,7 +417,7 @@ void SemanticAnalyzer::TypeCheckMethodCall(
 	const CallExpressionASTNode& node,
 	const TypeDescriptor& receiverType,
 	const MethodSignature& method,
-	const std::vector<TypeDescriptor>& argumentTypes)
+	const std::vector<ExpandedValue>& argumentTypes)
 {
 	bool hasError = false;
 	if (method.receiverIsPointer)
@@ -444,13 +444,13 @@ void SemanticAnalyzer::TypeCheckMethodCall(
 
 	for (std::size_t index = 0; index < argumentTypes.size(); ++index)
 	{
-		if (!ValidateValueExpression(argumentTypes[index], "method argument"))
+		if (!ValidateValueExpression(argumentTypes[index].type, "method argument"))
 		{
 			hasError = true;
 			continue;
 		}
 		const ParameterSignature& parameter = method.parameters[index];
-		if (argumentTypes[index] != parameter.type)
+		if (argumentTypes[index].type != parameter.type)
 		{
 			AddDiagnostic("Method call argument type does not match parameter type: " + receiverType.ToString() + "." + node.GetCalleeName());
 			hasError = true;
@@ -460,7 +460,7 @@ void SemanticAnalyzer::TypeCheckMethodCall(
 			AddDiagnostic("Pointer method parameter is not supported yet: " + receiverType.ToString() + "." + node.GetCalleeName());
 			hasError = true;
 		}
-		if (IsAddressOfExpression(*node.GetArguments()[index]))
+		if (IsAddressOfExpression(*argumentTypes[index].expression))
 		{
 			AddDiagnostic("Method call expects value argument, not address argument: " + receiverType.ToString() + "." + node.GetCalleeName());
 			hasError = true;
@@ -471,7 +471,7 @@ void SemanticAnalyzer::TypeCheckMethodCall(
 }
 
 // TODO to refactor
-void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, const std::vector<TypeDescriptor>& argumentTypes)
+void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, const std::vector<ExpandedValue>& argumentTypes)
 {
 	const std::string& calleeName = node.GetCalleeName();
 	if (calleeName == "append")
@@ -482,46 +482,46 @@ void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, c
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
-		if (!ValidateValueExpression(argumentTypes.front(), "function argument"))
+		if (!ValidateValueExpression(argumentTypes.front().type, "function argument"))
 		{
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
-		if (!argumentTypes.front().IsSlice())
+		if (!argumentTypes.front().type.IsSlice())
 		{
 			AddDiagnostic("append expects slice as first argument.");
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
-		if (IsAddressOfExpression(*node.GetArguments().front()))
+		if (IsAddressOfExpression(*argumentTypes.front().expression))
 		{
 			AddDiagnostic("append expects value argument, not address argument.");
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
 
-		const TypeDescriptor elementType = argumentTypes.front().GetElementType();
+		const TypeDescriptor elementType = argumentTypes.front().type.GetElementType();
 		bool hasError = false;
 		for (std::size_t index = 1; index < argumentTypes.size(); ++index)
 		{
-			if (!ValidateValueExpression(argumentTypes[index], "function argument"))
+			if (!ValidateValueExpression(argumentTypes[index].type, "function argument"))
 			{
 				hasError = true;
 				continue;
 			}
-			if (IsAddressOfExpression(*node.GetArguments()[index]))
+			if (IsAddressOfExpression(*argumentTypes[index].expression))
 			{
 				AddDiagnostic("append expects value argument, not address argument.");
 				hasError = true;
 				continue;
 			}
-			if (argumentTypes[index] != elementType)
+			if (argumentTypes[index].type != elementType)
 			{
 				AddDiagnostic("append element type does not match slice element type.");
 				hasError = true;
 			}
 		}
-		SetCurrentType(node, hasError ? Type::ERROR : argumentTypes.front());
+		SetCurrentType(node, hasError ? Type::ERROR : argumentTypes.front().type);
 		return;
 	}
 
@@ -537,20 +537,20 @@ void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, c
 		bool hasError = false;
 		for (std::size_t index = 0; index < argumentTypes.size(); ++index)
 		{
-			if (!ValidateValueExpression(argumentTypes[index], "function argument"))
+			if (!ValidateValueExpression(argumentTypes[index].type, "function argument"))
 			{
 				hasError = true;
 			}
-			if (IsAddressOfExpression(*node.GetArguments()[index]))
+			if (IsAddressOfExpression(*argumentTypes[index].expression))
 			{
 				AddDiagnostic(calleeName + " expects value argument, not address argument.");
 				hasError = true;
 			}
-			if (argumentTypes[index] != Type::INT
-				&& argumentTypes[index] != Type::FLOAT
-				&& argumentTypes[index] != Type::BOOL
-				&& argumentTypes[index] != Type::STRING
-				&& !argumentTypes[index].IsSequence())
+			if (argumentTypes[index].type != Type::INT
+				&& argumentTypes[index].type != Type::FLOAT
+				&& argumentTypes[index].type != Type::BOOL
+				&& argumentTypes[index].type != Type::STRING
+				&& !argumentTypes[index].type.IsSequence())
 			{
 				AddDiagnostic(calleeName + " expects int, float, bool, string, array or slice argument.");
 				hasError = true;
@@ -574,18 +574,18 @@ void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, c
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
-		if (!ValidateValueExpression(argumentTypes.front(), "function argument"))
+		if (!ValidateValueExpression(argumentTypes.front().type, "function argument"))
 		{
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
-		if (IsAddressOfExpression(*node.GetArguments().front()))
+		if (IsAddressOfExpression(*argumentTypes.front().expression))
 		{
 			AddDiagnostic("len expects value argument, not address argument.");
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
-		if (!argumentTypes.front().IsIndexable())
+		if (!argumentTypes.front().type.IsIndexable())
 		{
 			AddDiagnostic("len expects string, array or slice argument.");
 			SetCurrentType(node, Type::ERROR);
@@ -604,13 +604,13 @@ void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, c
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
-		if (GetAddressedIdentifier(*node.GetArguments().front()) == nullptr)
+		if (GetAddressedIdentifier(*argumentTypes.front().expression) == nullptr)
 		{
 			AddDiagnostic("scan expects address of assignable identifier argument.");
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
-		if (!ValidateValueExpression(argumentTypes.front(), "function argument"))
+		if (!ValidateValueExpression(argumentTypes.front().type, "function argument"))
 		{
 			SetCurrentType(node, Type::ERROR);
 			return;
@@ -633,6 +633,11 @@ bool SemanticAnalyzer::ValidateValueExpression(const TypeDescriptor& type, const
 	if (type == Type::VOID)
 	{
 		AddDiagnostic(std::string("Void expression cannot be used as ") + context + ".");
+		return false;
+	}
+	if (type.IsTuple())
+	{
+		AddDiagnostic(std::string("Tuple expression cannot be used as ") + context + ".");
 		return false;
 	}
 
@@ -788,7 +793,7 @@ bool SemanticAnalyzer::ValidateUserDefinedName(const std::string& name, const ch
 void SemanticAnalyzer::TypeCheckFunctionCall(
 	const CallExpressionASTNode& node,
 	const SemanticSymbol& symbol,
-	const std::vector<TypeDescriptor>& argumentTypes)
+	const std::vector<ExpandedValue>& argumentTypes)
 {
 	bool hasError = false;
 	if (symbol.parameters.size() != argumentTypes.size())
@@ -800,19 +805,19 @@ void SemanticAnalyzer::TypeCheckFunctionCall(
 
 	for (std::size_t index = 0; index < argumentTypes.size(); ++index)
 	{
-		if (!ValidateValueExpression(argumentTypes[index], "function argument"))
+		if (!ValidateValueExpression(argumentTypes[index].type, "function argument"))
 		{
 			hasError = true;
 			continue;
 		}
 		const ParameterSignature& parameter = symbol.parameters[index];
-		if (argumentTypes[index] != parameter.type)
+		if (argumentTypes[index].type != parameter.type)
 		{
 			AddDiagnostic("Function call argument type does not match parameter type: " + node.GetCalleeName());
 			hasError = true;
 		}
-		const bool isAddressArgument = IsAddressOfExpression(*node.GetArguments()[index]);
-		if (parameter.isPointer && GetAddressedIdentifier(*node.GetArguments()[index]) == nullptr)
+		const bool isAddressArgument = IsAddressOfExpression(*argumentTypes[index].expression);
+		if (parameter.isPointer && GetAddressedIdentifier(*argumentTypes[index].expression) == nullptr)
 		{
 			AddDiagnostic("Pointer parameter expects address of assignable identifier argument: " + node.GetCalleeName());
 			hasError = true;
@@ -830,7 +835,7 @@ void SemanticAnalyzer::TypeCheckFunctionCall(
 void SemanticAnalyzer::Visit(const AssignmentASTNode& node)
 {
 	const std::size_t diagnosticCount = m_diagnostics.size();
-	const std::vector<TypeDescriptor> valueTypes = AnalyzeValues(node.GetValues());
+	const std::vector<ExpandedValue> valueTypes = AnalyzeExpandedValues(node.GetValues());
 	ValidateAssignment(node.GetTargets(), valueTypes);
 	SetCurrentType(node, HasError(valueTypes) || m_diagnostics.size() != diagnosticCount ? Type::ERROR : Type::VOID);
 }
@@ -874,7 +879,7 @@ void SemanticAnalyzer::Visit(const DecrementASTNode& node)
 void SemanticAnalyzer::Visit(const ShortVariableDeclarationASTNode& node)
 {
 	const std::size_t diagnosticCount = m_diagnostics.size();
-	const std::vector<TypeDescriptor> valueTypes = AnalyzeValues(node.GetValues());
+	const std::vector<ExpandedValue> valueTypes = AnalyzeExpandedValues(node.GetValues());
 	DefineShortVariables(node.GetNames(), valueTypes);
 	SetCurrentType(node, HasError(valueTypes) || m_diagnostics.size() != diagnosticCount ? Type::ERROR : Type::VOID);
 }
@@ -882,7 +887,7 @@ void SemanticAnalyzer::Visit(const ShortVariableDeclarationASTNode& node)
 void SemanticAnalyzer::Visit(const VariableDeclarationASTNode& node)
 {
 	const std::size_t diagnosticCount = m_diagnostics.size();
-	const std::vector<TypeDescriptor> valueTypes = AnalyzeValues(node.GetValues());
+	const std::vector<ExpandedValue> valueTypes = AnalyzeExpandedValues(node.GetValues());
 	DefineVariables(node.GetNames(), node.GetDeclaredType(), valueTypes);
 	SetCurrentType(node, HasError(valueTypes) || m_diagnostics.size() != diagnosticCount ? Type::ERROR : Type::VOID);
 }
@@ -890,7 +895,18 @@ void SemanticAnalyzer::Visit(const VariableDeclarationASTNode& node)
 void SemanticAnalyzer::Visit(const ExpressionStatementASTNode& node)
 {
 	const TypeDescriptor expressionType = AnalyzeChild(node.GetExpression());
-	SetCurrentType(node, expressionType == Type::ERROR ? Type::ERROR : Type::VOID);
+	if (expressionType == Type::ERROR)
+	{
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+	if (expressionType.IsTuple())
+	{
+		AddDiagnostic("Tuple-valued expression cannot be used as statement.");
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+	SetCurrentType(node, Type::VOID);
 }
 
 void SemanticAnalyzer::Visit(const EmptyStatementASTNode& node)
@@ -898,7 +914,7 @@ void SemanticAnalyzer::Visit(const EmptyStatementASTNode& node)
 	SetCurrentType(node, Type::VOID);
 }
 
-void SemanticAnalyzer::ValidateAssignment(const std::vector<ASTNodePtr>& targets, const std::vector<TypeDescriptor>& valueTypes)
+void SemanticAnalyzer::ValidateAssignment(const std::vector<ASTNodePtr>& targets, const std::vector<ExpandedValue>& valueTypes)
 {
 	if (targets.size() != valueTypes.size())
 	{
@@ -908,7 +924,7 @@ void SemanticAnalyzer::ValidateAssignment(const std::vector<ASTNodePtr>& targets
 
 	for (std::size_t index = 0; index < targets.size(); ++index)
 	{
-		if (!ValidateValueExpression(valueTypes[index], "assignment value"))
+		if (!ValidateValueExpression(valueTypes[index].type, "assignment value"))
 		{
 			continue;
 		}
@@ -918,7 +934,7 @@ void SemanticAnalyzer::ValidateAssignment(const std::vector<ASTNodePtr>& targets
 		{
 			continue;
 		}
-		if (targetType != valueTypes[index])
+		if (targetType != valueTypes[index].type)
 		{
 			AddDiagnostic("Cannot assign value of different type to assignment target.");
 		}
@@ -969,7 +985,7 @@ TypeDescriptor SemanticAnalyzer::AnalyzeAssignmentTarget(const ASTNode& target)
 	return Type::ERROR;
 }
 
-void SemanticAnalyzer::DefineShortVariables(const std::vector<std::string>& names, const std::vector<TypeDescriptor>& valueTypes)
+void SemanticAnalyzer::DefineShortVariables(const std::vector<std::string>& names, const std::vector<ExpandedValue>& valueTypes)
 {
 	if (names.size() != valueTypes.size())
 	{
@@ -988,19 +1004,19 @@ void SemanticAnalyzer::DefineShortVariables(const std::vector<std::string>& name
 		{
 			continue;
 		}
-		if (!ValidateValueExpression(valueTypes[index], "variable initializer"))
+		if (!ValidateValueExpression(valueTypes[index].type, "variable initializer"))
 		{
 			continue;
 		}
 
-		m_symbolTable.Define(SemanticSymbol{ names[index], valueTypes[index], SemanticSymbolKind::VARIABLE, {}, {}, {} });
+		m_symbolTable.Define(SemanticSymbol{ names[index], valueTypes[index].type, SemanticSymbolKind::VARIABLE, {}, {}, {} });
 	}
 }
 
 void SemanticAnalyzer::DefineVariables(
 	const std::vector<std::string>& names,
 	const std::optional<TypeDescriptor>& declaredType,
-	const std::vector<TypeDescriptor>& valueTypes)
+	const std::vector<ExpandedValue>& valueTypes)
 {
 	if (!valueTypes.empty() && names.size() != valueTypes.size())
 	{
@@ -1029,12 +1045,12 @@ void SemanticAnalyzer::DefineVariables(
 			continue;
 		}
 
-		if (!valueTypes.empty() && !ValidateValueExpression(valueTypes[index], "variable initializer"))
+		if (!valueTypes.empty() && !ValidateValueExpression(valueTypes[index].type, "variable initializer"))
 		{
 			continue;
 		}
-		const TypeDescriptor symbolType = declaredType.has_value() ? *declaredType : valueTypes[index];
-		if (!valueTypes.empty() && symbolType != valueTypes[index])
+		const TypeDescriptor symbolType = declaredType.has_value() ? *declaredType : valueTypes[index].type;
+		if (!valueTypes.empty() && symbolType != valueTypes[index].type)
 		{
 			AddDiagnostic("Variable initializer type does not match declared type for: " + names[index]);
 			continue;
@@ -1202,7 +1218,7 @@ void SemanticAnalyzer::Visit(const ReturnASTNode& node)
 {
 	if (!m_currentFunctionReturnType.has_value())
 	{
-		if (const ASTNode* value = node.GetValue())
+		for (const ASTNodePtr& value : node.GetValues())
 		{
 			const TypeDescriptor valueType = AnalyzeChild(*value);
 			if (!ValidateValueExpression(valueType, "return value"))
@@ -1218,25 +1234,54 @@ void SemanticAnalyzer::Visit(const ReturnASTNode& node)
 	}
 
 	const TypeDescriptor expectedReturnType = *m_currentFunctionReturnType;
-	if (const ASTNode* value = node.GetValue())
+	if (node.HasValues())
 	{
-		const TypeDescriptor valueType = AnalyzeChild(*value);
-		if (!ValidateValueExpression(valueType, "return value"))
-		{
-			SetCurrentType(node, Type::ERROR);
-			return;
-		}
 		if (expectedReturnType == Type::VOID)
 		{
 			AddDiagnostic("Void function cannot return a value.");
 			SetCurrentType(node, Type::ERROR);
 			return;
 		}
-		if (valueType != expectedReturnType)
+
+		const std::vector<ExpandedValue> valueTypes = AnalyzeExpandedValues(node.GetValues());
+		if (HasError(valueTypes))
 		{
-			AddDiagnostic("Return value type does not match function return type.");
 			SetCurrentType(node, Type::ERROR);
 			return;
+		}
+		if (expectedReturnType.IsTuple())
+		{
+			const std::vector<TypeDescriptor>& expectedTypes = expectedReturnType.GetTupleElements();
+			if (expectedTypes.size() != valueTypes.size())
+			{
+				AddDiagnostic("Return value count does not match function return type.");
+				SetCurrentType(node, Type::ERROR);
+				return;
+			}
+			for (std::size_t index = 0; index < expectedTypes.size(); ++index)
+			{
+				if (valueTypes[index].type != expectedTypes[index])
+				{
+					AddDiagnostic("Return value type does not match function return type.");
+					SetCurrentType(node, Type::ERROR);
+					return;
+				}
+			}
+		}
+		else
+		{
+			if (valueTypes.size() != 1)
+			{
+				AddDiagnostic("Single-return function must return exactly one value.");
+				SetCurrentType(node, Type::ERROR);
+				return;
+			}
+			if (valueTypes.front().type != expectedReturnType)
+			{
+				AddDiagnostic("Return value type does not match function return type.");
+				SetCurrentType(node, Type::ERROR);
+				return;
+			}
 		}
 
 		SetCurrentType(node, Type::VOID);
@@ -1624,6 +1669,28 @@ std::vector<TypeDescriptor> SemanticAnalyzer::AnalyzeValues(const std::vector<AS
 	return result;
 }
 
+std::vector<SemanticAnalyzer::ExpandedValue> SemanticAnalyzer::AnalyzeExpandedValues(const std::vector<ASTNodePtr>& values)
+{
+	std::vector<ExpandedValue> result;
+	for (const ASTNodePtr& value : values)
+	{
+		const TypeDescriptor analyzedType = AnalyzeChild(*value);
+		if (analyzedType.IsTuple())
+		{
+			const std::vector<TypeDescriptor>& tupleElements = analyzedType.GetTupleElements();
+			result.reserve(result.size() + tupleElements.size());
+			for (const TypeDescriptor& tupleElement : tupleElements)
+			{
+				result.push_back(ExpandedValue{ value.get(), tupleElement });
+			}
+			continue;
+		}
+
+		result.push_back(ExpandedValue{ value.get(), analyzedType });
+	}
+	return result;
+}
+
 // TODO избавиться от дублирования кода
 bool SemanticAnalyzer::IsFalsey(TypeDescriptor type)
 {
@@ -1635,6 +1702,18 @@ bool SemanticAnalyzer::HasError(const std::vector<TypeDescriptor>& types)
 	for (const TypeDescriptor& type : types)
 	{
 		if (type == Type::ERROR)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool SemanticAnalyzer::HasError(const std::vector<ExpandedValue>& values)
+{
+	for (const ExpandedValue& value : values)
+	{
+		if (value.type == Type::ERROR)
 		{
 			return true;
 		}

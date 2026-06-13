@@ -59,6 +59,9 @@ private:
 	void EmitBinaryOperation(BinaryOperator op);
 	void EmitLogicalAnd(const BinaryASTNode& expr);
 	void EmitLogicalOr(const BinaryASTNode& expr);
+	int EmitExpandedValues(const std::vector<ASTNodePtr>& values);
+	int GetReturnArity(const TypeDescriptor& type) const;
+	void EmitPopForType(const TypeDescriptor& type);
 	void EmitScopeCleanup(int scopeDepth);
 	void EmitIdentifierRef(const IdentifierASTNode& expr);
 	void EmitAddressableRef(const ASTNode& expr);

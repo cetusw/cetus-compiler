@@ -8,7 +8,8 @@ using NativeFn = Value (*)(int argCount, Value* args);
 class ObjNative final : public Obj
 {
 public:
-	explicit ObjNative(NativeFn function);
+	ObjNative(NativeFn function, int returnArity);
 
 	NativeFn m_function;
+	int m_returnArity;
 };

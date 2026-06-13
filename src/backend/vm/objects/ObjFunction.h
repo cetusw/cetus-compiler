@@ -9,6 +9,7 @@ public:
 	ObjFunction();
 
 	int arity;
+	int returnArity;
 	Chunk chunk;
 	std::shared_ptr<ObjString> name;
 };

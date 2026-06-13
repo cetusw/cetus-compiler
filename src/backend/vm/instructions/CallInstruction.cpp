@@ -12,7 +12,10 @@ InterpretResult CallInstruction::Execute(VM& vm) const
 		const auto native = callee.AsNative();
 		const Value result = native->m_function(argCount, vm.GetStackTop() - argCount);
 		vm.SetStackTop(vm.GetStackTop() - argCount - 1);
-		vm.Push(result);
+		if (native->m_returnArity > 0)
+		{
+			vm.Push(result);
+		}
 		return InterpretResult::OK;
 	}
 	if (callee.IsFunction())

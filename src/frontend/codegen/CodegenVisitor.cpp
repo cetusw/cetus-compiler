@@ -390,18 +390,14 @@ void CodegenVisitor::Visit(const CallExpressionASTNode& expr)
 			return;
 		}
 
-		const std::vector<ASTNodePtr>& arguments = expr.GetArguments();
-		for (const ASTNodePtr& argument : arguments)
+		const int argumentCount = EmitExpandedValues(expr.GetArguments());
+		if (m_error.has_value())
 		{
-			argument->Accept(*this);
-			if (m_error.has_value())
-			{
-				return;
-			}
+			return;
 		}
 
 		CurrentEmitter().EmitOpcode(OP_CALL);
-		CurrentEmitter().EmitOperandByte(static_cast<int>(arguments.size() + 1));
+		CurrentEmitter().EmitOperandByte(argumentCount + 1);
 		return;
 	}
 
@@ -410,9 +406,21 @@ void CodegenVisitor::Visit(const CallExpressionASTNode& expr)
 	CurrentEmitter().EmitGlobalLoad(targetName);
 
 	const std::vector<ASTNodePtr>& arguments = expr.GetArguments();
+	int parameterIndex = 0;
+	int argumentCount = 0;
 	for (std::size_t index = 0; index < arguments.size(); ++index)
 	{
-		if (ShouldPassArgumentByPointer(calleeName, index))
+		const auto inferredType = arguments[index]->GetInferredType();
+		if (!inferredType.has_value())
+		{
+			Fail("Function argument type is missing during code generation.");
+			return;
+		}
+		const int argumentWidth = inferredType->IsTuple()
+			? static_cast<int>(inferredType->GetTupleElements().size())
+			: 1;
+
+		if (argumentWidth == 1 && ShouldPassArgumentByPointer(calleeName, static_cast<std::size_t>(parameterIndex)))
 		{
 			const IdentifierASTNode* identifier = GetAddressedIdentifier(*arguments[index]);
 			if (!identifier)
@@ -421,19 +429,22 @@ void CodegenVisitor::Visit(const CallExpressionASTNode& expr)
 				return;
 			}
 			EmitIdentifierRef(*identifier);
+			++argumentCount;
 		}
 		else
 		{
 			arguments[index]->Accept(*this);
+			argumentCount += argumentWidth;
 		}
 		if (m_error.has_value())
 		{
 			return;
 		}
+		parameterIndex += argumentWidth;
 	}
 
 	CurrentEmitter().EmitOpcode(OP_CALL);
-	CurrentEmitter().EmitOperandByte(static_cast<int>(expr.GetArguments().size()));
+	CurrentEmitter().EmitOperandByte(argumentCount);
 }
 
 void CodegenVisitor::Visit(const AssignmentASTNode& expr)
@@ -444,15 +455,10 @@ void CodegenVisitor::Visit(const AssignmentASTNode& expr)
 	}
 
 	const std::vector<ASTNodePtr>& targets = expr.GetTargets();
-	const std::vector<ASTNodePtr>& values = expr.GetValues();
-
-	for (const ASTNodePtr& value : values)
+	EmitExpandedValues(expr.GetValues());
+	if (m_error.has_value())
 	{
-		value->Accept(*this);
-		if (m_error.has_value())
-		{
-			return;
-		}
+		return;
 	}
 
 	for (std::size_t i = targets.size(); i > 0; --i)
@@ -518,17 +524,15 @@ void CodegenVisitor::Visit(const ShortVariableDeclarationASTNode& expr)
 	}
 
 	const std::vector<std::string>& names = expr.GetNames();
-	const std::vector<ASTNodePtr>& values = expr.GetValues();
-
-	for (std::size_t i = 0; i < names.size(); ++i)
+	EmitExpandedValues(expr.GetValues());
+	if (m_error.has_value())
 	{
-		values[i]->Accept(*this);
-		if (m_error.has_value())
-		{
-			return;
-		}
+		return;
+	}
 
-		m_functionStack.back().DeclareLocal(names[i]);
+	for (const std::string& name : names)
+	{
+		m_functionStack.back().DeclareLocal(name);
 	}
 }
 
@@ -553,15 +557,15 @@ void CodegenVisitor::Visit(const VariableDeclarationASTNode& expr)
 		return;
 	}
 
-	for (std::size_t i = 0; i < names.size(); ++i)
+	EmitExpandedValues(values);
+	if (m_error.has_value())
 	{
-		values[i]->Accept(*this);
-		if (m_error.has_value())
-		{
-			return;
-		}
+		return;
+	}
 
-		m_functionStack.back().DeclareLocal(names[i]);
+	for (const std::string& name : names)
+	{
+		m_functionStack.back().DeclareLocal(name);
 	}
 }
 
@@ -570,6 +574,12 @@ void CodegenVisitor::Visit(const ExpressionStatementASTNode& expr)
 	expr.GetExpression().Accept(*this);
 	if (m_error.has_value())
 	{
+		return;
+	}
+
+	if (const auto inferredType = expr.GetExpression().GetInferredType(); inferredType.has_value())
+	{
+		EmitPopForType(*inferredType);
 		return;
 	}
 
@@ -786,17 +796,16 @@ void CodegenVisitor::Visit(const ReturnASTNode& expr)
 		return;
 	}
 
-	if (const ASTNode* value = expr.GetValue())
+	const int expectedReturnArity = m_functionStack.back().Function().returnArity;
+	const int actualReturnArity = expr.HasValues() ? EmitExpandedValues(expr.GetValues()) : 0;
+	if (m_error.has_value())
 	{
-		value->Accept(*this);
-		if (m_error.has_value())
-		{
-			return;
-		}
+		return;
 	}
-	else
+	if (actualReturnArity != expectedReturnArity)
 	{
-		CurrentEmitter().EmitConstant(Value());
+		Fail("Return arity does not match function signature during code generation.");
+		return;
 	}
 
 	CurrentEmitter().EmitOpcode(OP_RETURN);
@@ -812,6 +821,7 @@ void CodegenVisitor::Visit(const FunctionDeclarationASTNode& expr)
 	auto function = std::make_shared<ObjFunction>();
 	function->name = std::make_shared<ObjString>(expr.GetQualifiedName());
 	function->arity = static_cast<int>(expr.GetParameters().size() + (expr.GetReceiver() ? 1 : 0));
+	function->returnArity = GetReturnArity(expr.GetReturnType());
 
 	m_functionStack.emplace_back(function, m_error);
 	int parameterSlot = 1;
@@ -829,7 +839,6 @@ void CodegenVisitor::Visit(const FunctionDeclarationASTNode& expr)
 	expr.GetBody().Accept(*this);
 	if (!m_error.has_value())
 	{
-		CurrentEmitter().EmitConstant(Value());
 		CurrentEmitter().EmitOpcode(OP_RETURN);
 	}
 	m_functionStack.pop_back();
@@ -990,6 +999,67 @@ void CodegenVisitor::EmitLogicalOr(const BinaryASTNode& expr)
 	}
 
 	CurrentEmitter().PatchJump(endJump);
+}
+
+int CodegenVisitor::EmitExpandedValues(const std::vector<ASTNodePtr>& values)
+{
+	int emittedValueCount = 0;
+	for (const ASTNodePtr& value : values)
+	{
+		const auto inferredType = value->GetInferredType();
+		if (!inferredType.has_value())
+		{
+			Fail("Expanded value type is missing during code generation.");
+			return emittedValueCount;
+		}
+
+		value->Accept(*this);
+		if (m_error.has_value())
+		{
+			return emittedValueCount;
+		}
+
+		if (inferredType->IsTuple())
+		{
+			emittedValueCount += static_cast<int>(inferredType->GetTupleElements().size());
+			continue;
+		}
+
+		++emittedValueCount;
+	}
+
+	return emittedValueCount;
+}
+
+int CodegenVisitor::GetReturnArity(const TypeDescriptor& type) const
+{
+	if (type == Type::VOID)
+	{
+		return 0;
+	}
+	if (type.IsTuple())
+	{
+		return static_cast<int>(type.GetTupleElements().size());
+	}
+	return 1;
+}
+
+void CodegenVisitor::EmitPopForType(const TypeDescriptor& type)
+{
+	if (type == Type::VOID)
+	{
+		return;
+	}
+	if (type.IsTuple())
+	{
+		for (std::size_t index = 0; index < type.GetTupleElements().size(); ++index)
+		{
+			CurrentEmitter().EmitOpcode(OP_POP);
+		}
+		return;
+	}
+
+	CurrentEmitter().EmitOpcode(OP_POP);
 }
 
 void CodegenVisitor::EmitScopeCleanup(const int scopeDepth)

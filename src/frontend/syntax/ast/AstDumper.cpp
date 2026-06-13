@@ -234,7 +234,7 @@ void AstDumper::Visit(const ContinueASTNode&)
 void AstDumper::Visit(const ReturnASTNode& expr)
 {
 	DumpLine("ReturnASTNode");
-	if (const ASTNode* value = expr.GetValue())
+	for (const ASTNodePtr& value : expr.GetValues())
 	{
 		DumpChild(*value);
 	}

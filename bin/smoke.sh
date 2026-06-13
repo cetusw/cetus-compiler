@@ -161,14 +161,18 @@ run_positive_output "${ROOT_DIR}/tests/smoke/positive/method_basic.cetus" "5"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/method_ref_receiver.cetus" "5"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/method_ref_receiver_member.cetus" "5"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/method_ref_receiver_index.cetus" "5"
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/multiple_return_binding.cetus" "7 true"
+run_positive_output "${ROOT_DIR}/tests/smoke/positive/multiple_return_forward.cetus" "11 true"
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/struct_basic.cetus" "1"
-run_positive_output "${ROOT_DIR}/tests/programs/max.cetus" "9"
-run_positive_output "${ROOT_DIR}/tests/programs/linear_search.cetus" "2"
-run_positive_output "${ROOT_DIR}/tests/programs/binary_search.cetus" "4"
-run_positive_output "${ROOT_DIR}/tests/programs/fizz_buzz.cetus" $'1\n2\nFizz\n4\nBuzz\nFizz\n7\n8\nFizz\nBuzz\n11\nFizz\n13\n14\nFizzBuzz\n16\n17\nFizz\n19\nBuzz\nFizz\n22\n23\nFizz\nBuzz\n26\nFizz\n28\n29\nFizzBuzz'
-run_positive_output "${ROOT_DIR}/tests/programs/selection_sort.cetus" "[11, 12, 22, 25, 64]"
-run_positive_output "${ROOT_DIR}/tests/programs/insertion_sort.cetus" "[1, 2, 3, 4, 5, 6]"
-run_positive_output "${ROOT_DIR}/tests/programs/valid_brackets.cetus" "true"
+run_positive_output "${ROOT_DIR}/tests/programs/algorithms/max.cetus" "9"
+run_positive_output "${ROOT_DIR}/tests/programs/search/linear_search.cetus" "2"
+run_positive_output "${ROOT_DIR}/tests/programs/search/binary_search.cetus" "4"
+run_positive_output "${ROOT_DIR}/tests/programs/algorithms/fizz_buzz.cetus" $'1\n2\nFizz\n4\nBuzz\nFizz\n7\n8\nFizz\nBuzz\n11\nFizz\n13\n14\nFizzBuzz\n16\n17\nFizz\n19\nBuzz\nFizz\n22\n23\nFizz\nBuzz\n26\nFizz\n28\n29\nFizzBuzz'
+run_positive_output "${ROOT_DIR}/tests/programs/sort/selection_sort.cetus" "[11, 12, 22, 25, 64]"
+run_positive_output "${ROOT_DIR}/tests/programs/sort/insertion_sort.cetus" "[1, 2, 3, 4, 5, 6]"
+run_positive_output "${ROOT_DIR}/tests/programs/algorithms/valid_brackets.cetus" $'false\ntrue'
+run_positive_output "${ROOT_DIR}/tests/programs/objects/stack.cetus" $'20 true\n10 true'
+run_positive_output "${ROOT_DIR}/tests/programs/objects/queue.cetus" $'10 true\n20 true'
 run_positive_output_stdin "${ROOT_DIR}/tests/smoke/positive/scan_input.cetus" $'cetus\n42\n2.5\ntrue\n' $'cetus\n42\n2.5\ntrue'
 run_typecheck_positive "${ROOT_DIR}/tests/smoke/typecheck/array_type.cetus"
 run_typecheck_positive "${ROOT_DIR}/tests/smoke/typecheck/slice_type.cetus"
@@ -191,5 +195,6 @@ run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/struct_literal_duplica
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/struct_literal_type_mismatch.cetus" "Struct literal field initializer type does not match declared field type"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/method_unknown.cetus" "Method is not declared"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/method_duplicate.cetus" "Method is already declared"
+run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/multiple_return_single_binding.cetus" "Short variable declaration expects the same number of names and values"
 
 echo "[smoke] ok"

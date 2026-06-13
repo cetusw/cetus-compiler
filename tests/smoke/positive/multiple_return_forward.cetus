@@ -1,0 +1,11 @@
+func Pair() (int, bool) {
+    return 11, true
+}
+
+func Forward() (int, bool) {
+    return Pair()
+}
+
+func main() {
+    println(Forward())
+}

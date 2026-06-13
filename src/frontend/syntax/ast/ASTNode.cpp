@@ -552,14 +552,21 @@ void ContinueASTNode::Accept(ASTNodeVisitor& visitor) const
 	visitor.Visit(*this);
 }
 
-ReturnASTNode::ReturnASTNode(ASTNodePtr value)
-	: m_value(std::move(value))
+ReturnASTNode::ReturnASTNode() = default;
+
+ReturnASTNode::ReturnASTNode(std::vector<ASTNodePtr> values)
+	: m_values(std::move(values))
 {
 }
 
-const ASTNode* ReturnASTNode::GetValue() const
+bool ReturnASTNode::HasValues() const
 {
-	return m_value.get();
+	return !m_values.empty();
+}
+
+const std::vector<ASTNodePtr>& ReturnASTNode::GetValues() const
+{
+	return m_values;
 }
 
 void ReturnASTNode::Accept(ASTNodeVisitor& visitor) const

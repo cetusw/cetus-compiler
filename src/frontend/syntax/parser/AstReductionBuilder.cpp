@@ -998,7 +998,7 @@ AstSemanticValue AstReductionBuilder::BuildReturnVoid(const std::vector<AstSeman
 AstSemanticValue AstReductionBuilder::BuildReturnValue(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "Return value reduction");
-	return { std::make_unique<ReturnASTNode>(TakeNode(values, 1)), std::nullopt };
+	return { std::make_unique<ReturnASTNode>(TakeExpressionList(values, 1)), std::nullopt };
 }
 
 AstSemanticValue AstReductionBuilder::BuildVoidFunctionNoParams(std::vector<AstSemanticValue> values)

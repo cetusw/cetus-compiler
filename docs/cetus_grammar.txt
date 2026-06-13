@@ -31,7 +31,7 @@
 ~Stmt~ -> ~VarDecl~ SEMICOLON @pass_expr
 ~Stmt~ -> SEMICOLON @empty_statement
 ~Stmt~ -> RETURN SEMICOLON @return_void
-~Stmt~ -> RETURN ~Con~ SEMICOLON @return_value
+~Stmt~ -> RETURN ~ExpressionList~ SEMICOLON @return_value
 ~Stmt~ -> ~IfStmt~ @pass_expr
 ~Stmt~ -> FOR ~Con~ ~Block~ @for_condition
 ~Stmt~ -> FOR ~ForInit~ SEMICOLON ~Con~ SEMICOLON ~SimpleStmt~ ~Block~ @for_classic
