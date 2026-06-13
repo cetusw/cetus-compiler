@@ -14,7 +14,7 @@ func (s *Stack) Push(value int) {
 
 func (s *Stack) Pop() (int, bool) {
     if s.IsEmpty() {
-        return 0, false
+        return 0, true
     }
 
     lastIndex := len(s.data) - 1
@@ -22,7 +22,7 @@ func (s *Stack) Pop() (int, bool) {
 
     s.data = s.data[:lastIndex]
 
-    return value, true
+    return value, false
 }
 
 func (s *Stack) IsEmpty() bool {
@@ -35,6 +35,17 @@ func main() {
     stack.Push(10)
     stack.Push(20)
 
-    println(stack.Pop())
-    println(stack.Pop())
+    first, err := stack.Pop()
+    if err {
+        println("Error")
+    } else {
+        println(first)
+    }
+
+    second, err2 := stack.Pop()
+    if err {
+        println("Error")
+    } else {
+        println(second)
+    }
 }
