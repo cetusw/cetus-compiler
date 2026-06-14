@@ -7,7 +7,10 @@
 
 struct ParseResult
 {
-	[[nodiscard]] static ParseResult Success(const int line, ASTNodePtr ast = nullptr, std::string message = "Syntax analysis completed successfully.")
+	[[nodiscard]] static ParseResult Success(
+		const int line,
+		std::unique_ptr<ProgramASTNode> ast,
+		std::string message = "Syntax analysis completed successfully.")
 	{
 		ParseResult result;
 		result.success = true;
@@ -25,7 +28,10 @@ struct ParseResult
 		return result;
 	}
 
-	[[nodiscard]] static ParseResult Error(const int line, std::string message, std::vector<std::string> expectedTerminals)
+	[[nodiscard]] static ParseResult Error(
+		const int line,
+		std::string message,
+		std::vector<std::string> expectedTerminals)
 	{
 		ParseResult result = Error(line, std::move(message));
 		result.expectedTerminals = std::move(expectedTerminals);
@@ -36,5 +42,5 @@ struct ParseResult
 	int line = 1;
 	std::string message;
 	std::vector<std::string> expectedTerminals;
-	ASTNodePtr ast;
+	std::unique_ptr<ProgramASTNode> ast;
 };

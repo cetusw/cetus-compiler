@@ -3,24 +3,94 @@
 #include "src/frontend/lexical/Token.h"
 #include "src/frontend/syntax/ast/ASTNode.h"
 #include "src/frontend/syntax/lalr/types/PreparedGrammar.h"
-#include <optional>
+#include <variant>
 #include <vector>
 
-// TODO переделать на variant
-struct AstSemanticValue
+struct NodeValue
 {
-	ASTNodePtr node = nullptr;
-	std::optional<Token> token = std::nullopt;
-	std::vector<std::string> identifiers = {};
-	std::vector<ASTNodePtr> expressions = {};
-	std::vector<FunctionParameter> parameters = {};
-	std::optional<TypeDescriptor> type = std::nullopt;
-	std::vector<TypeDescriptor> types = {};
-	std::vector<StructField> fields = {};
-	std::vector<StructFieldInitializer> fieldInitializers = {};
-	bool hasStructLiteralTail = false;
-	bool compositeLiteralInitializer = false;
+	ASTNodePtr value;
 };
+
+struct ProgramValue
+{
+	std::unique_ptr<ProgramASTNode> value;
+};
+
+struct TokenValue
+{
+	Token value;
+};
+
+struct IdentifierListValue
+{
+	std::vector<std::string> values;
+};
+
+struct ExpressionListValue
+{
+	std::vector<ASTNodePtr> values;
+};
+
+struct ParameterListValue
+{
+	std::vector<FunctionParameter> values;
+};
+
+struct TypeValue
+{
+	TypeDescriptor value;
+};
+
+struct TypeListValue
+{
+	std::vector<TypeDescriptor> values;
+};
+
+struct StructFieldListValue
+{
+	std::vector<StructField> values;
+};
+
+struct FieldInitializerListValue
+{
+	std::vector<StructFieldInitializer> values;
+};
+
+struct StructLiteralTailValue
+{
+	std::vector<StructFieldInitializer> fieldInitializers;
+};
+
+struct EmptyStructLiteralTailValue
+{
+};
+
+struct CompositeLiteralInitializerValue
+{
+	std::vector<ASTNodePtr> expressions;
+};
+
+struct StatementListValue
+{
+	std::vector<ASTNodePtr> values;
+};
+
+using AstSemanticValue = std::variant<
+	std::monostate,
+	NodeValue,
+	ProgramValue,
+	TokenValue,
+	IdentifierListValue,
+	ExpressionListValue,
+	ParameterListValue,
+	TypeValue,
+	TypeListValue,
+	StructFieldListValue,
+	FieldInitializerListValue,
+	StructLiteralTailValue,
+	EmptyStructLiteralTailValue,
+	CompositeLiteralInitializerValue,
+	StatementListValue>;
 
 // TODO отрефакторить. слишком много методов
 class AstReductionBuilder
@@ -28,6 +98,7 @@ class AstReductionBuilder
 public:
 	[[nodiscard]] static AstSemanticValue Build(const ParserRule& rule, std::vector<AstSemanticValue> values);
 
+	[[nodiscard]] static std::unique_ptr<ProgramASTNode> TakeProgram(AstSemanticValue& value);
 private:
 	static void RequireValueCount(const std::vector<AstSemanticValue>& values, std::size_t expectedCount, const char* actionName);
 	[[nodiscard]] static AstSemanticValue BuildBinary(std::vector<AstSemanticValue> values);
@@ -40,7 +111,7 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildArrayLiteral(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildEmptyArrayLiteral(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildStructLiteral(std::vector<AstSemanticValue> values);
-	[[nodiscard]] static AstSemanticValue BuildEmptyStructLiteral(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildEmptyStructLiteral(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildIdentifier(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildNamedPostfix(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildIdentifierTail(const std::vector<AstSemanticValue>& values);
@@ -57,10 +128,10 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildArrayType(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildSliceType(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildPointerType(const std::vector<AstSemanticValue>& values);
-	[[nodiscard]] static AstSemanticValue BuildSingleReturnType(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildSingleReturnType(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildTupleReturnType(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildTypeList(std::vector<AstSemanticValue> values);
-	[[nodiscard]] static AstSemanticValue BuildSingleTypeList(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildSingleTypeList(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildParameter(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildPointerParameter(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildParameterList(std::vector<AstSemanticValue> values);
@@ -118,9 +189,12 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildReturnMethodNoParams(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildVoidMethod(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildReturnMethod(std::vector<AstSemanticValue> values);
+
 	[[nodiscard]] static AstSemanticValue PassNode(std::vector<AstSemanticValue> values, std::size_t index);
-	[[nodiscard]] static AstSemanticValue PassToken(std::vector<AstSemanticValue> values, std::size_t index);
+	[[nodiscard]] static AstSemanticValue PassToken(const std::vector<AstSemanticValue>& values, std::size_t index);
+
 	[[nodiscard]] static ASTNodePtr TakeNode(std::vector<AstSemanticValue>& values, std::size_t index);
+	[[nodiscard]] static std::vector<ASTNodePtr> TakeStatementList(std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static std::vector<ASTNodePtr> TakeExpressionList(std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static std::vector<std::string> TakeIdentifierList(std::vector<AstSemanticValue>& values, std::size_t index);
 	[[nodiscard]] static std::vector<std::string> TakeIdentifierNamesFromTargets(std::vector<AstSemanticValue>& values, std::size_t index);

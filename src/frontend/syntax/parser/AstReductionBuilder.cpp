@@ -208,68 +208,79 @@ void AstReductionBuilder::RequireValueCount(
 AstSemanticValue AstReductionBuilder::BuildBinary(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "Binary reduction");
-	return {
+	return NodeValue{
 		std::make_unique<BinaryASTNode>(
 			TakeNode(values, 0),
 			ToBinaryOperator(TakeToken(values, 1).type),
-			TakeNode(values, 2)),
-		std::nullopt
+			TakeNode(values, 2))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildUnary(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 2, "Unary reduction");
-	return {
+	return NodeValue{
 		std::make_unique<UnaryASTNode>(
 			ToUnaryOperator(TakeToken(values, 0).type),
-			TakeNode(values, 1)),
-		std::nullopt
+			TakeNode(values, 1))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildBoolLiteral(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 1, "Bool literal reduction");
-	// TODO сделать что-то с такими длинными объявлениями
-	return { std::make_unique<BoolLiteralASTNode>(TakeToken(values, 0).type == TokenType::TRUE), std::nullopt };
+	return NodeValue{
+		std::make_unique<BoolLiteralASTNode>(
+			TakeToken(values, 0).type == TokenType::TRUE)
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildNilLiteral(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 1, "Nil literal reduction");
-	return { std::make_unique<NilLiteralASTNode>(), std::nullopt };
+	return NodeValue{
+		std::make_unique<NilLiteralASTNode>()
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildIntLiteral(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 1, "Int literal reduction");
-	return { std::make_unique<IntLiteralASTNode>(TakeToken(values, 0).lexeme), std::nullopt };
+	return NodeValue{
+		std::make_unique<IntLiteralASTNode>(
+			TakeToken(values, 0).lexeme)
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildFloatLiteral(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 1, "Float literal reduction");
-	return { std::make_unique<FloatLiteralASTNode>(TakeToken(values, 0).lexeme), std::nullopt };
+	return NodeValue{
+		std::make_unique<FloatLiteralASTNode>(
+			TakeToken(values, 0).lexeme)
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildStringLiteral(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 1, "String literal reduction");
-	return { std::make_unique<StringLiteralASTNode>(TakeToken(values, 0).lexeme), std::nullopt };
+	return NodeValue{
+		std::make_unique<StringLiteralASTNode>(
+			TakeToken(values, 0).lexeme)
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildArrayLiteral(std::vector<AstSemanticValue> values)
 {
 	if (values.size() == 6)
 	{
-		return {
+		return NodeValue{
 			std::make_unique<ArrayLiteralASTNode>(
 				TypeDescriptor::Slice(TakeType(values, 2)),
-				TakeExpressionList(values, 4)),
-			std::nullopt
+				TakeExpressionList(values, 4))
 		};
 	}
+
 	if (values.size() == 7)
 	{
 		const int length = std::stoi(TakeToken(values, 1).lexeme);
@@ -277,11 +288,11 @@ AstSemanticValue AstReductionBuilder::BuildArrayLiteral(std::vector<AstSemanticV
 		{
 			throw std::runtime_error("Array length must be source.");
 		}
-		return {
+
+		return NodeValue{
 			std::make_unique<ArrayLiteralASTNode>(
 				TypeDescriptor::Array(length, TakeType(values, 3)),
-				TakeExpressionList(values, 5)),
-			std::nullopt
+				TakeExpressionList(values, 5))
 		};
 	}
 
@@ -292,13 +303,13 @@ AstSemanticValue AstReductionBuilder::BuildEmptyArrayLiteral(const std::vector<A
 {
 	if (values.size() == 5)
 	{
-		return {
+		return NodeValue{
 			std::make_unique<ArrayLiteralASTNode>(
 				TypeDescriptor::Slice(TakeType(values, 2)),
-				std::vector<ASTNodePtr>{}),
-			std::nullopt
+				std::vector<ASTNodePtr>{})
 		};
 	}
+
 	if (values.size() == 6)
 	{
 		const int length = std::stoi(TakeToken(values, 1).lexeme);
@@ -306,11 +317,11 @@ AstSemanticValue AstReductionBuilder::BuildEmptyArrayLiteral(const std::vector<A
 		{
 			throw std::runtime_error("Array length must be source.");
 		}
-		return {
+
+		return NodeValue{
 			std::make_unique<ArrayLiteralASTNode>(
 				TypeDescriptor::Array(length, TakeType(values, 3)),
-				std::vector<ASTNodePtr>{}),
-			std::nullopt
+				std::vector<ASTNodePtr>{})
 		};
 	}
 
@@ -321,53 +332,69 @@ AstSemanticValue AstReductionBuilder::BuildStructLiteral(std::vector<AstSemantic
 {
 	if (values.size() == 4 || values.size() == 5)
 	{
-		return {
+		return NodeValue{
 			std::make_unique<StructLiteralASTNode>(
 				TakeToken(values, 0).lexeme,
-				TakeFieldInitializerList(values, 2)),
-			std::nullopt
+				TakeFieldInitializerList(values, 2))
 		};
 	}
 
 	throw std::logic_error("Struct literal reduction expects 4 or 5 semantic values.");
 }
 
-AstSemanticValue AstReductionBuilder::BuildEmptyStructLiteral(std::vector<AstSemanticValue> values)
+AstSemanticValue AstReductionBuilder::BuildEmptyStructLiteral(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 3, "Empty struct literal reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<StructLiteralASTNode>(
 			TakeToken(values, 0).lexeme,
-			std::vector<StructFieldInitializer>{}),
-		std::nullopt
+			std::vector<StructFieldInitializer>{})
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildIdentifier(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 1, "Identifier reduction");
-	return { std::make_unique<IdentifierASTNode>(TakeToken(values, 0).lexeme), std::nullopt };
+	return NodeValue{
+		std::make_unique<IdentifierASTNode>(
+			TakeToken(values, 0).lexeme)
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildNamedPostfix(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 2, "Named postfix reduction");
+
 	const std::string typeOrName = TakeToken(values, 0).lexeme;
-	if (values[1].hasStructLiteralTail)
+
+	if (std::holds_alternative<StructLiteralTailValue>(values[1]))
 	{
-		return {
-			std::make_unique<StructLiteralASTNode>(typeOrName, TakeFieldInitializerList(values, 1)),
-			std::nullopt
+		return NodeValue{
+			std::make_unique<StructLiteralASTNode>(
+				typeOrName,
+				TakeFieldInitializerList(values, 1))
 		};
 	}
 
-	return { std::make_unique<IdentifierASTNode>(typeOrName), std::nullopt };
+	if (std::holds_alternative<EmptyStructLiteralTailValue>(values[1]))
+	{
+		return NodeValue{
+			std::make_unique<StructLiteralASTNode>(
+				typeOrName,
+				std::vector<StructFieldInitializer>{})
+		};
+	}
+
+	return NodeValue{
+		std::make_unique<IdentifierASTNode>(typeOrName)
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildIdentifierTail(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 0, "Identifier tail reduction");
-	return { nullptr, std::nullopt };
+	return std::monostate{};
 }
 
 AstSemanticValue AstReductionBuilder::BuildStructLiteralTail(std::vector<AstSemanticValue> values)
@@ -377,36 +404,36 @@ AstSemanticValue AstReductionBuilder::BuildStructLiteralTail(std::vector<AstSema
 		throw std::logic_error("Struct literal tail reduction expects 3 or 4 semantic values.");
 	}
 
-	AstSemanticValue result;
-	result.hasStructLiteralTail = true;
-	result.fieldInitializers = TakeFieldInitializerList(values, 1);
-	return result;
+	return StructLiteralTailValue{
+		TakeFieldInitializerList(values, 1)
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildEmptyStructLiteralTail(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 2, "Empty struct literal tail reduction");
-	AstSemanticValue result;
-	result.hasStructLiteralTail = true;
-	return result;
+	return EmptyStructLiteralTailValue{};
 }
 
 AstSemanticValue AstReductionBuilder::BuildAddressOf(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 2, "Address-of reduction");
-	return { std::make_unique<AddressOfASTNode>(TakeNode(values, 1)), std::nullopt };
+
+	return NodeValue{
+		std::make_unique<AddressOfASTNode>(
+			TakeNode(values, 1))
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildAddressOfStructLiteral(std::vector<AstSemanticValue> values)
 {
 	if (values.size() == 5 || values.size() == 6)
 	{
-		return {
+		return NodeValue{
 			std::make_unique<AddressOfASTNode>(
 				std::make_unique<StructLiteralASTNode>(
 					TakeToken(values, 1).lexeme,
-					TakeFieldInitializerList(values, 3))),
-			std::nullopt
+					TakeFieldInitializerList(values, 3)))
 		};
 	}
 
@@ -416,256 +443,326 @@ AstSemanticValue AstReductionBuilder::BuildAddressOfStructLiteral(std::vector<As
 AstSemanticValue AstReductionBuilder::BuildAddressOfEmptyStructLiteral(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 4, "Address-of empty struct literal reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<AddressOfASTNode>(
 			std::make_unique<StructLiteralASTNode>(
 				TakeToken(values, 1).lexeme,
-				std::vector<StructFieldInitializer>{})),
-		std::nullopt
+				std::vector<StructFieldInitializer>{}))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildIdentifierList(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "Identifier list reduction");
+
 	std::vector<std::string> identifiers = TakeIdentifierList(values, 0);
 	identifiers.push_back(TakeToken(values, 2).lexeme);
-	return { nullptr, std::nullopt, std::move(identifiers) };
+
+	return IdentifierListValue{ std::move(identifiers) };
 }
 
 AstSemanticValue AstReductionBuilder::BuildSingleIdentifierList(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 1, "Single identifier list reduction");
-	return { nullptr, std::nullopt, { TakeToken(values, 0).lexeme } };
+
+	return IdentifierListValue{
+		{ TakeToken(values, 0).lexeme }
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildExpressionList(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "Expression list reduction");
+
 	std::vector<ASTNodePtr> expressions = TakeExpressionList(values, 0);
 	expressions.push_back(TakeNode(values, 2));
-	return { nullptr, std::nullopt, {}, std::move(expressions) };
+
+	return ExpressionListValue{ std::move(expressions) };
 }
 
 AstSemanticValue AstReductionBuilder::BuildSingleExpressionList(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 1, "Single expression list reduction");
+
 	std::vector<ASTNodePtr> expressions;
 	expressions.push_back(TakeNode(values, 0));
-	return { nullptr, std::nullopt, {}, std::move(expressions) };
+
+	return ExpressionListValue{ std::move(expressions) };
 }
 
 AstSemanticValue AstReductionBuilder::BuildTypeName(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 1, "Type name reduction");
+
 	const std::string& typeName = TakeToken(values, 0).lexeme;
+
 	if (typeName == "int")
 	{
-		return { nullptr, std::nullopt, {}, {}, {}, Type::INT };
+		return TypeValue{ Type::INT };
 	}
 	if (typeName == "float")
 	{
-		return { nullptr, std::nullopt, {}, {}, {}, Type::FLOAT };
+		return TypeValue{ Type::FLOAT };
 	}
 	if (typeName == "bool")
 	{
-		return { nullptr, std::nullopt, {}, {}, {}, Type::BOOL };
+		return TypeValue{ Type::BOOL };
 	}
 	if (typeName == "string")
 	{
-		return { nullptr, std::nullopt, {}, {}, {}, Type::STRING };
+		return TypeValue{ Type::STRING };
 	}
 
-	return { nullptr, std::nullopt, {}, {}, {}, TypeDescriptor::Named(typeName) };
+	return TypeValue{ TypeDescriptor::Named(typeName) };
 }
 
 AstSemanticValue AstReductionBuilder::BuildArrayType(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 4, "Array type reduction");
+
 	const int length = std::stoi(TakeToken(values, 1).lexeme);
 	if (length <= 0)
 	{
 		throw std::runtime_error("Array length must be source.");
 	}
-	return { nullptr, std::nullopt, {}, {}, {}, TypeDescriptor::Array(length, TakeType(values, 3)) };
+
+	return TypeValue{
+		TypeDescriptor::Array(length, TakeType(values, 3))
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildSliceType(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 3, "Slice type reduction");
-	return { nullptr, std::nullopt, {}, {}, {}, TypeDescriptor::Slice(TakeType(values, 2)) };
+
+	return TypeValue{
+		TypeDescriptor::Slice(TakeType(values, 2))
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildPointerType(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 2, "Pointer type reduction");
-	return { nullptr, std::nullopt, {}, {}, {}, TypeDescriptor::Pointer(TakeType(values, 1)) };
+
+	return TypeValue{
+		TypeDescriptor::Pointer(TakeType(values, 1))
+	};
 }
 
-AstSemanticValue AstReductionBuilder::BuildSingleReturnType(std::vector<AstSemanticValue> values)
+AstSemanticValue AstReductionBuilder::BuildSingleReturnType(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 1, "Single return type reduction");
-	return { nullptr, std::nullopt, {}, {}, {}, TakeType(values, 0) };
+
+	return TypeValue{ TakeType(values, 0) };
 }
 
 AstSemanticValue AstReductionBuilder::BuildTupleReturnType(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "Tuple return type reduction");
-	return { nullptr, std::nullopt, {}, {}, {}, TypeDescriptor::Tuple(TakeTypeList(values, 1)) };
+
+	return TypeValue{
+		TypeDescriptor::Tuple(TakeTypeList(values, 1))
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildTypeList(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "Type list reduction");
+
 	std::vector<TypeDescriptor> types = TakeTypeList(values, 0);
 	std::vector<TypeDescriptor> nextType = TakeTypeList(values, 2);
+
 	types.push_back(std::move(nextType.front()));
-	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, std::move(types) };
+
+	return TypeListValue{ std::move(types) };
 }
 
-AstSemanticValue AstReductionBuilder::BuildSingleTypeList(std::vector<AstSemanticValue> values)
+AstSemanticValue AstReductionBuilder::BuildSingleTypeList(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 1, "Single type list reduction");
-	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, { TakeType(values, 0) } };
+
+	return TypeListValue{
+		{ TakeType(values, 0) }
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildParameter(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 2, "Parameter reduction");
+
 	const TypeDescriptor parameterType = TakeType(values, 1);
+
 	if (parameterType.IsPointer())
 	{
-		return {
-			nullptr,
-			std::nullopt,
-			{},
-			{},
-			{ FunctionParameter{ TakeToken(values, 0).lexeme, parameterType.GetPointeeType(), true } }
+		return ParameterListValue{
+				{
+					FunctionParameter{
+						TakeToken(values, 0).lexeme,
+						parameterType.GetPointeeType(),
+						true
+					}
+				}
 		};
 	}
-	return { nullptr, std::nullopt, {}, {}, { FunctionParameter{ TakeToken(values, 0).lexeme, parameterType } } };
+
+	return ParameterListValue{
+			{
+				FunctionParameter{
+					TakeToken(values, 0).lexeme,
+					parameterType
+				}
+			}
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildPointerParameter(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 3, "Pointer parameter reduction");
-	return {
-		nullptr,
-		std::nullopt,
-		{},
-		{},
-		{ FunctionParameter{ TakeToken(values, 0).lexeme, TakeType(values, 2), true } }
+
+	return ParameterListValue{
+			{
+				FunctionParameter{
+					TakeToken(values, 0).lexeme,
+					TakeType(values, 2),
+					true
+				}
+			}
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildParameterList(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "Parameter list reduction");
-	std::vector<FunctionParameter> parameters = TakeParameterList(values, 0);
-	std::vector<FunctionParameter> nextParameter = TakeParameterList(values, 2);
+
+	std::vector<FunctionParameter> parameters =
+		TakeParameterList(values, 0);
+
+	std::vector<FunctionParameter> nextParameter =
+		TakeParameterList(values, 2);
+
 	parameters.push_back(std::move(nextParameter.front()));
-	return { nullptr, std::nullopt, {}, {}, std::move(parameters) };
+
+	return ParameterListValue{ std::move(parameters) };
 }
 
 AstSemanticValue AstReductionBuilder::BuildSingleParameterList(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 1, "Single parameter list reduction");
-	return { nullptr, std::nullopt, {}, {}, TakeParameterList(values, 0) };
+
+	return ParameterListValue{
+		TakeParameterList(values, 0)
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildCallNoArgs(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 3, "Function call without arguments reduction");
-	return { std::make_unique<CallExpressionASTNode>(TakeToken(values, 0).lexeme, std::vector<ASTNodePtr>{}), std::nullopt };
+
+	return NodeValue{
+		std::make_unique<CallExpressionASTNode>(
+			TakeToken(values, 0).lexeme,
+			std::vector<ASTNodePtr>{})
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildCall(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 4, "Function call reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<CallExpressionASTNode>(
 			TakeToken(values, 0).lexeme,
-			TakeExpressionList(values, 2)),
-		std::nullopt
+			TakeExpressionList(values, 2))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildMethodCallNoArgs(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 5, "Method call without arguments reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<CallExpressionASTNode>(
 			TakeNode(values, 0),
 			TakeToken(values, 2).lexeme,
-			std::vector<ASTNodePtr>{}),
-		std::nullopt
+			std::vector<ASTNodePtr>{})
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildMethodCall(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 6, "Method call reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<CallExpressionASTNode>(
 			TakeNode(values, 0),
 			TakeToken(values, 2).lexeme,
-			TakeExpressionList(values, 4)),
-		std::nullopt
+			TakeExpressionList(values, 4))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildMemberAccess(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "Member access reduction");
-	return { std::make_unique<MemberAccessASTNode>(TakeNode(values, 0), TakeToken(values, 2).lexeme), std::nullopt };
+
+	return NodeValue{
+		std::make_unique<MemberAccessASTNode>(
+			TakeNode(values, 0),
+			TakeToken(values, 2).lexeme)
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildIndexAccess(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 4, "Index access reduction");
-	return { std::make_unique<IndexASTNode>(TakeNode(values, 0), TakeNode(values, 2)), std::nullopt };
+
+	return NodeValue{
+		std::make_unique<IndexASTNode>(
+			TakeNode(values, 0),
+			TakeNode(values, 2))
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildSliceExpression(std::vector<AstSemanticValue> values)
 {
 	if (values.size() == 4)
 	{
-		return {
+		return NodeValue{
 			std::make_unique<SliceExpressionASTNode>(
 				TakeNode(values, 0),
 				nullptr,
-				nullptr),
-			std::nullopt
+				nullptr)
 		};
 	}
+
 	if (values.size() == 5)
 	{
-		if (values[2].token.has_value() && values[2].token->type == TokenType::COLON)
+		if (const auto* token = std::get_if<TokenValue>(&values[2]);
+			token && token->value.type == TokenType::COLON)
 		{
-			return {
+			return NodeValue{
 				std::make_unique<SliceExpressionASTNode>(
 					TakeNode(values, 0),
 					nullptr,
-					TakeNode(values, 3)),
-				std::nullopt
+					TakeNode(values, 3))
 			};
 		}
-		return {
+
+		return NodeValue{
 			std::make_unique<SliceExpressionASTNode>(
 				TakeNode(values, 0),
 				TakeNode(values, 2),
-				nullptr),
-			std::nullopt
+				nullptr)
 		};
 	}
+
 	if (values.size() == 6)
 	{
-		return {
+		return NodeValue{
 			std::make_unique<SliceExpressionASTNode>(
 				TakeNode(values, 0),
 				TakeNode(values, 2),
-				TakeNode(values, 4)),
-			std::nullopt
+				TakeNode(values, 4))
 		};
 	}
 
@@ -675,254 +772,305 @@ AstSemanticValue AstReductionBuilder::BuildSliceExpression(std::vector<AstSemant
 AstSemanticValue AstReductionBuilder::BuildAssignableList(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "Assignable list reduction");
+
 	std::vector<ASTNodePtr> targets = TakeExpressionList(values, 0);
 	targets.push_back(TakeNode(values, 2));
-	return { nullptr, std::nullopt, {}, std::move(targets) };
+
+	return ExpressionListValue{ std::move(targets) };
 }
 
 AstSemanticValue AstReductionBuilder::BuildSingleAssignableList(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 1, "Single assignable list reduction");
+
 	std::vector<ASTNodePtr> targets;
 	targets.push_back(TakeNode(values, 0));
-	return { nullptr, std::nullopt, {}, std::move(targets) };
+
+	return ExpressionListValue{ std::move(targets) };
 }
 
 AstSemanticValue AstReductionBuilder::BuildAssignment(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "Assignment reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<AssignmentASTNode>(
 			TakeExpressionList(values, 0),
-			TakeExpressionList(values, 2)),
-		std::nullopt
+			TakeExpressionList(values, 2))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildIncrement(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 2, "Increment reduction");
-	return { std::make_unique<IncrementASTNode>(TakeNode(values, 0)), std::nullopt };
+
+	return NodeValue{
+		std::make_unique<IncrementASTNode>(
+			TakeNode(values, 0))
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildDecrement(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 2, "Decrement reduction");
-	return { std::make_unique<DecrementASTNode>(TakeNode(values, 0)), std::nullopt };
+
+	return NodeValue{
+		std::make_unique<DecrementASTNode>(
+			TakeNode(values, 0))
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildStructField(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 3, "Struct field reduction");
-	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, {}, { StructField{ TakeToken(values, 0).lexeme, TakeType(values, 1) } } };
+
+	return StructFieldListValue{
+		{ StructField{
+			TakeToken(values, 0).lexeme,
+			TakeType(values, 1) } }
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildStructFieldList(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 2, "Struct field list reduction");
+
 	std::vector<StructField> fields = TakeStructFieldList(values, 0);
 	std::vector<StructField> nextField = TakeStructFieldList(values, 1);
+
 	fields.push_back(std::move(nextField.front()));
-	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, {}, std::move(fields) };
+
+	return StructFieldListValue{ std::move(fields) };
 }
 
 AstSemanticValue AstReductionBuilder::BuildSingleStructFieldList(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 1, "Single struct field list reduction");
-	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, {}, TakeStructFieldList(values, 0) };
+
+	return StructFieldListValue{
+		TakeStructFieldList(values, 0)
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildFieldInitializer(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "Field initializer reduction");
+
 	std::vector<StructFieldInitializer> initializers;
-	initializers.push_back(StructFieldInitializer{ TakeToken(values, 0).lexeme, TakeNode(values, 2) });
-	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, {}, {}, std::move(initializers) };
+	initializers.push_back(StructFieldInitializer{
+		TakeToken(values, 0).lexeme,
+		TakeNode(values, 2) });
+
+	return FieldInitializerListValue{ std::move(initializers) };
 }
 
 AstSemanticValue AstReductionBuilder::BuildFieldInitializerList(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "Field initializer list reduction");
+
 	std::vector<StructFieldInitializer> initializers = TakeFieldInitializerList(values, 0);
+
 	std::vector<StructFieldInitializer> nextInitializer = TakeFieldInitializerList(values, 2);
+
 	initializers.push_back(std::move(nextInitializer.front()));
-	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, {}, {}, std::move(initializers) };
+
+	return FieldInitializerListValue{ std::move(initializers) };
 }
 
 AstSemanticValue AstReductionBuilder::BuildSingleFieldInitializerList(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 1, "Single field initializer list reduction");
-	return { nullptr, std::nullopt, {}, {}, {}, std::nullopt, {}, {}, TakeFieldInitializerList(values, 0) };
+
+	return FieldInitializerListValue{
+		TakeFieldInitializerList(values, 0)
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildStructDeclaration(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 6, "Struct declaration reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<StructDeclarationASTNode>(
 			TakeToken(values, 1).lexeme,
-			TakeStructFieldList(values, 4)),
-		std::nullopt
+			TakeStructFieldList(values, 4))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildShortVariableDeclaration(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "Short variable declaration reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<ShortVariableDeclarationASTNode>(
 			TakeIdentifierNamesFromTargets(values, 0),
-			TakeExpressionList(values, 2)),
-		std::nullopt
+			TakeExpressionList(values, 2))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildVarInferredDeclaration(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 4, "Inferred variable declaration reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<VariableDeclarationASTNode>(
 			TakeIdentifierList(values, 1),
 			std::nullopt,
-			TakeExpressionList(values, 3)),
-		std::nullopt
+			TakeExpressionList(values, 3))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildVarTypedDeclaration(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "Typed variable declaration reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<VariableDeclarationASTNode>(
 			TakeIdentifierList(values, 1),
 			TakeType(values, 2),
-			std::vector<ASTNodePtr>{}),
-		std::nullopt
+			std::vector<ASTNodePtr>{})
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildVarTypedInitializedDeclaration(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 5, "Typed initialized variable declaration reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<VariableDeclarationASTNode>(
 			TakeIdentifierList(values, 1),
 			TakeType(values, 2),
-			TakeExpressionList(values, 4)),
-		std::nullopt
+			TakeExpressionList(values, 4))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildVarTypedDeclarationFull(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 4, "Typed variable declaration full reduction");
+
 	const TypeDescriptor declaredType = TakeType(values, 2);
 	const std::vector<std::string> names = TakeIdentifierList(values, 1);
 
 	std::vector<ASTNodePtr> initializers;
-	if (values[3].compositeLiteralInitializer)
+
+	if (auto* compositeInitializer = std::get_if<CompositeLiteralInitializerValue>(&values[3]))
 	{
 		initializers.push_back(std::make_unique<ArrayLiteralASTNode>(
 			declaredType,
-			std::move(values[3].expressions)));
+			std::move(compositeInitializer->expressions)));
 	}
 	else
 	{
-		initializers = std::move(values[3].expressions);
+		initializers = TakeExpressionList(values, 3);
 	}
 
-	return {
+	return NodeValue{
 		std::make_unique<VariableDeclarationASTNode>(
 			std::move(names),
 			declaredType,
-			std::move(initializers)),
-		std::nullopt
+			std::move(initializers))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildVarTypedCompositeDeclaration(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 6, "Typed composite variable declaration reduction");
+
 	std::vector<ASTNodePtr> initializers;
 	initializers.push_back(std::make_unique<ArrayLiteralASTNode>(
 		TakeType(values, 2),
 		TakeExpressionList(values, 4)));
-	return {
+
+	return NodeValue{
 		std::make_unique<VariableDeclarationASTNode>(
 			TakeIdentifierList(values, 1),
 			TakeType(values, 2),
-			std::move(initializers)),
-		std::nullopt
+			std::move(initializers))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildVarTypedEmptyCompositeDeclaration(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 5, "Typed empty composite variable declaration reduction");
+
 	std::vector<ASTNodePtr> initializers;
 	initializers.push_back(std::make_unique<ArrayLiteralASTNode>(
 		TakeType(values, 2),
 		std::vector<ASTNodePtr>{}));
-	return {
+
+	return NodeValue{
 		std::make_unique<VariableDeclarationASTNode>(
 			TakeIdentifierList(values, 1),
 			TakeType(values, 2),
-			std::move(initializers)),
-		std::nullopt
+			std::move(initializers))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildExpressionStatement(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 1, "Expression statement reduction");
-	return { std::make_unique<ExpressionStatementASTNode>(TakeNode(values, 0)), std::nullopt };
+
+	return NodeValue{
+		std::make_unique<ExpressionStatementASTNode>(
+			TakeNode(values, 0))
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildAssertStatement(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 5, "Assert statement reduction");
+
 	Token assertToken = TakeToken(values, 0);
 	ASTNodePtr condition = TakeNode(values, 2);
 	std::string sourceText = DescribeExpression(*condition);
-	return {
+
+	return NodeValue{
 		std::make_unique<AssertStatementASTNode>(
 			std::move(condition),
 			assertToken.line,
-			std::move(sourceText)),
-		std::nullopt
+			std::move(sourceText))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildForAllStatement(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 5, "Forall statement reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<ForAllStatementASTNode>(
 			TakeParameterList(values, 2),
-			TakeNode(values, 4)),
-		std::nullopt
+			TakeNode(values, 4))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildEmptyStatement(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 1, "Empty statement reduction");
-	return { std::make_unique<EmptyStatementASTNode>(), std::nullopt };
+
+	return NodeValue{
+		std::make_unique<EmptyStatementASTNode>()
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildProgram(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 1, "Program reduction");
-	return { std::make_unique<ProgramASTNode>(TakeNode(values, 0)), std::nullopt };
+
+	return ProgramValue{
+		std::make_unique<ProgramASTNode>(
+			std::make_unique<StatementListASTNode>(
+				TakeStatementList(values, 0)))
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildEmptyProgram(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 0, "Empty program reduction");
-	return {
+
+	return ProgramValue{
 		std::make_unique<ProgramASTNode>(
-			std::make_unique<StatementListASTNode>(std::vector<ASTNodePtr>{})),
-		std::nullopt
+			std::make_unique<StatementListASTNode>(
+				std::vector<ASTNodePtr>{}))
 	};
 }
 
@@ -930,17 +1078,10 @@ AstSemanticValue AstReductionBuilder::BuildStatementList(std::vector<AstSemantic
 {
 	RequireValueCount(values, 2, "Statement list reduction");
 
-	const ASTNodePtr listNode = TakeNode(values, 0);
-	// TODO избавиться от dynamic_cast
-	auto* statementList = dynamic_cast<StatementListASTNode*>(listNode.get());
-	if (!statementList)
-	{
-		throw std::logic_error("Statement list reduction expects StatementListASTNode as left operand.");
-	}
-
-	std::vector<ASTNodePtr> statements = statementList->TakeStatements();
+	std::vector<ASTNodePtr> statements = TakeStatementList(values, 0);
 	statements.push_back(TakeNode(values, 1));
-	return { std::make_unique<StatementListASTNode>(std::move(statements)), std::nullopt };
+
+	return StatementListValue{ std::move(statements) };
 }
 
 AstSemanticValue AstReductionBuilder::BuildSingleStatementList(std::vector<AstSemanticValue> values)
@@ -949,271 +1090,338 @@ AstSemanticValue AstReductionBuilder::BuildSingleStatementList(std::vector<AstSe
 
 	std::vector<ASTNodePtr> statements;
 	statements.push_back(TakeNode(values, 0));
-	return { std::make_unique<StatementListASTNode>(std::move(statements)), std::nullopt };
+
+	return StatementListValue{ std::move(statements) };
 }
 
 AstSemanticValue AstReductionBuilder::BuildBlock(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "Block reduction");
-	return { std::make_unique<BlockASTNode>(TakeNode(values, 1)), std::nullopt };
+
+	return NodeValue{
+		std::make_unique<BlockASTNode>(
+			std::make_unique<StatementListASTNode>(
+				TakeStatementList(values, 1)))
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildEmptyBlock(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 2, "Empty block reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<BlockASTNode>(
-			std::make_unique<StatementListASTNode>(std::vector<ASTNodePtr>{})),
-		std::nullopt
+			std::make_unique<StatementListASTNode>(
+				std::vector<ASTNodePtr>{}))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildIf(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "If reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<IfASTNode>(
 			TakeNode(values, 1),
-			TakeNode(values, 2)),
-		std::nullopt
+			TakeNode(values, 2))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildIfElse(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 5, "If/else reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<IfASTNode>(
 			TakeNode(values, 1),
 			TakeNode(values, 2),
-			TakeNode(values, 4)),
-		std::nullopt
+			TakeNode(values, 4))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildForCondition(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "For condition reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<ForASTNode>(
 			nullptr,
 			TakeNode(values, 1),
 			nullptr,
-			TakeNode(values, 2)),
-		std::nullopt
+			TakeNode(values, 2))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildForClassic(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 7, "Classic for reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<ForASTNode>(
 			TakeNode(values, 1),
 			TakeNode(values, 3),
 			TakeNode(values, 5),
-			TakeNode(values, 6)),
-		std::nullopt
+			TakeNode(values, 6))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildBreak(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 2, "Break reduction");
-	return { std::make_unique<BreakASTNode>(), std::nullopt };
+
+	return NodeValue{
+		std::make_unique<BreakASTNode>()
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildContinue(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 2, "Continue reduction");
-	return { std::make_unique<ContinueASTNode>(), std::nullopt };
+
+	return NodeValue{
+		std::make_unique<ContinueASTNode>()
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildReturnVoid(const std::vector<AstSemanticValue>& values)
 {
 	RequireValueCount(values, 2, "Return void reduction");
-	return { std::make_unique<ReturnASTNode>(), std::nullopt };
+
+	return NodeValue{
+		std::make_unique<ReturnASTNode>()
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildReturnValue(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "Return value reduction");
-	return { std::make_unique<ReturnASTNode>(TakeExpressionList(values, 1)), std::nullopt };
+
+	return NodeValue{
+		std::make_unique<ReturnASTNode>(
+			TakeExpressionList(values, 1))
+	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildTestDeclaration(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 3, "Test declaration reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<TestDeclarationASTNode>(
 			TakeToken(values, 1).lexeme,
-			TakeNode(values, 2)),
-		std::nullopt
+			TakeNode(values, 2))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildVoidFunctionNoParams(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 5, "Void function declaration reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<FunctionDeclarationASTNode>(
 			TakeToken(values, 1).lexeme,
 			std::vector<FunctionParameter>{},
 			std::nullopt,
-			TakeNode(values, 4)),
-		std::nullopt
+			TakeNode(values, 4))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildReturnFunctionNoParams(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 6, "Returning function declaration reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<FunctionDeclarationASTNode>(
 			TakeToken(values, 1).lexeme,
 			std::vector<FunctionParameter>{},
 			TakeType(values, 4),
-			TakeNode(values, 5)),
-		std::nullopt
+			TakeNode(values, 5))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildVoidFunction(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 6, "Void function declaration reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<FunctionDeclarationASTNode>(
 			TakeToken(values, 1).lexeme,
 			TakeParameterList(values, 3),
 			std::nullopt,
-			TakeNode(values, 5)),
-		std::nullopt
+			TakeNode(values, 5))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildReturnFunction(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 7, "Returning function declaration reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<FunctionDeclarationASTNode>(
 			TakeToken(values, 1).lexeme,
 			TakeParameterList(values, 3),
 			TakeType(values, 5),
-			TakeNode(values, 6)),
-		std::nullopt
+			TakeNode(values, 6))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildVoidMethodNoParams(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 8, "Void method declaration reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<FunctionDeclarationASTNode>(
 			TakeParameterList(values, 2).front(),
 			TakeToken(values, 4).lexeme,
 			std::vector<FunctionParameter>{},
 			std::nullopt,
-			TakeNode(values, 7)),
-		std::nullopt
+			TakeNode(values, 7))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildReturnMethodNoParams(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 9, "Returning method declaration reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<FunctionDeclarationASTNode>(
 			TakeParameterList(values, 2).front(),
 			TakeToken(values, 4).lexeme,
 			std::vector<FunctionParameter>{},
 			TakeType(values, 7),
-			TakeNode(values, 8)),
-		std::nullopt
+			TakeNode(values, 8))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildVoidMethod(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 9, "Void method declaration reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<FunctionDeclarationASTNode>(
 			TakeParameterList(values, 2).front(),
 			TakeToken(values, 4).lexeme,
 			TakeParameterList(values, 6),
 			std::nullopt,
-			TakeNode(values, 8)),
-		std::nullopt
+			TakeNode(values, 8))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildReturnMethod(std::vector<AstSemanticValue> values)
 {
 	RequireValueCount(values, 10, "Returning method declaration reduction");
-	return {
+
+	return NodeValue{
 		std::make_unique<FunctionDeclarationASTNode>(
 			TakeParameterList(values, 2).front(),
 			TakeToken(values, 4).lexeme,
 			TakeParameterList(values, 6),
 			TakeType(values, 8),
-			TakeNode(values, 9)),
-		std::nullopt
+			TakeNode(values, 9))
 	};
 }
 
-AstSemanticValue AstReductionBuilder::PassNode(std::vector<AstSemanticValue> values, const std::size_t index)
+AstSemanticValue AstReductionBuilder::PassNode(
+	std::vector<AstSemanticValue> values,
+	const std::size_t index)
 {
 	if (index >= values.size())
 	{
 		throw std::logic_error("PassNode index is out of range.");
 	}
-	if (!values[index].node)
+
+	auto* node = std::get_if<NodeValue>(&values[index]);
+
+	if (!node || !node->value)
 	{
 		throw std::logic_error("PassNode expects node semantic value.");
 	}
-	return { std::move(values[index].node), std::nullopt };
+
+	return NodeValue{ std::move(node->value) };
 }
 
-AstSemanticValue AstReductionBuilder::PassToken(std::vector<AstSemanticValue> values, const std::size_t index)
+AstSemanticValue AstReductionBuilder::PassToken(
+	const std::vector<AstSemanticValue>& values,
+	const std::size_t index)
 {
 	if (index >= values.size())
 	{
 		throw std::logic_error("PassToken index is out of range.");
 	}
-	return { nullptr, values[index].token };
+
+	const auto* token = std::get_if<TokenValue>(&values[index]);
+
+	if (!token)
+	{
+		throw std::logic_error("PassToken expects token semantic value.");
+	}
+
+	return TokenValue{ token->value };
+}
+
+std::unique_ptr<ProgramASTNode> AstReductionBuilder::TakeProgram(AstSemanticValue& value)
+{
+	// TODO что делает get_if
+	auto* program = std::get_if<ProgramValue>(&value);
+
+	if (!program || !program->value)
+	{
+		throw std::runtime_error("Expected program semantic value.");
+	}
+
+	return std::move(program->value);
 }
 
 ASTNodePtr AstReductionBuilder::TakeNode(std::vector<AstSemanticValue>& values, const std::size_t index)
 {
-	if (!values[index].node)
+	auto* node = std::get_if<NodeValue>(&values[index]);
+
+	if (!node || !node->value)
 	{
 		throw std::runtime_error("Expected node semantic value.");
 	}
 
-	return std::move(values[index].node);
+	return std::move(node->value);
+}
+
+std::vector<ASTNodePtr> AstReductionBuilder::TakeStatementList(std::vector<AstSemanticValue>& values, const std::size_t index)
+{
+	auto* statementList = std::get_if<StatementListValue>(&values[index]);
+
+	if (!statementList)
+	{
+		throw std::runtime_error("Expected statement list semantic value.");
+	}
+
+	return std::move(statementList->values);
 }
 
 std::vector<ASTNodePtr> AstReductionBuilder::TakeExpressionList(
 	std::vector<AstSemanticValue>& values,
 	const std::size_t index)
 {
-	if (values[index].expressions.empty())
+	auto* expressionList = std::get_if<ExpressionListValue>(&values[index]);
+
+	if (!expressionList)
 	{
 		throw std::runtime_error("Expected expression list semantic value.");
 	}
 
-	return std::move(values[index].expressions);
+	return std::move(expressionList->values);
 }
 
 std::vector<std::string> AstReductionBuilder::TakeIdentifierList(
 	std::vector<AstSemanticValue>& values,
 	const std::size_t index)
 {
-	if (values[index].identifiers.empty())
+	auto* identifierList = std::get_if<IdentifierListValue>(&values[index]);
+
+	if (!identifierList)
 	{
 		throw std::runtime_error("Expected identifier list semantic value.");
 	}
 
-	return std::move(values[index].identifiers);
+	return std::move(identifierList->values);
 }
 
 std::vector<std::string> AstReductionBuilder::TakeIdentifierNamesFromTargets(
@@ -1239,27 +1447,29 @@ std::vector<FunctionParameter> AstReductionBuilder::TakeParameterList(
 	std::vector<AstSemanticValue>& values,
 	const std::size_t index)
 {
-	if (values[index].parameters.empty())
+	auto* parameterList = std::get_if<ParameterListValue>(&values[index]);
+
+	if (!parameterList)
 	{
 		throw std::runtime_error("Expected parameter list semantic value.");
 	}
 
-	return std::move(values[index].parameters);
+	return std::move(parameterList->values);
 }
 
 std::vector<TypeDescriptor> AstReductionBuilder::TakeTypeList(
 	std::vector<AstSemanticValue>& values,
 	const std::size_t index)
 {
-	if (!values[index].types.empty())
+	if (auto* typeList = std::get_if<TypeListValue>(&values[index]))
 	{
-		return std::move(values[index].types);
+		return std::move(typeList->values);
 	}
-	if (values[index].type.has_value())
+
+	if (auto* type = std::get_if<TypeValue>(&values[index]))
 	{
 		std::vector<TypeDescriptor> types;
-		types.push_back(*values[index].type);
-		values[index].type.reset();
+		types.push_back(std::move(type->value));
 		return types;
 	}
 
@@ -1270,44 +1480,55 @@ std::vector<StructField> AstReductionBuilder::TakeStructFieldList(
 	std::vector<AstSemanticValue>& values,
 	const std::size_t index)
 {
-	if (values[index].fields.empty())
+	auto* fieldList = std::get_if<StructFieldListValue>(&values[index]);
+
+	if (!fieldList)
 	{
 		throw std::runtime_error("Expected struct field list semantic value.");
 	}
 
-	return std::move(values[index].fields);
+	return std::move(fieldList->values);
 }
 
 std::vector<StructFieldInitializer> AstReductionBuilder::TakeFieldInitializerList(
 	std::vector<AstSemanticValue>& values,
 	const std::size_t index)
 {
-	if (values[index].fieldInitializers.empty())
+	if (auto* initializerList = std::get_if<FieldInitializerListValue>(&values[index]))
 	{
-		throw std::runtime_error("Expected struct field initializer list semantic value.");
+		return std::move(initializerList->values);
 	}
 
-	return std::move(values[index].fieldInitializers);
+	if (auto* structLiteralTail = std::get_if<StructLiteralTailValue>(&values[index]))
+	{
+		return std::move(structLiteralTail->fieldInitializers);
+	}
+
+	throw std::runtime_error("Expected struct field initializer list semantic value.");
 }
 
 TypeDescriptor AstReductionBuilder::TakeType(const std::vector<AstSemanticValue>& values, const std::size_t index)
 {
-	if (!values[index].type.has_value())
+	const auto* type = std::get_if<TypeValue>(&values[index]);
+
+	if (!type)
 	{
 		throw std::runtime_error("Expected type semantic value.");
 	}
 
-	return *values[index].type;
+	return type->value;
 }
 
 Token AstReductionBuilder::TakeToken(const std::vector<AstSemanticValue>& values, const std::size_t index)
 {
-	if (!values[index].token.has_value())
+	const auto* token = std::get_if<TokenValue>(&values[index]);
+
+	if (!token)
 	{
 		throw std::runtime_error("Expected token semantic value.");
 	}
 
-	return *values[index].token;
+	return token->value;
 }
 
 BinaryOperator AstReductionBuilder::ToBinaryOperator(const TokenType type)

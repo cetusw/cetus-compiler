@@ -159,6 +159,7 @@ target_link_libraries(cetus_app_cli PUBLIC cetus_frontend cetus_tooling cetus_ba
 
 add_executable(cetus
         src/app/main.cpp
+        src/app/cli/utils/utils.h
 )
 
 target_include_directories(cetus PRIVATE ${CMAKE_SOURCE_DIR})

@@ -1,50 +1,16 @@
 #include "RunSourceDriver.h"
 
 #include "src/app/cli/testing/TestReporter.h"
+#include "src/app/cli/utils/utils.h"
 #include "src/backend/vm/testing/TestRunner.h"
 #include "src/backend/vm/vm.h"
 #include "src/frontend/codegen/CodegenVisitor.h"
-#include "src/frontend/lexical/LexicalAnalyzer.h"
 #include "src/frontend/semantic/SemanticAnalyzer.h"
-#include "src/frontend/syntax/GrammarPreparator.h"
-#include "src/frontend/syntax/SyntaxAnalyzer.h"
 #include "src/frontend/testing/TestCoverageAnalyzer.h"
 #include "src/frontend/testing/TestDiscovery.h"
-#include "src/support/io/FileReader.h"
 
 #include <iostream>
 #include <stdexcept>
-
-namespace
-{
-ParseResult ParseSourceFile(const Configuration& configuration)
-{
-	const std::string source = FileReader::ReadAll(configuration.inputFilePath);
-	LexicalAnalyzer lexicalAnalyzer(source);
-	const LexerResult lexerResult = lexicalAnalyzer.ScanTokens();
-	if (lexerResult.error.has_value())
-	{
-		return ParseResult::Error(
-			lexerResult.errorLine,
-			"Lexical error at line " + std::to_string(lexerResult.errorLine) + ": " + *lexerResult.error);
-	}
-
-	GrammarPreparator preparator;
-	const SyntaxAnalyzer syntaxAnalyzer(preparator.Prepare(configuration.regenerateTable));
-	return syntaxAnalyzer.Analyze(lexerResult.tokens);
-}
-
-// TODO вынести эту логику отсюда. драйвер не должен отвечать за проверку узлов
-const ProgramASTNode& RequireProgramAst(const ASTNode& ast)
-{
-	const auto* program = dynamic_cast<const ProgramASTNode*>(&ast);
-	if (!program)
-	{
-		throw std::runtime_error("Top-level AST is not ProgramASTNode.");
-	}
-	return *program;
-}
-}
 
 void RunSourceDriver::Execute(const Configuration& configuration)
 {
@@ -53,17 +19,18 @@ void RunSourceDriver::Execute(const Configuration& configuration)
 		throw std::runtime_error("Input source file path is required for source execution.");
 	}
 
-	const ParseResult parseResult = ParseSourceFile(configuration);
+	const ParseResult parseResult = Utils::ParseSourceFile(configuration);
 	if (!parseResult.success)
 	{
 		throw std::runtime_error(parseResult.message);
 	}
 	if (!parseResult.ast)
 	{
-		throw std::runtime_error("AST was not produced for parsed input.");
+		throw std::runtime_error("Program AST was not produced for parsed input.");
 	}
 
-	const ProgramASTNode& program = RequireProgramAst(*parseResult.ast);
+	const ProgramASTNode& program = *parseResult.ast;
+
 	const TestDiscovery discovery;
 	const TestDiscoveryResult discoveryResult = discovery.Discover(program);
 	if (!discoveryResult.diagnostics.empty())
