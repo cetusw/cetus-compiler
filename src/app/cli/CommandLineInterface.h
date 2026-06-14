@@ -23,6 +23,7 @@ struct Configuration
 	bool verbose = false;
 	bool regenerateTable = false;
 	bool requireTests = true;
+	bool report = false;
 };
 
 class CommandLineInterface

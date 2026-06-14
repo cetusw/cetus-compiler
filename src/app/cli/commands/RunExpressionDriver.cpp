@@ -100,7 +100,10 @@ void RunExpressionDriver::Execute(const Configuration& configuration)
 	if (configuration.requireTests)
 	{
 		const TestRunResult result = TestRunner::Run(codegenResult.program, vm);
-		TestReporter::Print(result, std::cout);
+		if (configuration.report)
+		{
+			TestReporter::Print(result, std::cout);
+		}
 		if (result.failedCount > 0)
 		{
 			throw std::runtime_error("Test execution failed.");
