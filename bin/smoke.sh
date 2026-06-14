@@ -75,7 +75,7 @@ run_test_output() {
     local file="$1"
     local expected="$2"
     echo "[smoke] test: ${file#${ROOT_DIR}/}"
-    "${CETUS_BIN}" --test "$file" >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"
+    "${CETUS_BIN}" --test "$file" --report >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"
 
     local actual
     actual="$(normalize_test_stdout)"
@@ -137,7 +137,7 @@ run_negative_with_tests() {
     local file="$1"
     local expected="$2"
     echo "[smoke] negative: ${file#${ROOT_DIR}/}"
-    if "${CETUS_BIN}" --run-src "$file" >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"; then
+    if "${CETUS_BIN}" --run-src "$file" --report >"${SMOKE_STDOUT}" 2>"${SMOKE_STDERR}"; then
         echo "Expected failure, but command succeeded: $file" >&2
         cat "${SMOKE_STDOUT}" >&2
         cat "${SMOKE_STDERR}" >&2
