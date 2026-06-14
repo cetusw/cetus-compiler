@@ -12,6 +12,14 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(nlohmann_json)
 
+FetchContent_Declare(
+        googletest
+        URL https://github.com/google/googletest/archive/refs/tags/v1.17.0.zip
+)
+FetchContent_MakeAvailable(googletest)
+
+enable_testing()
+
 file(GLOB_RECURSE CETUS_SUPPORT_HEADERS CONFIGURE_DEPENDS
         src/support/*.h
 )
@@ -156,6 +164,30 @@ add_executable(cetus
 target_include_directories(cetus PRIVATE ${CMAKE_SOURCE_DIR})
 target_link_libraries(cetus PRIVATE cetus_app_cli)
 
+add_executable(cetus_smoke_tests
+        tests/smoke/SmokeTests.cpp
+)
+
+target_include_directories(cetus_smoke_tests PRIVATE ${CMAKE_SOURCE_DIR})
+
+target_link_libraries(cetus_smoke_tests
+        PRIVATE
+        cetus_app_cli
+        GTest::gtest
+        GTest::gtest_main
+)
+
+target_compile_definitions(cetus_smoke_tests
+        PRIVATE
+        CETUS_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+)
+
+add_test(
+        NAME cetus_smoke_tests
+        COMMAND cetus_smoke_tests
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
 if (MSVC)
     foreach(target
             cetus_support
@@ -163,7 +195,8 @@ if (MSVC)
             cetus_tooling
             cetus_backend_vm
             cetus_app_cli
-            cetus)
+            cetus
+            cetus_smoke_tests)
         target_compile_options(${target} PRIVATE /W4 /WX)
     endforeach()
 else ()
@@ -173,7 +206,8 @@ else ()
             cetus_tooling
             cetus_backend_vm
             cetus_app_cli
-            cetus)
+            cetus
+            cetus_smoke_tests)
         target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror)
     endforeach()
 endif ()

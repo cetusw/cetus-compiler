@@ -275,7 +275,7 @@ AstSemanticValue AstReductionBuilder::BuildArrayLiteral(std::vector<AstSemanticV
 		const int length = std::stoi(TakeToken(values, 1).lexeme);
 		if (length <= 0)
 		{
-			throw std::runtime_error("Array length must be positive.");
+			throw std::runtime_error("Array length must be source.");
 		}
 		return {
 			std::make_unique<ArrayLiteralASTNode>(
@@ -304,7 +304,7 @@ AstSemanticValue AstReductionBuilder::BuildEmptyArrayLiteral(const std::vector<A
 		const int length = std::stoi(TakeToken(values, 1).lexeme);
 		if (length <= 0)
 		{
-			throw std::runtime_error("Array length must be positive.");
+			throw std::runtime_error("Array length must be source.");
 		}
 		return {
 			std::make_unique<ArrayLiteralASTNode>(
@@ -485,7 +485,7 @@ AstSemanticValue AstReductionBuilder::BuildArrayType(const std::vector<AstSemant
 	const int length = std::stoi(TakeToken(values, 1).lexeme);
 	if (length <= 0)
 	{
-		throw std::runtime_error("Array length must be positive.");
+		throw std::runtime_error("Array length must be source.");
 	}
 	return { nullptr, std::nullopt, {}, {}, {}, TypeDescriptor::Array(length, TakeType(values, 3)) };
 }

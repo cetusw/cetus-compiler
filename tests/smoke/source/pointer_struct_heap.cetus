@@ -16,5 +16,5 @@ func main() {
     counter := NewCounter();
     counter.Add(3);
     counter.Add(4);
-    printf(counter.value);
+    println(counter.value);
 }

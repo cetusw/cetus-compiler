@@ -6,5 +6,5 @@ type Point struct {
 func main() {
     var p Point;
     p.x = 1;
-    printf(p.x);
+    println(p.x);
 }

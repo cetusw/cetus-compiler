@@ -3,6 +3,7 @@ func main() {
     var integer int;
     var number float;
     var flag bool;
+    println()
     scan(&text);
     scan(&integer);
     scan(&number);
