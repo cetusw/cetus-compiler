@@ -141,6 +141,7 @@ add_library(cetus_app_cli STATIC
         src/app/cli/commands/TestDriver.cpp
         src/app/cli/commands/TypeCheckDriver.cpp
         src/app/cli/testing/TestReporter.cpp
+        src/app/pipeline/CompilerPipeline.cpp
         ${CETUS_APP_CLI_HEADERS}
 )
 
@@ -160,6 +161,8 @@ target_link_libraries(cetus_app_cli PUBLIC cetus_frontend cetus_tooling cetus_ba
 add_executable(cetus
         src/app/main.cpp
         src/app/cli/utils/utils.h
+        src/app/pipeline/CompilerPipeline.cpp
+        src/app/pipeline/CompilerPipeline.h
 )
 
 target_include_directories(cetus PRIVATE ${CMAKE_SOURCE_DIR})
