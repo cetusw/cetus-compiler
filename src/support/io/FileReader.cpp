@@ -37,7 +37,6 @@ std::vector<std::string> FileReader::ReadLines(const std::string& path)
 
 void FileReader::WriteAll(const std::string& path, const std::string& content)
 {
-	std::cout << path << std::endl;
 	std::ofstream output(path, std::ios::binary | std::ios::trunc);
 	if (!output)
 	{
