@@ -2,7 +2,7 @@
 
 #include "src/app/cli/CommandLineInterface.h"
 
-class RunExpressionDriver
+class RunSourceDriver
 {
 public:
 	static void Execute(const Configuration& configuration);

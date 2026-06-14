@@ -1,4 +1,4 @@
-#include "RunExpressionDriver.h"
+#include "RunSourceDriver.h"
 
 #include "src/app/cli/testing/TestReporter.h"
 #include "src/backend/vm/testing/TestRunner.h"
@@ -6,10 +6,10 @@
 #include "src/frontend/codegen/CodegenVisitor.h"
 #include "src/frontend/lexical/LexicalAnalyzer.h"
 #include "src/frontend/semantic/SemanticAnalyzer.h"
-#include "src/frontend/testing/TestCoverageAnalyzer.h"
-#include "src/frontend/testing/TestDiscovery.h"
 #include "src/frontend/syntax/GrammarPreparator.h"
 #include "src/frontend/syntax/SyntaxAnalyzer.h"
+#include "src/frontend/testing/TestCoverageAnalyzer.h"
+#include "src/frontend/testing/TestDiscovery.h"
 #include "src/support/io/FileReader.h"
 
 #include <iostream>
@@ -46,7 +46,7 @@ const ProgramASTNode& RequireProgramAst(const ASTNode& ast)
 }
 }
 
-void RunExpressionDriver::Execute(const Configuration& configuration)
+void RunSourceDriver::Execute(const Configuration& configuration)
 {
 	if (configuration.inputFilePath.empty())
 	{

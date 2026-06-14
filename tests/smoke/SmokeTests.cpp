@@ -1,5 +1,5 @@
 #include "src/app/cli/CommandLineInterface.h"
-#include "src/app/cli/commands/RunExpressionDriver.h"
+#include "src/app/cli/commands/RunSourceDriver.h"
 
 #include <algorithm>
 #include <filesystem>
@@ -65,7 +65,7 @@ std::string RunProgram(const fs::path& sourceFile)
 	configuration.report = false;
 	configuration.regenerateTable = false;
 
-	RunExpressionDriver driver;
+	RunSourceDriver driver;
 
 	CurrentPathGuard pathGuard(GetProjectRoot());
 
