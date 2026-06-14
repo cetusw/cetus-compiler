@@ -18,29 +18,6 @@ struct SmokeTestCase
 	fs::path expectedFile;
 };
 
-class CoutCapture
-{
-public:
-	CoutCapture()
-		: oldBuffer(std::cout.rdbuf(buffer.rdbuf()))
-	{
-	}
-
-	~CoutCapture()
-	{
-		std::cout.rdbuf(oldBuffer);
-	}
-
-	std::string GetOutput() const
-	{
-		return buffer.str();
-	}
-
-private:
-	std::ostringstream buffer;
-	std::streambuf* oldBuffer;
-};
-
 class CurrentPathGuard
 {
 public:
