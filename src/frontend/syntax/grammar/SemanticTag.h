@@ -73,6 +73,7 @@ enum class SemanticTag
 	VAR_TYPED_EMPTY_COMPOSITE_DECLARATION,
 	EXPRESSION_STATEMENT,
 	ASSERT_STATEMENT,
+	FORALL_STATEMENT,
 	EMPTY_STATEMENT,
 	PROGRAM,
 	PROGRAM_EMPTY,
@@ -168,6 +169,7 @@ enum class SemanticTag
 	if (value == "var_typed_empty_composite_declaration") return SemanticTag::VAR_TYPED_EMPTY_COMPOSITE_DECLARATION;
 	if (value == "expression_statement") return SemanticTag::EXPRESSION_STATEMENT;
 	if (value == "assert_statement") return SemanticTag::ASSERT_STATEMENT;
+	if (value == "forall_statement") return SemanticTag::FORALL_STATEMENT;
 	if (value == "empty_statement") return SemanticTag::EMPTY_STATEMENT;
 	if (value == "program") return SemanticTag::PROGRAM;
 	if (value == "program_empty") return SemanticTag::PROGRAM_EMPTY;

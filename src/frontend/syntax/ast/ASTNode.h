@@ -373,6 +373,20 @@ private:
 	std::string m_sourceText;
 };
 
+class ForAllStatementASTNode final : public StatementASTNode
+{
+public:
+	ForAllStatementASTNode(std::vector<FunctionParameter> parameters, ASTNodePtr body);
+
+	[[nodiscard]] const std::vector<FunctionParameter>& GetParameters() const;
+	[[nodiscard]] const ASTNode& GetBody() const;
+	void Accept(ASTNodeVisitor& visitor) const override;
+
+private:
+	std::vector<FunctionParameter> m_parameters;
+	ASTNodePtr m_body;
+};
+
 class EmptyStatementASTNode final : public StatementASTNode
 {
 public:

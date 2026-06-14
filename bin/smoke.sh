@@ -123,7 +123,7 @@ run_negative() {
         exit 1
     fi
 
-    if ! grep -q "$expected" "${SMOKE_STDERR}" "${SMOKE_STDOUT}"; then
+    if ! grep -Fq "$expected" "${SMOKE_STDERR}" "${SMOKE_STDOUT}"; then
         echo "Expected diagnostic not found: $expected" >&2
         echo "stdout:" >&2
         cat "${SMOKE_STDOUT}" >&2
@@ -144,7 +144,7 @@ run_negative_with_tests() {
         exit 1
     fi
 
-    if ! grep -q "$expected" "${SMOKE_STDERR}" "${SMOKE_STDOUT}"; then
+    if ! grep -Fq "$expected" "${SMOKE_STDERR}" "${SMOKE_STDOUT}"; then
         echo "Expected diagnostic not found: $expected" >&2
         echo "stdout:" >&2
         cat "${SMOKE_STDOUT}" >&2
@@ -177,7 +177,7 @@ run_typecheck_negative() {
         exit 1
     fi
 
-    if ! grep -q "$expected" "${SMOKE_STDERR}" "${SMOKE_STDOUT}"; then
+    if ! grep -Fq "$expected" "${SMOKE_STDERR}" "${SMOKE_STDOUT}"; then
         echo "Expected diagnostic not found: $expected" >&2
         echo "stdout:" >&2
         cat "${SMOKE_STDOUT}" >&2
@@ -198,7 +198,7 @@ run_typecheck_negative_with_tests() {
         exit 1
     fi
 
-    if ! grep -q "$expected" "${SMOKE_STDERR}" "${SMOKE_STDOUT}"; then
+    if ! grep -Fq "$expected" "${SMOKE_STDERR}" "${SMOKE_STDOUT}"; then
         echo "Expected diagnostic not found: $expected" >&2
         echo "stdout:" >&2
         cat "${SMOKE_STDOUT}" >&2
@@ -262,8 +262,10 @@ run_positive_output "${ROOT_DIR}/tests/smoke/positive/nil_slice.cetus" $'true\n0
 run_positive_output "${ROOT_DIR}/tests/smoke/positive/struct_basic.cetus" "1"
 run_positive_output_with_tests "${ROOT_DIR}/tests/smoke/positive/test_blocks.cetus" "4"
 run_positive_output_with_tests "${ROOT_DIR}/tests/smoke/positive/test_method_blocks.cetus" "5"
+run_positive_output_with_tests "${ROOT_DIR}/tests/smoke/positive/property_forall.cetus" "1"
 run_test_output "${ROOT_DIR}/tests/smoke/positive/test_blocks.cetus" $'ok add\ntests: 1 passed, 0 failed'
 run_test_output "${ROOT_DIR}/tests/smoke/positive/test_method_blocks.cetus" $'ok Point.Sum\ntests: 1 passed, 0 failed'
+run_test_output "${ROOT_DIR}/tests/smoke/positive/property_forall.cetus" $'ok add\ntests: 1 passed, 0 failed'
 run_positive_output "${ROOT_DIR}/tests/programs/algorithms/max.cetus" "9"
 run_positive_output "${ROOT_DIR}/tests/programs/search/linear_search.cetus" "2"
 run_positive_output "${ROOT_DIR}/tests/programs/search/binary_search.cetus" "4"
@@ -298,6 +300,7 @@ run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/struct_literal_type_mi
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/method_unknown.cetus" "Method is not declared"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/method_duplicate.cetus" "Method is already declared"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/multiple_return_single_binding.cetus" "Short variable declaration expects the same number of names and values"
+run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/forall_unsupported_type.cetus" "Forall generator does not support parameter type: []int"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/nil_invalid_assignment.cetus" "Variable initializer type does not match declared type"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/return_address_of_local.cetus" "Address of stack-backed variable cannot escape function return"
 run_typecheck_negative "${ROOT_DIR}/tests/smoke/typecheck/address_of_borrowed_ref.cetus" "Cannot take address of borrowed stack-backed reference"

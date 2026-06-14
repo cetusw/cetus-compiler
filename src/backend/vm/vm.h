@@ -19,6 +19,7 @@ public:
 
 	void LoadProgram(const Program& program);
 	InterpretResult InterpretFunction(const std::shared_ptr<ObjFunction>& function);
+	InterpretResult InterpretFunction(const std::shared_ptr<ObjFunction>& function, const std::vector<Value>& arguments);
 	InterpretResult InterpretProgram(const Program& program);
 	uint8_t ReadByte();
 	Value ReadConstant();

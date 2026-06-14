@@ -33,6 +33,8 @@ std::string_view TokenTypeToGrammarTerminal(const TokenType type)
 		return "TEST";
 	case TokenType::ASSERT:
 		return "ASSERT";
+	case TokenType::FORALL:
+		return "FORALL";
 	case TokenType::FUNC:
 		return "FUNC";
 	case TokenType::TYPE:

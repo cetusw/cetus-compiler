@@ -169,6 +169,7 @@ std::string JsonPreparedGrammarStorage::SerializeSemanticTag(const SemanticTag t
 	case SemanticTag::VAR_TYPED_EMPTY_COMPOSITE_DECLARATION: return "var_typed_empty_composite_declaration";
 	case SemanticTag::EXPRESSION_STATEMENT: return "expression_statement";
 	case SemanticTag::ASSERT_STATEMENT: return "assert_statement";
+	case SemanticTag::FORALL_STATEMENT: return "forall_statement";
 	case SemanticTag::EMPTY_STATEMENT: return "empty_statement";
 	case SemanticTag::PROGRAM: return "program";
 	case SemanticTag::PROGRAM_EMPTY: return "program_empty";

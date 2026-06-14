@@ -32,6 +32,7 @@
 ~Stmt~ -> ~VarDecl~ SEMICOLON @pass_expr
 ~Stmt~ -> SEMICOLON @empty_statement
 ~Stmt~ -> ASSERT LPAREN ~Con~ RPAREN SEMICOLON @assert_statement
+~Stmt~ -> FORALL LPAREN ~ParamList~ RPAREN ~Block~ @forall_statement
 ~Stmt~ -> RETURN SEMICOLON @return_void
 ~Stmt~ -> RETURN ~ExpressionList~ SEMICOLON @return_value
 ~Stmt~ -> ~IfStmt~ @pass_expr

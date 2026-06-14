@@ -180,6 +180,18 @@ void AstDumper::Visit(const AssertStatementASTNode& expr)
 	DumpChild(expr.GetCondition());
 }
 
+void AstDumper::Visit(const ForAllStatementASTNode& expr)
+{
+	std::vector<std::string> names;
+	names.reserve(expr.GetParameters().size());
+	for (const FunctionParameter& parameter : expr.GetParameters())
+	{
+		names.push_back(parameter.name + " " + parameter.type.ToString());
+	}
+	DumpLine("ForAllStatementASTNode(" + JoinNames(names) + ")");
+	DumpChild(expr.GetBody());
+}
+
 void AstDumper::Visit(const EmptyStatementASTNode&)
 {
 	DumpLine("EmptyStatementASTNode");

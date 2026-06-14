@@ -138,6 +138,8 @@ AstSemanticValue AstReductionBuilder::Build(const ParserRule& rule, std::vector<
 		return BuildExpressionStatement(std::move(values));
 	case SemanticTag::ASSERT_STATEMENT:
 		return BuildAssertStatement(std::move(values));
+	case SemanticTag::FORALL_STATEMENT:
+		return BuildForAllStatement(std::move(values));
 	case SemanticTag::EMPTY_STATEMENT:
 		return BuildEmptyStatement(values);
 	case SemanticTag::PROGRAM:
@@ -887,6 +889,17 @@ AstSemanticValue AstReductionBuilder::BuildAssertStatement(std::vector<AstSemant
 			std::move(condition),
 			assertToken.line,
 			std::move(sourceText)),
+		std::nullopt
+	};
+}
+
+AstSemanticValue AstReductionBuilder::BuildForAllStatement(std::vector<AstSemanticValue> values)
+{
+	RequireValueCount(values, 5, "Forall statement reduction");
+	return {
+		std::make_unique<ForAllStatementASTNode>(
+			TakeParameterList(values, 2),
+			TakeNode(values, 4)),
 		std::nullopt
 	};
 }

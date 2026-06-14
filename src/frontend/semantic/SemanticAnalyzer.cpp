@@ -1,6 +1,7 @@
 #include "SemanticAnalyzer.h"
 
 #include "rules/TypeRules.h"
+#include "src/frontend/testing/PropertyGenerator.h"
 #include "src/frontend/syntax/ast/ASTNode.h"
 
 // TODO избавится от dynamic_cast
@@ -979,6 +980,69 @@ void SemanticAnalyzer::Visit(const AssertStatementASTNode& node)
 	SetCurrentType(node, Type::VOID);
 }
 
+void SemanticAnalyzer::Visit(const ForAllStatementASTNode& node)
+{
+	if (m_testDepth == 0)
+	{
+		AddDiagnostic("Forall statement is only allowed inside test blocks.");
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+	if (m_forAllDepth > 0)
+	{
+		AddDiagnostic("Nested forall statements are not supported.");
+		SetCurrentType(node, Type::ERROR);
+		return;
+	}
+
+	bool hasError = false;
+	std::unordered_set<std::string> parameterNames;
+	for (const FunctionParameter& parameter : node.GetParameters())
+	{
+		if (!ValidateUserDefinedName(parameter.name, "Forall parameter"))
+		{
+			hasError = true;
+		}
+		if (!ValidateTypeReference(parameter.type, "forall parameter"))
+		{
+			hasError = true;
+		}
+		if (!PropertyGenerator::Supports(parameter.type))
+		{
+			AddDiagnostic("Forall generator does not support parameter type: " + parameter.type.ToString());
+			hasError = true;
+		}
+		if (!parameterNames.insert(parameter.name).second)
+		{
+			AddDiagnostic("Forall parameter is already declared: " + parameter.name);
+			hasError = true;
+		}
+	}
+
+	const SymbolTable savedSymbols = m_symbolTable;
+	m_symbolTable = SymbolTable(savedSymbols.GetBindings());
+	m_symbolTable.EnterScope();
+	for (const FunctionParameter& parameter : node.GetParameters())
+	{
+		m_symbolTable.Define(SemanticSymbol{
+			parameter.name,
+			parameter.type,
+			SemanticSymbolKind::VARIABLE,
+			true,
+			false,
+			{},
+			{},
+			{} });
+	}
+
+	++m_forAllDepth;
+	const TypeDescriptor bodyType = AnalyzeChild(node.GetBody());
+	--m_forAllDepth;
+	m_symbolTable = savedSymbols;
+
+	SetCurrentType(node, hasError || bodyType == Type::ERROR ? Type::ERROR : Type::VOID);
+}
+
 void SemanticAnalyzer::Visit(const EmptyStatementASTNode& node)
 {
 	SetCurrentType(node, Type::VOID);
@@ -1509,7 +1573,9 @@ void SemanticAnalyzer::Visit(const StructDeclarationASTNode& node)
 
 void SemanticAnalyzer::Visit(const TestDeclarationASTNode& node)
 {
+	++m_testDepth;
 	const TypeDescriptor bodyType = AnalyzeChild(node.GetBody());
+	--m_testDepth;
 	SetCurrentType(node, bodyType == Type::ERROR ? Type::ERROR : Type::VOID);
 }
 

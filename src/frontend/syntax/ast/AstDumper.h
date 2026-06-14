@@ -29,6 +29,7 @@ public:
 	void Visit(const VariableDeclarationASTNode& expr) override;
 	void Visit(const ExpressionStatementASTNode& expr) override;
 	void Visit(const AssertStatementASTNode& expr) override;
+	void Visit(const ForAllStatementASTNode& expr) override;
 	void Visit(const EmptyStatementASTNode& expr) override;
 	void Visit(const ProgramASTNode& expr) override;
 	void Visit(const StatementListASTNode& expr) override;

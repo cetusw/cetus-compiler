@@ -29,6 +29,11 @@ void VM::LoadProgram(const Program& program)
 
 InterpretResult VM::InterpretFunction(const std::shared_ptr<ObjFunction>& function)
 {
+	return InterpretFunction(function, {});
+}
+
+InterpretResult VM::InterpretFunction(const std::shared_ptr<ObjFunction>& function, const std::vector<Value>& arguments)
+{
 	if (!function)
 	{
 		return InterpretResult::RUNTIME_ERROR;
@@ -38,6 +43,10 @@ InterpretResult VM::InterpretFunction(const std::shared_ptr<ObjFunction>& functi
 	m_stackTop = m_stack;
 	m_frameCount = 0;
 	Push(Value(function));
+	for (const Value& argument : arguments)
+	{
+		Push(argument);
+	}
 	CallFrame frame;
 	frame.function = function;
 	frame.ip = function->chunk.GetCode().data();

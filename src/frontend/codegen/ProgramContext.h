@@ -10,7 +10,7 @@ class ProgramContext
 public:
 	void Reset();
 	void AddFunction(std::shared_ptr<ObjFunction> function);
-	void AddTestFunction(std::string testName, std::shared_ptr<ObjFunction> function);
+	void AddTestFunction(std::string testName, std::shared_ptr<ObjFunction> function, std::vector<PropertyDescriptor> properties);
 	[[nodiscard]] bool HasEntryPoint() const;
 	[[nodiscard]] Program Build();
 

@@ -624,6 +624,27 @@ void AssertStatementASTNode::Accept(ASTNodeVisitor& visitor) const
 	visitor.Visit(*this);
 }
 
+ForAllStatementASTNode::ForAllStatementASTNode(std::vector<FunctionParameter> parameters, ASTNodePtr body)
+	: m_parameters(std::move(parameters))
+	, m_body(std::move(body))
+{
+}
+
+const std::vector<FunctionParameter>& ForAllStatementASTNode::GetParameters() const
+{
+	return m_parameters;
+}
+
+const ASTNode& ForAllStatementASTNode::GetBody() const
+{
+	return *m_body;
+}
+
+void ForAllStatementASTNode::Accept(ASTNodeVisitor& visitor) const
+{
+	visitor.Visit(*this);
+}
+
 void EmptyStatementASTNode::Accept(ASTNodeVisitor& visitor) const
 {
 	visitor.Visit(*this);

@@ -70,6 +70,7 @@ enum class TokenType
     RETURN,             // return
     TEST,               // test
     ASSERT,             // assert
+    FORALL,             // forall
     DEFER,              // defer
     TRUE,               // true
     FALSE,              // false

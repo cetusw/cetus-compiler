@@ -93,6 +93,7 @@ private:
 	[[nodiscard]] static AstSemanticValue BuildVarTypedEmptyCompositeDeclaration(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildExpressionStatement(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildAssertStatement(std::vector<AstSemanticValue> values);
+	[[nodiscard]] static AstSemanticValue BuildForAllStatement(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildEmptyStatement(const std::vector<AstSemanticValue>& values);
 	[[nodiscard]] static AstSemanticValue BuildProgram(std::vector<AstSemanticValue> values);
 	[[nodiscard]] static AstSemanticValue BuildEmptyProgram(const std::vector<AstSemanticValue>& values);

@@ -22,6 +22,7 @@ class ShortVariableDeclarationASTNode;
 class VariableDeclarationASTNode;
 class ExpressionStatementASTNode;
 class AssertStatementASTNode;
+class ForAllStatementASTNode;
 class EmptyStatementASTNode;
 class ProgramASTNode;
 class StatementListASTNode;
@@ -62,6 +63,7 @@ public:
 	virtual void Visit(const VariableDeclarationASTNode& expr) = 0;
 	virtual void Visit(const ExpressionStatementASTNode& expr) = 0;
 	virtual void Visit(const AssertStatementASTNode& expr) = 0;
+	virtual void Visit(const ForAllStatementASTNode& expr) = 0;
 	virtual void Visit(const EmptyStatementASTNode& expr) = 0;
 	virtual void Visit(const ProgramASTNode& expr) = 0;
 	virtual void Visit(const StatementListASTNode& expr) = 0;

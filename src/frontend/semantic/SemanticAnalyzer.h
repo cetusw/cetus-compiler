@@ -38,6 +38,7 @@ public:
 	void Visit(const VariableDeclarationASTNode& node) override;
 	void Visit(const ExpressionStatementASTNode& node) override;
 	void Visit(const AssertStatementASTNode& node) override;
+	void Visit(const ForAllStatementASTNode& node) override;
 	void Visit(const EmptyStatementASTNode& node) override;
 	void Visit(const ProgramASTNode& node) override;
 	void Visit(const StatementListASTNode& node) override;
@@ -113,4 +114,6 @@ private:
 	std::unordered_set<const FunctionDeclarationASTNode*> m_predeclaredFunctions;
 	std::unordered_set<const StructDeclarationASTNode*> m_predeclaredTypes;
 	int m_loopDepth = 0;
+	int m_testDepth = 0;
+	int m_forAllDepth = 0;
 };

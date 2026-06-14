@@ -57,6 +57,7 @@ add_library(cetus_frontend STATIC
         src/frontend/semantic/Type.cpp
         src/frontend/semantic/rules/TypeRules.cpp
         src/frontend/semantic/SemanticAnalyzer.cpp
+        src/frontend/testing/PropertyGenerator.cpp
         src/frontend/testing/TestCoverageAnalyzer.cpp
         src/frontend/testing/TestDiscovery.cpp
         src/frontend/syntax/parser/AstReductionBuilder.cpp
@@ -87,6 +88,7 @@ add_library(cetus_backend_vm STATIC
         src/backend/vm/objects/ObjStruct.cpp
         src/backend/vm/disassembler/Disassembler.cpp
         src/backend/vm/parser/BytecodeParser.cpp
+        src/backend/vm/testing/PropertyRunner.cpp
         src/backend/vm/testing/TestRunner.cpp
         src/backend/vm/instructions/ArrayInstruction.cpp
         src/backend/vm/instructions/AssertInstruction.cpp

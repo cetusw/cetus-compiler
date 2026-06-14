@@ -21,11 +21,14 @@ void ProgramContext::AddFunction(std::shared_ptr<ObjFunction> function)
 	m_functions.push_back(std::move(function));
 }
 
-void ProgramContext::AddTestFunction(std::string testName, std::shared_ptr<ObjFunction> function)
+void ProgramContext::AddTestFunction(
+	std::string testName,
+	std::shared_ptr<ObjFunction> function,
+	std::vector<PropertyDescriptor> properties)
 {
 	m_functions.push_back(function);
 	m_testManifest.coveredSymbols.insert(testName);
-	m_testManifest.tests.push_back({ std::move(testName), std::move(function) });
+	m_testManifest.tests.push_back({ std::move(testName), std::move(function), std::move(properties) });
 }
 
 bool ProgramContext::HasEntryPoint() const

@@ -3,8 +3,8 @@
 #include "OperatorOpcodeResolver.h"
 #include "src/backend/vm/objects/ObjFunction.h"
 #include "src/backend/vm/objects/ObjString.h"
+#include "src/frontend/testing/PropertyGenerator.h"
 #include "src/frontend/syntax/ast/ASTNode.h"
-#include <unordered_map>
 
 namespace
 {
@@ -52,6 +52,11 @@ std::string ResolveBuiltinRuntimeName(const std::string& sourceName)
 std::string MakeTestFunctionName(const std::string& testName)
 {
 	return "<test#" + testName + ">";
+}
+
+std::string MakePropertyFunctionName(const std::string& testName, const int index)
+{
+	return "<property#" + testName + "#" + std::to_string(index) + ">";
 }
 }
 
@@ -617,6 +622,46 @@ void CodegenVisitor::Visit(const AssertStatementASTNode& expr)
 	CurrentEmitter().EmitAssert(expr.GetSourceLine(), expr.GetSourceText());
 }
 
+void CodegenVisitor::Visit(const ForAllStatementASTNode& expr)
+{
+	if (!EnsureTyped(expr))
+	{
+		return;
+	}
+	if (!m_activeTestName.has_value())
+	{
+		Fail("Forall statement can only be code generated inside test declaration.");
+		return;
+	}
+
+	std::vector<PropertyParameterDescriptor> parameters;
+	parameters.reserve(expr.GetParameters().size());
+	for (const FunctionParameter& parameter : expr.GetParameters())
+	{
+		const std::optional<PropertyGeneratorKind> kind = PropertyGenerator::ResolveKind(parameter.type);
+		if (!kind.has_value())
+		{
+			Fail("Unsupported forall parameter type during code generation: " + parameter.type.ToString());
+			return;
+		}
+		parameters.push_back({ parameter.name, *kind });
+	}
+
+	const std::shared_ptr<ObjFunction> function = BuildCallable(
+		MakePropertyFunctionName(*m_activeTestName, m_activeTestPropertyIndex++),
+		static_cast<int>(expr.GetParameters().size()),
+		0,
+		expr.GetBody(),
+		&expr.GetParameters(),
+		nullptr);
+	if (!function)
+	{
+		return;
+	}
+
+	m_activeTestProperties.push_back({ function, std::move(parameters) });
+}
+
 void CodegenVisitor::Visit(const EmptyStatementASTNode&)
 {
 }
@@ -849,13 +894,19 @@ void CodegenVisitor::Visit(const FunctionDeclarationASTNode& expr)
 		return;
 	}
 
-	EmitCallable(
+	const std::shared_ptr<ObjFunction> function = BuildCallable(
 		expr.GetQualifiedName(),
 		static_cast<int>(expr.GetParameters().size() + (expr.GetReceiver() ? 1 : 0)),
 		GetReturnArity(expr.GetReturnType()),
 		expr.GetBody(),
 		&expr.GetParameters(),
 		expr.GetReceiver());
+	if (!function)
+	{
+		return;
+	}
+
+	m_programContext.AddFunction(function);
 }
 
 void CodegenVisitor::Visit(const StructDeclarationASTNode&)
@@ -869,7 +920,25 @@ void CodegenVisitor::Visit(const TestDeclarationASTNode& expr)
 		return;
 	}
 
-	EmitCallable(MakeTestFunctionName(expr.GetName()), 0, 0, expr.GetBody(), nullptr, nullptr, &expr.GetName());
+	m_activeTestName = expr.GetName();
+	m_activeTestPropertyIndex = 0;
+	m_activeTestProperties.clear();
+	const std::shared_ptr<ObjFunction> function = BuildCallable(
+		MakeTestFunctionName(expr.GetName()),
+		0,
+		0,
+		expr.GetBody(),
+		nullptr,
+		nullptr);
+	const std::vector<PropertyDescriptor> properties = std::move(m_activeTestProperties);
+	m_activeTestProperties.clear();
+	m_activeTestName.reset();
+	if (!function)
+	{
+		return;
+	}
+
+	m_programContext.AddTestFunction(expr.GetName(), function, properties);
 }
 
 BytecodeEmitter& CodegenVisitor::CurrentEmitter()
@@ -885,14 +954,13 @@ void CodegenVisitor::Fail(std::string message)
 	}
 }
 
-void CodegenVisitor::EmitCallable(
+std::shared_ptr<ObjFunction> CodegenVisitor::BuildCallable(
 	const std::string& name,
 	const int arity,
 	const int returnArity,
 	const ASTNode& body,
 	const std::vector<FunctionParameter>* parameters,
-	const FunctionParameter* receiver,
-	const std::string* testName)
+	const FunctionParameter* receiver)
 {
 	auto function = std::make_shared<ObjFunction>();
 	function->name = std::make_shared<ObjString>(name);
@@ -924,16 +992,10 @@ void CodegenVisitor::EmitCallable(
 
 	if (m_error.has_value())
 	{
-		return;
+		return nullptr;
 	}
 
-	if (testName)
-	{
-		m_programContext.AddTestFunction(*testName, std::move(function));
-		return;
-	}
-
-	m_programContext.AddFunction(std::move(function));
+	return function;
 }
 
 void CodegenVisitor::EmitDefault(const TypeDescriptor& type)
