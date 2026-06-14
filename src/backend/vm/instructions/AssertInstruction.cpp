@@ -30,8 +30,6 @@ InterpretResult AssertInstruction::Execute(VM& vm) const
 	if (const std::optional<std::string>& activeTestName = vm.GetActiveTestName(); activeTestName.has_value())
 	{
 		vm.AddRuntimeDiagnostic(failureDiagnostic);
-		std::fprintf(stderr, "Test failed: %s\n", activeTestName->c_str());
-		std::fprintf(stderr, "%s\n", failureDiagnostic.c_str());
 		return InterpretResult::RUNTIME_ERROR;
 	}
 
