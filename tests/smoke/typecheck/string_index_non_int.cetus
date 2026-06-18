@@ -1,5 +1,0 @@
-func main() {
-    text := "abc";
-    flag := true;
-    println(text[flag]);
-}

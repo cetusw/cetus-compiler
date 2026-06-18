@@ -1,9 +1,11 @@
 #include "src/app/cli/CommandLineInterface.h"
 #include "src/app/cli/commands/RunSourceDriver.h"
+#include "src/support/io/FileReader.h"
 
 #include <algorithm>
 #include <filesystem>
 #include <fstream>
+#include <stdexcept>
 #include <string>
 #include <vector>
 
@@ -14,6 +16,7 @@ namespace fs = std::filesystem;
 struct SmokeTestCase
 {
 	std::string feature;
+	std::string variant;
 	std::string name;
 	fs::path sourceFile;
 	fs::path expectedFile;
@@ -39,42 +42,91 @@ private:
 
 fs::path GetProjectRoot()
 {
-	return fs::path(CETUS_SOURCE_DIR);
+	return { CETUS_SOURCE_DIR };
 }
 
-std::string ReadFile(const fs::path& filePath)
+bool RequiresTests(const std::string& feature)
 {
-	std::ifstream file(filePath);
+	return feature == "tests" || feature == "assertions";
+}
 
-	if (!file.is_open())
+std::string TrimTrailingWhitespace(std::string value)
+{
+	while (!value.empty() && (value.back() == '\n' || value.back() == '\r' || value.back() == ' ' || value.back() == '\t'))
 	{
-		throw std::runtime_error(
-			"Failed to open file: " + filePath.string());
+		value.pop_back();
 	}
 
-	return {
-		std::istreambuf_iterator(file),
-		std::istreambuf_iterator<char>()
-	};
+	return value;
 }
 
-std::string RunProgram(const fs::path& sourceFile)
+std::string RunProgram(const fs::path& sourceFile, const bool requireTests, const bool expectException)
 {
 	Configuration configuration;
 	configuration.inputFilePath = sourceFile.string();
-	configuration.requireTests = false;
+	configuration.requireTests = requireTests;
 	configuration.report = false;
 	configuration.regenerateTable = false;
 
-	RunSourceDriver driver;
-
 	CurrentPathGuard pathGuard(GetProjectRoot());
 
-	testing::internal::CaptureStdout();
+	try
+	{
+		testing::internal::CaptureStdout();
+		RunSourceDriver::Execute(configuration);
+		return testing::internal::GetCapturedStdout();
+	}
+	catch (const std::exception& exception)
+	{
+		testing::internal::GetCapturedStdout();
+		if (expectException)
+		{
+			return exception.what();
+		}
+		throw;
+	}
+}
 
-	driver.Execute(configuration);
+void DiscoverTestsInDirectory(
+	std::vector<SmokeTestCase>& testCases,
+	const fs::path& featureDirectory,
+	const std::string& variant)
+{
+	const fs::path sourceDirectory = featureDirectory / variant;
+	const fs::path expectedDirectory = featureDirectory / "expected";
 
-	return testing::internal::GetCapturedStdout();
+	if (!fs::exists(sourceDirectory) || !fs::exists(expectedDirectory))
+	{
+		return;
+	}
+
+	for (const auto& sourceEntry : fs::directory_iterator(sourceDirectory))
+	{
+		if (!sourceEntry.is_regular_file())
+		{
+			continue;
+		}
+
+		const fs::path& sourceFile = sourceEntry.path();
+		fs::path expectedFile = expectedDirectory / sourceFile.stem();
+		expectedFile.replace_extension(".txt");
+
+		if (!fs::exists(expectedFile))
+		{
+			throw std::runtime_error(
+				"Expected file not found: " + expectedFile.string());
+		}
+
+		const std::string feature = featureDirectory.filename().string();
+		const std::string name = feature + "_" += variant + "_" + sourceFile.stem().string();
+		testCases.push_back({
+			feature,
+			variant,
+			name,
+			sourceFile,
+			expectedFile,
+		});
+	}
 }
 
 std::vector<SmokeTestCase> DiscoverSmokeTests()
@@ -91,40 +143,8 @@ std::vector<SmokeTestCase> DiscoverSmokeTests()
 		}
 
 		const fs::path& featureDirectory = featureEntry.path();
-		const fs::path sourceDirectory = featureDirectory / "positive";
-		const fs::path expectedDirectory = featureDirectory / "expected";
-
-		if (!fs::exists(sourceDirectory) || !fs::exists(expectedDirectory))
-		{
-			continue;
-		}
-
-		for (const auto& sourceEntry : fs::directory_iterator(sourceDirectory))
-		{
-			if (!sourceEntry.is_regular_file())
-			{
-				continue;
-			}
-
-			const fs::path sourceFile = sourceEntry.path();
-			fs::path expectedFile = expectedDirectory / sourceFile.stem();
-			expectedFile.replace_extension(".txt");
-
-			if (!fs::exists(expectedFile))
-			{
-				throw std::runtime_error(
-					"Expected file not found: " + expectedFile.string());
-			}
-
-			const std::string feature = featureDirectory.filename().string();
-
-			testCases.push_back({
-				feature,
-				feature + "_positive_" + sourceFile.stem().string(),
-				sourceFile,
-				expectedFile,
-			});
-		}
+		DiscoverTestsInDirectory(testCases, featureDirectory, "positive");
+		DiscoverTestsInDirectory(testCases, featureDirectory, "negative");
 	}
 
 	std::ranges::sort(testCases,
@@ -143,13 +163,18 @@ class SmokeTest
 TEST_P(SmokeTest, MatchesExpectedOutput)
 {
 	const SmokeTestCase& testCase = GetParam();
+	const bool requireTests = RequiresTests(testCase.feature);
+	const std::string expectedOutput = TrimTrailingWhitespace(FileReader::ReadAll(testCase.expectedFile));
 
-	const std::string actualOutput = RunProgram(testCase.sourceFile);
+	if (testCase.variant == "positive")
+	{
+		const std::string actualOutput = TrimTrailingWhitespace(RunProgram(testCase.sourceFile, requireTests, false));
+		EXPECT_EQ(actualOutput, expectedOutput);
+		return;
+	}
 
-	const std::string expectedOutput = ReadFile(testCase.expectedFile);
-
-	std::cout << testCase.sourceFile << std::endl;
-	EXPECT_EQ(actualOutput, expectedOutput);
+	const std::string actualError = RunProgram(testCase.sourceFile, requireTests, true);
+	EXPECT_NE(actualError.find(expectedOutput), std::string::npos);
 }
 
 INSTANTIATE_TEST_SUITE_P(

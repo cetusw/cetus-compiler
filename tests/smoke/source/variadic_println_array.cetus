@@ -1,6 +1,0 @@
-func main() {
-    values := []int{64, 34, 25};
-    nested := [2][2]int{[2]int{1, 2}, [2]int{3, 4}};
-    println("Before:", values)
-    println(nested)
-}

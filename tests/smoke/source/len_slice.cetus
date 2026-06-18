@@ -1,8 +1,0 @@
-func size(values []int) int {
-    return len(values);
-}
-
-func main() {
-    values := []int{1, 2, 3, 4};
-    println(size(values))
-}

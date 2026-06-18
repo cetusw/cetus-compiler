@@ -1,8 +1,0 @@
-test "property" {
-    forall(values []int) {
-        assert(true)
-    }
-}
-
-func main() {
-}

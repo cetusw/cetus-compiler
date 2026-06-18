@@ -1,7 +1,0 @@
-func main() {
-    i := 5
-    for j := 3; j > 0; j-- {
-        i--
-    }
-    println(i)
-}

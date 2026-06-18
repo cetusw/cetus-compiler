@@ -1,7 +1,0 @@
-func inc(value *int) {
-    value = value + 1;
-}
-
-func main() {
-    inc(1 + 2);
-}

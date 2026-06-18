@@ -1,7 +1,0 @@
-func answer() int {
-    return 42;
-}
-
-func main() {
-    printf(answer());
-}

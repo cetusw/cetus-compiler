@@ -1,9 +1,0 @@
-func main() {
-    var items []int = nil
-    println(items == nil)
-    println(len(items))
-
-    items = append(items, 3, 4)
-    println(items == nil)
-    println(items)
-}

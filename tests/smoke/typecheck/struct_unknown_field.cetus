@@ -1,8 +1,0 @@
-type Point struct {
-    x int;
-}
-
-func main() {
-    var p Point;
-    p.y = 1;
-}

@@ -1,6 +1,0 @@
-func main() {
-    println("a" + "bc");
-    println("a" == "a");
-    println("a" != "b");
-    println(len("abc"));
-}
