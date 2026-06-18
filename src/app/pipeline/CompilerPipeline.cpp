@@ -36,9 +36,7 @@ std::unique_ptr<ProgramASTNode> CompilerPipeline::ParseFile(const Configuration&
 
 TestDiscoveryResult CompilerPipeline::DiscoverTests(const ProgramASTNode& program)
 {
-	constexpr TestDiscovery discovery;
-
-	const TestDiscoveryResult discoveryResult = discovery.Discover(program);
+	const TestDiscoveryResult discoveryResult = TestDiscovery::Discover(program);
 
 	if (!discoveryResult.diagnostics.empty())
 	{
@@ -69,9 +67,7 @@ TypeCheckResult CompilerPipeline::TypeCheck(const ProgramASTNode& program)
 
 void CompilerPipeline::ValidateTestCoverage(const ProgramASTNode& program, const TestDiscoveryResult& discoveryResult)
 {
-	constexpr TestCoverageAnalyzer coverageAnalyzer;
-
-	const std::vector<SemanticDiagnostic> diagnostics = coverageAnalyzer.Analyze(program, discoveryResult);
+	const std::vector<SemanticDiagnostic> diagnostics = TestCoverageAnalyzer::Analyze(program, discoveryResult);
 
 	if (!diagnostics.empty())
 	{
