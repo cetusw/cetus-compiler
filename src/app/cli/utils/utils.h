@@ -1,6 +1,7 @@
 #pragma once
 
 #include "src/app/cli/CommandLineInterface.h"
+#include "src/app/diagnostics/DiagnosticStage.h"
 #include "src/frontend/lexical/LexicalAnalyzer.h"
 #include "src/frontend/syntax/GrammarPreparator.h"
 #include "src/frontend/syntax/SyntaxAnalyzer.h"
@@ -17,6 +18,7 @@ inline ParseResult ParseSourceFile(const Configuration& configuration)
 	if (lexerResult.error.has_value())
 	{
 		return ParseResult::Error(
+			DiagnosticStage::Lexical,
 			lexerResult.errorLine,
 			"Lexical error at line " + std::to_string(lexerResult.errorLine) + ": " + *lexerResult.error);
 	}

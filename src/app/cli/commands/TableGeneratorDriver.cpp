@@ -1,23 +1,28 @@
 #include "TableGeneratorDriver.h"
 
+#include "src/app/diagnostics/CompilerError.h"
+#include "src/app/diagnostics/DiagnosticStage.h"
 #include "../../../frontend/syntax/presentation/presenters/ConsolePresenter.h"
 #include "src/frontend/syntax/grammar/GrammarLoader.h"
 #include "src/frontend/syntax/lalr/LALRBuilder.h"
 #include "src/frontend/syntax/presentation/presenters/CsvPresenter.h"
 
 #include <iostream>
-#include <stdexcept>
 
 void TableGeneratorDriver::Execute(const Configuration& configuration)
 {
 	if (configuration.inputFilePath.empty())
 	{
-		throw std::runtime_error("Input grammar file path is required for table generation.");
+		throw CompilerError(
+			DiagnosticStage::Syntax,
+			"Input grammar file path is required for table generation.");
 	}
 
 	if (configuration.outputFilePath.empty())
 	{
-		throw std::runtime_error("Output file path is required for table generation.");
+		throw CompilerError(
+			DiagnosticStage::Syntax,
+			"Output file path is required for table generation.");
 	}
 
 	if (configuration.verbose)

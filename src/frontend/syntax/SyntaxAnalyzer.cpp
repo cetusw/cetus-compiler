@@ -13,7 +13,10 @@ ParseResult SyntaxAnalyzer::Analyze(const std::vector<Token>& tokens) const
 {
 	if (tokens.empty())
 	{
-		return ParseResult::Error(1, "Token stream is empty.");
+		return ParseResult::Error(
+			DiagnosticStage::Syntax,
+			1,
+			"Token stream is empty.");
 	}
 
 	SyntaxContext ctx;
@@ -28,7 +31,10 @@ ParseResult SyntaxAnalyzer::Analyze(const std::vector<Token>& tokens) const
 		}
 	}
 
-	return ParseResult::Error(tokens.back().line, "Unexpected end of token stream.");
+	return ParseResult::Error(
+		DiagnosticStage::Syntax,
+		tokens.back().line,
+		"Unexpected end of token stream.");
 }
 
 std::optional<ParseResult> SyntaxAnalyzer::HandleAction(
@@ -87,11 +93,17 @@ std::optional<ParseResult> SyntaxAnalyzer::ValidateReduceContext(
 {
 	if (ctx.stateStack.size() <= rhsSize)
 	{
-		return ParseResult::Error(line, "Parser state stack underflow during reduce.");
+		return ParseResult::Error(
+			DiagnosticStage::Syntax,
+			line,
+			"Parser state stack underflow during reduce.");
 	}
 	if (ctx.semanticStack.size() < rhsSize)
 	{
-		return ParseResult::Error(line, "Parser semantic stack underflow during reduce.");
+		return ParseResult::Error(
+			DiagnosticStage::Syntax,
+			line,
+			"Parser semantic stack underflow during reduce.");
 	}
 	return std::nullopt;
 }
@@ -110,7 +122,10 @@ std::optional<ParseResult> SyntaxAnalyzer::ValidateGotoAfterReduce(
 {
 	if (actionType != ActionType::GOTO)
 	{
-		return ParseResult::Error(line, "Missing goto action after reduce.");
+		return ParseResult::Error(
+			DiagnosticStage::Syntax,
+			line,
+			"Missing goto action after reduce.");
 	}
 	return std::nullopt;
 }
@@ -129,6 +144,7 @@ ParseResult SyntaxAnalyzer::BuildSuccessResult(SyntaxContext& ctx, const Token& 
 	if (ctx.semanticStack.empty())
 	{
 		return ParseResult::Error(
+			DiagnosticStage::Internal,
 			token.line,
 			"Internal parser error: Program AST was not produced for accepted input.");
 	}
@@ -186,7 +202,11 @@ Action SyntaxAnalyzer::GetAction(const int state, const Symbol& symbol) const
 ParseResult SyntaxAnalyzer::BuildUnexpectedTokenResult(const int state, const Token& token) const
 {
 	std::vector<std::string> expectedTerminals = FindExpectedTerminal(state);
-	return ParseResult::Error(token.line, CreateMessage(token, expectedTerminals), std::move(expectedTerminals));
+	return ParseResult::Error(
+		DiagnosticStage::Syntax,
+		token.line,
+		CreateMessage(token, expectedTerminals),
+		std::move(expectedTerminals));
 }
 
 std::vector<std::string> SyntaxAnalyzer::FindExpectedTerminal(const int state) const

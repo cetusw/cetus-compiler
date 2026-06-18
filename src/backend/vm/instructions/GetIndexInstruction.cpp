@@ -33,6 +33,7 @@ InterpretResult GetIndexInstruction::Execute(VM& vm) const
 	const Value indexableValue = vm.Pop().Dereference();
 	if (!indexableValue.IsIndexable() || !indexValue.IsInt())
 	{
+		vm.SetRuntimeError("Index access expects indexable value and int index.");
 		return InterpretResult::RUNTIME_ERROR;
 	}
 
@@ -40,6 +41,7 @@ InterpretResult GetIndexInstruction::Execute(VM& vm) const
 	const int length = IndexableLength(indexableValue);
 	if (index < 0 || index >= length)
 	{
+		vm.SetRuntimeError("Index out of bounds.");
 		return InterpretResult::RUNTIME_ERROR;
 	}
 

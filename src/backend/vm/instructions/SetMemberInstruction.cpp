@@ -34,6 +34,7 @@ InterpretResult SetMemberInstruction::Execute(VM& vm) const
 	const Value assignedValue = vm.Pop().Dereference();
 	if (!fieldNameValue.IsString())
 	{
+		vm.SetRuntimeError("Member assignment expects string field name.");
 		return InterpretResult::RUNTIME_ERROR;
 	}
 
@@ -41,10 +42,12 @@ InterpretResult SetMemberInstruction::Execute(VM& vm) const
 	const auto object = ResolveStructObject(objectValue);
 	if (!object)
 	{
+		vm.SetRuntimeError("Cannot assign member through nil pointer.");
 		return InterpretResult::RUNTIME_ERROR;
 	}
 	if (!object->HasField(fieldName))
 	{
+		vm.SetRuntimeError("Struct field is not declared: " + object->GetTypeName() + "." + fieldName);
 		return InterpretResult::RUNTIME_ERROR;
 	}
 

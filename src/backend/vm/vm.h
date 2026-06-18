@@ -57,6 +57,8 @@ public:
 	void AddRuntimeDiagnostic(std::string diagnostic);
 	void ClearRuntimeDiagnostics();
 
+	[[nodiscard]] std::string GetRuntimeErrorMessage() const;
+	void SetRuntimeError(std::string diagnostic);
 
 private:
 	Value m_stack[STACK_MAX];

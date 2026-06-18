@@ -65,6 +65,7 @@ InterpretResult BinaryInstruction<Op>::Execute(VM& vm) const
 	const Value result = Op()(a, b);
 	if (result.IsNull())
 	{
+		vm.SetRuntimeError("Invalid operands for binary operation.");
 		return InterpretResult::RUNTIME_ERROR;
 	}
 	vm.Push(result);

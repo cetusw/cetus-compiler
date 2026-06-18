@@ -1,73 +1,30 @@
 #include "TestDriver.h"
 
-#include "src/app/cli/testing/TestReporter.h"
-#include "src/app/cli/utils/utils.h"
-#include "src/backend/vm/testing/TestRunner.h"
+#include "src/app/diagnostics/CompilerError.h"
+#include "src/app/diagnostics/DiagnosticStage.h"
+#include "src/app/pipeline/CompilerPipeline.h"
 #include "src/backend/vm/vm.h"
-#include "src/frontend/codegen/CodegenVisitor.h"
-#include "src/frontend/semantic/SemanticAnalyzer.h"
-#include "src/frontend/testing/TestCoverageAnalyzer.h"
-#include "src/frontend/testing/TestDiscovery.h"
-
-#include <iostream>
-#include <stdexcept>
 
 void TestDriver::Execute(const Configuration& configuration)
 {
 	if (configuration.inputFilePath.empty())
 	{
-		throw std::runtime_error("Input source file path is required for test execution.");
+		throw CompilerError(
+			DiagnosticStage::Internal,
+			"Input source file path is required for test execution.");
 	}
 
-	const ParseResult parseResult = Utils::ParseSourceFile(configuration);
-	if (!parseResult.success)
-	{
-		throw std::runtime_error(parseResult.message);
-	}
-	if (!parseResult.ast)
-	{
-		throw std::runtime_error("Program AST was not produced for parsed input.");
-	}
+	std::unique_ptr<ProgramASTNode> program = CompilerPipeline::ParseFile(configuration);
+	const TestDiscoveryResult discoveryResult = CompilerPipeline::DiscoverTests(*program);
+	const TypeCheckResult typeResult = CompilerPipeline::TypeCheck(*program);
 
-	const ProgramASTNode& program = *parseResult.ast;
-
-	const TestDiscovery discovery;
-	const TestDiscoveryResult discoveryResult = discovery.Discover(program);
-	if (!discoveryResult.diagnostics.empty())
-	{
-		throw std::runtime_error(discoveryResult.diagnostics.front().message);
-	}
-
-	const SymbolTable symbols;
-	SemanticAnalyzer checker(symbols);
-	const TypeCheckResult typeResult = checker.Analyze(program);
-	if (const std::optional<std::string> error = typeResult.GetErrorMessage())
-	{
-		throw std::runtime_error(*error);
-	}
 	if (configuration.requireTests)
 	{
-		const TestCoverageAnalyzer coverageAnalyzer;
-		const std::vector<SemanticDiagnostic> coverageDiagnostics = coverageAnalyzer.Analyze(program, discoveryResult);
-		if (!coverageDiagnostics.empty())
-		{
-			throw std::runtime_error(coverageDiagnostics.front().message);
-		}
+		CompilerPipeline::ValidateTestCoverage(*program, discoveryResult);
 	}
 
-	CodegenVisitor codegen(typeResult.symbols, typeResult);
-	const CodegenResult codegenResult = codegen.Generate(program);
-	if (codegenResult.error.has_value())
-	{
-		throw std::runtime_error(*codegenResult.error);
-	}
-
+	const CodegenResult codegenResult = CompilerPipeline::Compile(*program, typeResult);
 	VM vm;
 	vm.LoadProgram(codegenResult.program);
-	const TestRunResult result = TestRunner::Run(codegenResult.program, vm);
-	TestReporter::Print(result, std::cout);
-	if (result.failedCount > 0)
-	{
-		throw std::runtime_error("Test execution failed.");
-	}
+	CompilerPipeline::RunTests(codegenResult, vm, true);
 }

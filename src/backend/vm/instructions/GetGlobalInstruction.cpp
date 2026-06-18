@@ -8,7 +8,7 @@ InterpretResult GetGlobalInstruction::Execute(VM& vm) const
 
 	if (!vm.HasGlobal(name))
 	{
-		std::fprintf(stderr, "Runtime Error: Undefined variable '%s'.\n", name.c_str());
+		vm.SetRuntimeError("Undefined global variable: " + name);
 		return InterpretResult::RUNTIME_ERROR;
 	}
 

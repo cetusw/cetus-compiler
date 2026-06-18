@@ -8,6 +8,7 @@ InterpretResult StructInstruction::Execute(VM& vm) const
 	const Value typeNameValue = vm.ReadConstant();
 	if (!typeNameValue.IsString())
 	{
+		vm.SetRuntimeError("Struct instruction expects string type name.");
 		return InterpretResult::RUNTIME_ERROR;
 	}
 
@@ -19,6 +20,7 @@ InterpretResult StructInstruction::Execute(VM& vm) const
 		const Value fieldNameValue = vm.ReadConstant();
 		if (!fieldNameValue.IsString())
 		{
+			vm.SetRuntimeError("Struct instruction expects string field name.");
 			return InterpretResult::RUNTIME_ERROR;
 		}
 		fieldNames.push_back(fieldNameValue.AsString());

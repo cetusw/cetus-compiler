@@ -24,13 +24,14 @@ InterpretResult CallInstruction::Execute(VM& vm) const
 
 		if (argCount != function->arity)
 		{
-			std::fprintf(stderr, "Expected %d arguments but got %d.\n", function->arity, argCount);
+			vm.SetRuntimeError("Expected " + std::to_string(function->arity)
+				+ " arguments but got " + std::to_string(argCount) + ".");
 			return InterpretResult::RUNTIME_ERROR;
 		}
 
 		if (vm.GetFrameCount() >= FRAMES_MAX)
 		{
-			std::fprintf(stderr, "Stack overflow.\n");
+			vm.SetRuntimeError("Stack overflow.");
 			return InterpretResult::RUNTIME_ERROR;
 		}
 
@@ -45,6 +46,6 @@ InterpretResult CallInstruction::Execute(VM& vm) const
 		return InterpretResult::OK;
 	}
 
-	std::fprintf(stderr, "Can only call functions.\n");
+	vm.SetRuntimeError("Can only call functions.");
 	return InterpretResult::RUNTIME_ERROR;
 }

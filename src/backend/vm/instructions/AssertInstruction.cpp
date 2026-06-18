@@ -2,18 +2,16 @@
 
 #include "../objects/ObjAssertionMetadata.h"
 #include "../vm.h"
-#include <cstdio>
 #include <string>
 
 InterpretResult AssertInstruction::Execute(VM& vm) const
 {
 	const Value condition = vm.Pop().Dereference();
 	const Value metadataValue = vm.ReadConstant();
-	const auto function = vm.GetCurrentFrame().function;
 
 	if (!condition.IsBool() || !metadataValue.IsAssertionMetadata())
 	{
-		std::fprintf(stderr, "Assertion expects bool condition.\n");
+		vm.SetRuntimeError("Assertion expects bool condition.");
 		return InterpretResult::RUNTIME_ERROR;
 	}
 	if (condition.AsBool())
@@ -33,13 +31,6 @@ InterpretResult AssertInstruction::Execute(VM& vm) const
 		return InterpretResult::RUNTIME_ERROR;
 	}
 
-	vm.AddRuntimeDiagnostic(failureDiagnostic);
-	std::fprintf(stderr, "Assertion failed in %s at line %d", function->name->GetData().c_str(),
-		descriptor.sourceLine);
-	if (!descriptor.sourceText.empty())
-	{
-		std::fprintf(stderr, ": %s", descriptor.sourceText.c_str());
-	}
-	std::fprintf(stderr, "\n");
+	vm.SetRuntimeError(failureDiagnostic);
 	return InterpretResult::RUNTIME_ERROR;
 }

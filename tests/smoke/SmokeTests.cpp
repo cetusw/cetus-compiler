@@ -1,5 +1,7 @@
 #include "src/app/cli/CommandLineInterface.h"
 #include "src/app/cli/commands/RunSourceDriver.h"
+#include "src/app/diagnostics/CompilerError.h"
+#include "src/app/diagnostics/DiagnosticStage.h"
 #include "src/support/io/FileReader.h"
 
 #include <algorithm>
@@ -60,6 +62,14 @@ std::string TrimTrailingWhitespace(std::string value)
 	return value;
 }
 
+std::string FormatCompilerError(const CompilerError& error)
+{
+	return "[ "
+		+ std::string(ToString(error.GetStage()))
+		+ " ] "
+		+ error.what();
+}
+
 std::string RunProgram(const fs::path& sourceFile, const bool requireTests, const bool expectException)
 {
 	Configuration configuration;
@@ -76,12 +86,24 @@ std::string RunProgram(const fs::path& sourceFile, const bool requireTests, cons
 		RunSourceDriver::Execute(configuration);
 		return testing::internal::GetCapturedStdout();
 	}
+	catch (const CompilerError& error)
+	{
+		testing::internal::GetCapturedStdout();
+		if (expectException)
+		{
+			return FormatCompilerError(error);
+		}
+		throw;
+	}
 	catch (const std::exception& exception)
 	{
 		testing::internal::GetCapturedStdout();
 		if (expectException)
 		{
-			return exception.what();
+			return "[ "
+				+ std::string(ToString(DiagnosticStage::Internal))
+				+ " ] "
+				+ exception.what();
 		}
 		throw;
 	}
@@ -118,7 +140,7 @@ void DiscoverTestsInDirectory(
 		}
 
 		const std::string feature = featureDirectory.filename().string();
-		const std::string name = feature + "_" += variant + "_" + sourceFile.stem().string();
+		const std::string name = feature + "_" + variant + "_" + sourceFile.stem().string();
 		testCases.push_back({
 			feature,
 			variant,
@@ -174,7 +196,7 @@ TEST_P(SmokeTest, MatchesExpectedOutput)
 	}
 
 	const std::string actualError = RunProgram(testCase.sourceFile, requireTests, true);
-	EXPECT_NE(actualError.find(expectedOutput), std::string::npos);
+	EXPECT_EQ(TrimTrailingWhitespace(actualError), expectedOutput);
 }
 
 INSTANTIATE_TEST_SUITE_P(

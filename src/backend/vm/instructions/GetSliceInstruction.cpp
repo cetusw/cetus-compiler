@@ -34,6 +34,7 @@ InterpretResult GetSliceInstruction::Execute(VM& vm) const
 		const Value endValue = vm.Pop().Dereference();
 		if (!endValue.IsInt())
 		{
+			vm.SetRuntimeError("Slice bound must have int type.");
 			return InterpretResult::RUNTIME_ERROR;
 		}
 		end = endValue.AsInt();
@@ -45,6 +46,7 @@ InterpretResult GetSliceInstruction::Execute(VM& vm) const
 		const Value startValue = vm.Pop().Dereference();
 		if (!startValue.IsInt())
 		{
+			vm.SetRuntimeError("Slice bound must have int type.");
 			return InterpretResult::RUNTIME_ERROR;
 		}
 		start = startValue.AsInt();
@@ -53,6 +55,7 @@ InterpretResult GetSliceInstruction::Execute(VM& vm) const
 	const Value sequenceValue = vm.Pop().Dereference();
 	if (!sequenceValue.IsSequence())
 	{
+		vm.SetRuntimeError("Slice expression expects array or slice value.");
 		return InterpretResult::RUNTIME_ERROR;
 	}
 
@@ -63,6 +66,7 @@ InterpretResult GetSliceInstruction::Execute(VM& vm) const
 	}
 	if (start < 0 || end < start || end > length)
 	{
+		vm.SetRuntimeError("Slice bounds out of range.");
 		return InterpretResult::RUNTIME_ERROR;
 	}
 

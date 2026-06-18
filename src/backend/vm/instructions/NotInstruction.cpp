@@ -8,6 +8,7 @@ InterpretResult NotInstruction::Execute(VM& vm) const
 	const Value result = operand.LogicalNot();
 	if (result.IsNull())
 	{
+		vm.SetRuntimeError("Invalid operand for logical not.");
 		return InterpretResult::RUNTIME_ERROR;
 	}
 

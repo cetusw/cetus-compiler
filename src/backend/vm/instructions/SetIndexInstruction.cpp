@@ -30,6 +30,7 @@ InterpretResult SetIndexInstruction::Execute(VM& vm) const
 	const Value assignedValue = vm.Pop().Dereference();
 	if (!sequenceValue.IsSequence() || !indexValue.IsInt())
 	{
+		vm.SetRuntimeError("Index assignment expects sequence value and int index.");
 		return InterpretResult::RUNTIME_ERROR;
 	}
 
@@ -37,6 +38,7 @@ InterpretResult SetIndexInstruction::Execute(VM& vm) const
 	const int length = SequenceLength(sequenceValue);
 	if (index < 0 || index >= length)
 	{
+		vm.SetRuntimeError("Index out of bounds.");
 		return InterpretResult::RUNTIME_ERROR;
 	}
 

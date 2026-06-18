@@ -5,6 +5,8 @@
 #include "src/app/cli/commands/TableGeneratorDriver.h"
 #include "src/app/cli/commands/TestDriver.h"
 #include "src/app/cli/commands/TypeCheckDriver.h"
+#include "src/app/diagnostics/CompilerError.h"
+#include "src/app/diagnostics/DiagnosticStage.h"
 #include <iostream>
 
 int main(const int argc, char* argv[])
@@ -43,9 +45,20 @@ int main(const int argc, char* argv[])
 			break;
 		}
 	}
+	catch (const CompilerError& error)
+	{
+		std::cerr
+			<< "[ " << ToString(error.GetStage()) << " ] "
+			<< error.what()
+			<< std::endl;
+		return 1;
+	}
 	catch (const std::exception& exception)
 	{
-		std::cerr << "Error: " << exception.what() << std::endl;
+		std::cerr
+			<< "[ " << ToString(DiagnosticStage::Internal) << " ] "
+			<< exception.what()
+			<< std::endl;
 		return 1;
 	}
 

@@ -298,3 +298,18 @@ void VM::ClearRuntimeDiagnostics()
 {
 	m_runtimeDiagnostics.clear();
 }
+
+std::string VM::GetRuntimeErrorMessage() const
+{
+	if (m_runtimeDiagnostics.empty())
+	{
+		return "VM execution failed.";
+	}
+
+	return m_runtimeDiagnostics.back();
+}
+
+void VM::SetRuntimeError(std::string diagnostic)
+{
+	AddRuntimeDiagnostic(std::move(diagnostic));
+}

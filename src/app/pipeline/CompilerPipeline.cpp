@@ -2,6 +2,8 @@
 
 #include "src/app/cli/testing/TestReporter.h"
 #include "src/app/cli/utils/utils.h"
+#include "src/app/diagnostics/CompilerError.h"
+#include "src/app/diagnostics/DiagnosticStage.h"
 #include "src/backend/vm/testing/TestRunner.h"
 #include "src/frontend/codegen/CodegenVisitor.h"
 #include "src/frontend/semantic/SemanticAnalyzer.h"
@@ -17,12 +19,15 @@ std::unique_ptr<ProgramASTNode> CompilerPipeline::ParseFile(const Configuration&
 
 	if (!parseResult.success)
 	{
-		throw std::runtime_error(parseResult.message);
+		throw CompilerError(
+			parseResult.stage,
+			parseResult.message);
 	}
 
 	if (!parseResult.ast)
 	{
-		throw std::runtime_error(
+		throw CompilerError(
+			DiagnosticStage::Internal,
 			"Program AST was not produced for parsed input.");
 	}
 
@@ -37,7 +42,9 @@ TestDiscoveryResult CompilerPipeline::DiscoverTests(const ProgramASTNode& progra
 
 	if (!discoveryResult.diagnostics.empty())
 	{
-		throw std::runtime_error(discoveryResult.diagnostics.front().message);
+		throw CompilerError(
+			DiagnosticStage::Semantic,
+			discoveryResult.diagnostics.front().message);
 	}
 
 	return discoveryResult;
@@ -52,7 +59,9 @@ TypeCheckResult CompilerPipeline::TypeCheck(const ProgramASTNode& program)
 
 	if (const std::optional<std::string> error = typeResult.GetErrorMessage())
 	{
-		throw std::runtime_error(*error);
+		throw CompilerError(
+			DiagnosticStage::Semantic,
+			*error);
 	}
 
 	return typeResult;
@@ -66,7 +75,8 @@ void CompilerPipeline::ValidateTestCoverage(const ProgramASTNode& program, const
 
 	if (!diagnostics.empty())
 	{
-		throw std::runtime_error(
+		throw CompilerError(
+			DiagnosticStage::Semantic,
 			diagnostics.front().message);
 	}
 }
@@ -79,7 +89,9 @@ CodegenResult CompilerPipeline::Compile(const ProgramASTNode& program, const Typ
 
 	if (codegenResult.error.has_value())
 	{
-		throw std::runtime_error(*codegenResult.error);
+		throw CompilerError(
+			DiagnosticStage::Codegen,
+			*codegenResult.error);
 	}
 
 	return codegenResult;
@@ -96,7 +108,16 @@ void CompilerPipeline::RunTests(const CodegenResult& codegenResult, VM& vm, cons
 
 	if (result.failedCount > 0)
 	{
-		throw std::runtime_error("Test execution failed.");
+		if (result.firstFailure.has_value() && !result.firstFailure->diagnostics.empty())
+		{
+			throw CompilerError(
+				DiagnosticStage::Runtime,
+				result.firstFailure->diagnostics.front());
+		}
+
+		throw CompilerError(
+			DiagnosticStage::Runtime,
+			"Test execution failed.");
 	}
 }
 
@@ -104,6 +125,8 @@ void CompilerPipeline::RunProgram(const CodegenResult& codegenResult, VM& vm)
 {
 	if (vm.InterpretProgram(codegenResult.program) != InterpretResult::OK)
 	{
-		throw std::runtime_error("VM execution failed.");
+		throw CompilerError(
+			DiagnosticStage::Runtime,
+			vm.GetRuntimeErrorMessage());
 	}
 }

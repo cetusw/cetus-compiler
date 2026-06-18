@@ -33,6 +33,7 @@ InterpretResult GetMemberInstruction::Execute(VM& vm) const
 	const Value objectValue = vm.Pop().Dereference();
 	if (!fieldNameValue.IsString())
 	{
+		vm.SetRuntimeError("Member access expects string field name.");
 		return InterpretResult::RUNTIME_ERROR;
 	}
 
@@ -40,10 +41,12 @@ InterpretResult GetMemberInstruction::Execute(VM& vm) const
 	const auto object = ResolveStructObject(objectValue);
 	if (!object)
 	{
+		vm.SetRuntimeError("Cannot access member through nil pointer.");
 		return InterpretResult::RUNTIME_ERROR;
 	}
 	if (!object->HasField(fieldName))
 	{
+		vm.SetRuntimeError("Struct field is not declared: " + object->GetTypeName() + "." + fieldName);
 		return InterpretResult::RUNTIME_ERROR;
 	}
 

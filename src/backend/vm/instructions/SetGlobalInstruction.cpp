@@ -10,7 +10,7 @@ InterpretResult SetGlobalInstruction::Execute(VM& vm) const
 	Value* global = vm.GetGlobalAddress(name);
 	if (!global)
 	{
-		std::fprintf(stderr, "Runtime Error: Undefined variable '%s'.\n", name.c_str());
+		vm.SetRuntimeError("Undefined global variable: " + name);
 		return InterpretResult::RUNTIME_ERROR;
 	}
 

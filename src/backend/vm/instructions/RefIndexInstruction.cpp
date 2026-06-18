@@ -11,12 +11,14 @@ InterpretResult RefIndexInstruction::Execute(VM& vm) const
 	const Value sequenceValue = vm.Pop().Dereference();
 	if (!indexValue.IsInt() || !sequenceValue.IsSequence())
 	{
+		vm.SetRuntimeError("Index reference expects sequence value and int index.");
 		return InterpretResult::RUNTIME_ERROR;
 	}
 
 	const RuntimeInt index = indexValue.AsInt();
 	if (index < 0)
 	{
+		vm.SetRuntimeError("Index out of bounds.");
 		return InterpretResult::RUNTIME_ERROR;
 	}
 
@@ -26,6 +28,7 @@ InterpretResult RefIndexInstruction::Execute(VM& vm) const
 		const auto array = sequenceValue.AsArray();
 		if (index >= array->Length())
 		{
+			vm.SetRuntimeError("Index out of bounds.");
 			return InterpretResult::RUNTIME_ERROR;
 		}
 		element = array->GetAddress(static_cast<int>(index));
@@ -35,6 +38,7 @@ InterpretResult RefIndexInstruction::Execute(VM& vm) const
 		const auto slice = sequenceValue.AsSlice();
 		if (index >= slice->Length())
 		{
+			vm.SetRuntimeError("Index out of bounds.");
 			return InterpretResult::RUNTIME_ERROR;
 		}
 		element = slice->GetAddress(static_cast<int>(index));

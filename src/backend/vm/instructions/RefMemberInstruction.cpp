@@ -34,18 +34,21 @@ InterpretResult RefMemberInstruction::Execute(VM& vm) const
 	const Value objectValue = vm.Pop().Dereference();
 	if (!fieldNameValue.IsString())
 	{
+		vm.SetRuntimeError("Member reference expects string field name.");
 		return InterpretResult::RUNTIME_ERROR;
 	}
 
 	const auto object = ResolveStructObject(objectValue);
 	if (!object)
 	{
+		vm.SetRuntimeError("Cannot access member through nil pointer.");
 		return InterpretResult::RUNTIME_ERROR;
 	}
 
 	Value* field = object->GetFieldAddress(fieldNameValue.AsString());
 	if (!field)
 	{
+		vm.SetRuntimeError("Struct field is not declared: " + object->GetTypeName() + "." + fieldNameValue.AsString());
 		return InterpretResult::RUNTIME_ERROR;
 	}
 

@@ -8,6 +8,7 @@ InterpretResult PointerInstruction::Execute(VM& vm) const
 	const Value targetValue = vm.Pop().Dereference();
 	if (!targetValue.IsHeapObject())
 	{
+		vm.SetRuntimeError("Pointer instruction expects heap object target.");
 		return InterpretResult::RUNTIME_ERROR;
 	}
 

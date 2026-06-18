@@ -1,4 +1,6 @@
 #include "BytecodeExecutionDriver.h"
+#include "src/app/diagnostics/CompilerError.h"
+#include "src/app/diagnostics/DiagnosticStage.h"
 #include "src/backend/vm/disassembler/Disassembler.h"
 #include "src/backend/vm/parser/BytecodeParser.h"
 #include "src/backend/vm/vm.h"
@@ -7,7 +9,9 @@ void BytecodeExecutionDriver::Execute(const Configuration& configuration)
 {
 	if (configuration.inputFilePath.empty())
 	{
-		throw std::runtime_error("Input bytecode file path is required for bytecode execution.");
+		throw CompilerError(
+			DiagnosticStage::Internal,
+			"Input bytecode file path is required for bytecode execution.");
 	}
 
 	BytecodeParser parser;
@@ -15,8 +19,9 @@ void BytecodeExecutionDriver::Execute(const Configuration& configuration)
 
 	if (!mainFunction)
 	{
-		std::fprintf(stderr, "Error: Could not find 'main' function or parsing failed.\n");
-		return;
+		throw CompilerError(
+			DiagnosticStage::Runtime,
+			"Could not find 'main' function or bytecode parsing failed.");
 	}
 
 	disassembler::DisassembleChunk(mainFunction->chunk, mainFunction->name->GetData());
@@ -29,5 +34,7 @@ void BytecodeExecutionDriver::Execute(const Configuration& configuration)
 		std::printf("\nExecution Finished: OK\n");
 		return;
 	}
-	std::printf("\nExecution Finished: RUNTIME ERROR\n");
+	throw CompilerError(
+		DiagnosticStage::Runtime,
+		vm.GetRuntimeErrorMessage());
 }
