@@ -1,0 +1,5 @@
+func main() {
+    values := []int{1}
+    var fixed [1]int
+    fixed = values
+}

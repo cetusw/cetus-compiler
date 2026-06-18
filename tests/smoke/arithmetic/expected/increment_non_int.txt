@@ -1,1 +1,1 @@
-Increment target must have int type.
+[ Semantic ] Increment target must have int type.

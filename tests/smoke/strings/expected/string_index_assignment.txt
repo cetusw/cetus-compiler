@@ -1,1 +1,1 @@
-Cannot assign to string index.
+[ Semantic ] Cannot assign to string index.

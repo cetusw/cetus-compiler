@@ -1,1 +1,1 @@
-Struct field is already declared: Point.x
+[ Semantic ] Struct field is already declared: Point.x

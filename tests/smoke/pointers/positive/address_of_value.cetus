@@ -1,0 +1,5 @@
+func main() {
+    value := 7
+    pointer := &value
+    println(pointer)
+}

@@ -1,1 +1,1 @@
-Cannot take address of borrowed stack-backed reference.
+[ Semantic ] Cannot take address of borrowed stack-backed reference.

@@ -1,1 +1,2 @@
-Modulo operator expects int operands.
+[ Semantic ] Modulo operator expects int operands.
+printf expects int, float, bool, string, nil, pointer, array or slice argument.

@@ -1,1 +1,1 @@
-Missing test for method: Point.Sum
+[ Semantic ] Missing test for method: Point.Sum

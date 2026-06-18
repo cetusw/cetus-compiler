@@ -1,0 +1,1 @@
+[ Syntax ] Syntax error at line 4: unexpected token 'else'

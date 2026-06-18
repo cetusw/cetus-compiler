@@ -1,1 +1,1 @@
-Struct literal field is initialized more than once: Stack.data
+[ Semantic ] Struct literal field is initialized more than once: Stack.data

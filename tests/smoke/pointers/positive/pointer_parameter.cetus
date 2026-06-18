@@ -1,0 +1,9 @@
+func set(value *int) {
+    value = 9
+}
+
+func main() {
+    current := 1
+    set(&current)
+    println(current)
+}

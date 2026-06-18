@@ -1,0 +1,7 @@
+func main() {
+    if true {
+        println(1)
+    } else else {
+        println(2)
+    }
+}

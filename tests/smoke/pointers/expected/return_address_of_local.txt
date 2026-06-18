@@ -1,1 +1,1 @@
-Address of stack-backed variable cannot escape function return.
+[ Semantic ] Address of stack-backed variable cannot escape function return.

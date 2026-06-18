@@ -1,0 +1,2 @@
+[ Semantic ] Function call argument type does not match parameter type: add
+println expects int, float, bool, string, nil, pointer, array or slice argument.

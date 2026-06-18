@@ -1,0 +1,1 @@
+[ Semantic ] Cannot assign to non-variable identifier: get

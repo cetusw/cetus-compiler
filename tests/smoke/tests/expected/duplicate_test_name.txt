@@ -1,1 +1,1 @@
-Test is already declared: add
+[ Semantic ] Test is already declared: add

@@ -1,1 +1,1 @@
-Continue statement is not allowed outside loop.
+[ Semantic ] Continue statement is not allowed outside loop.

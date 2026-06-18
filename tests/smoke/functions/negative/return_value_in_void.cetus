@@ -1,0 +1,7 @@
+func log() {
+    return 1
+}
+
+func main() {
+    log()
+}

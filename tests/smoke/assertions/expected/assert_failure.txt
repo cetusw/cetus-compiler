@@ -1,1 +1,1 @@
-Test execution failed.
+[ Runtime ] Assertion failed at line 6: add(2, 2) == 5

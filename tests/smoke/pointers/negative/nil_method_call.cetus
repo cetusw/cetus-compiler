@@ -1,0 +1,12 @@
+type Counter struct {
+    value int
+}
+
+func (counter *Counter) Add(delta int) {
+    counter.value = counter.value + delta
+}
+
+func main() {
+    var counter *Counter
+    counter.Add(1)
+}

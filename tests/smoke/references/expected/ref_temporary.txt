@@ -1,1 +1,1 @@
-Pointer parameter expects address of assignable identifier argument: inc
+[ Semantic ] Pointer parameter expects address of assignable identifier argument: inc

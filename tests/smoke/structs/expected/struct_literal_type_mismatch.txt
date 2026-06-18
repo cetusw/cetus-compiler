@@ -1,1 +1,1 @@
-Struct literal field initializer type does not match declared field type: Stack.data
+[ Semantic ] Struct literal field initializer type does not match declared field type: Stack.data

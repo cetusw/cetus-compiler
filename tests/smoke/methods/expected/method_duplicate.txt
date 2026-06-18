@@ -1,1 +1,1 @@
-Method is already declared in current scope: Point.Value
+[ Semantic ] Method is already declared in current scope: Point.Value

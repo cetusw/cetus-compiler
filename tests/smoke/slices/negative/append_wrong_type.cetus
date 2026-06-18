@@ -1,0 +1,4 @@
+func main() {
+    values := []int{1}
+    values = append(values, "text")
+}

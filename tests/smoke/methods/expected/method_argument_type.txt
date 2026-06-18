@@ -1,0 +1,1 @@
+[ Semantic ] Method call argument type does not match parameter type: Point.Move

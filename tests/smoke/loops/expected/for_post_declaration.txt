@@ -1,1 +1,1 @@
-For post statement cannot declare variables.
+[ Semantic ] For post statement cannot declare variables.

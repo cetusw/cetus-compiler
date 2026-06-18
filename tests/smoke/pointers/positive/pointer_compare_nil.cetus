@@ -1,0 +1,10 @@
+type Box struct {
+    value int
+}
+
+func main() {
+    var box *Box
+    println(box == nil)
+    box = &Box{value: 1}
+    println(box == nil)
+}

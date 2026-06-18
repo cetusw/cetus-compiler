@@ -1,1 +1,1 @@
-Array literal element type does not match literal element type.
+[ Semantic ] Array literal element type does not match literal element type.

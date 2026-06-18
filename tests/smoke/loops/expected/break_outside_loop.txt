@@ -1,1 +1,1 @@
-Break statement is not allowed outside loop.
+[ Semantic ] Break statement is not allowed outside loop.

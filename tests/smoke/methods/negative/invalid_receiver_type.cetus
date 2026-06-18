@@ -1,0 +1,6 @@
+func (value int) Show() {
+    println(value)
+}
+
+func main() {
+}

@@ -1,1 +1,1 @@
-Variable is already declared in current scope: value
+[ Semantic ] Variable is already declared in current scope: value

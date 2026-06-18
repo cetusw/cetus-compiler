@@ -1,0 +1,7 @@
+func add(value int) int {
+    return value
+}
+
+func main() {
+    println(add("text"))
+}

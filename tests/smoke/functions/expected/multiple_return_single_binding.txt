@@ -1,1 +1,3 @@
-Short variable declaration expects the same number of names and values.
+[ Semantic ] Short variable declaration expects the same number of names and values.
+Undefined identifier: value
+println expects int, float, bool, string, nil, pointer, array or slice argument.

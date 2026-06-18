@@ -1,1 +1,1 @@
-Array literal element count does not match array length.
+[ Semantic ] Array literal element count does not match array length.

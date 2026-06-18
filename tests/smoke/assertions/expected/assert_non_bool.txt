@@ -1,1 +1,1 @@
-Assert condition must have bool type.
+[ Semantic ] Assert condition must have bool type.

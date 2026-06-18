@@ -1,0 +1,2 @@
+[ Semantic ] Arithmetic operator expects numeric operands.
+println expects int, float, bool, string, nil, pointer, array or slice argument.

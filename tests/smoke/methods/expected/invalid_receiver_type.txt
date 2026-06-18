@@ -1,0 +1,2 @@
+[ Semantic ] Method receiver must use declared struct type: Show
+Method receiver must use declared struct type: Show

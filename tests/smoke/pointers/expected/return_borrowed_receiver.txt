@@ -1,1 +1,1 @@
-Borrowed stack-backed reference cannot escape function return.
+[ Semantic ] Borrowed stack-backed reference cannot escape function return.

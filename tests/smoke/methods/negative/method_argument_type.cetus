@@ -1,0 +1,12 @@
+type Point struct {
+    value int
+}
+
+func (point Point) Move(delta int) {
+    println(point.value + delta)
+}
+
+func main() {
+    var point Point
+    point.Move("text")
+}

@@ -1,1 +1,2 @@
-Function call argument count does not match function parameters: add
+[ Semantic ] Function call argument count does not match function parameters: add
+println expects int, float, bool, string, nil, pointer, array or slice argument.

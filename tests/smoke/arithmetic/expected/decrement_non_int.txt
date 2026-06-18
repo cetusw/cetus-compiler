@@ -1,1 +1,1 @@
-Decrement target must have int type.
+[ Semantic ] Decrement target must have int type.
