@@ -1,0 +1,4 @@
+func main() {
+    text := "abc";
+    println(text[3]);
+}

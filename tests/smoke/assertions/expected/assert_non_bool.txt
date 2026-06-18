@@ -1,0 +1,1 @@
+Assert condition must have bool type.

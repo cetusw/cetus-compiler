@@ -13,6 +13,7 @@ namespace fs = std::filesystem;
 
 struct SmokeTestCase
 {
+	std::string feature;
 	std::string name;
 	fs::path sourceFile;
 	fs::path expectedFile;
@@ -80,31 +81,50 @@ std::vector<SmokeTestCase> DiscoverSmokeTests()
 {
 	std::vector<SmokeTestCase> testCases;
 
-	const fs::path sourceDirectory = GetProjectRoot() / "tests/smoke/source";
-	const fs::path expectedDirectory = GetProjectRoot() / "tests/smoke/expected";
+	const fs::path smokeDirectory = GetProjectRoot() / "tests/smoke";
 
-	for (const auto& entry : fs::directory_iterator(sourceDirectory))
+	for (const auto& featureEntry : fs::directory_iterator(smokeDirectory))
 	{
-		if (!entry.is_regular_file())
+		if (!featureEntry.is_directory())
 		{
 			continue;
 		}
 
-		const fs::path sourceFile = entry.path();
+		const fs::path& featureDirectory = featureEntry.path();
+		const fs::path sourceDirectory = featureDirectory / "positive";
+		const fs::path expectedDirectory = featureDirectory / "expected";
 
-		const fs::path expectedFile = expectedDirectory / sourceFile.stem().replace_extension(".cetus");
-
-		if (!fs::exists(expectedFile))
+		if (!fs::exists(sourceDirectory) || !fs::exists(expectedDirectory))
 		{
-			throw std::runtime_error(
-				"Expected file not found: " + expectedFile.string());
+			continue;
 		}
 
-		testCases.push_back({
-			sourceFile.stem().string(),
-			sourceFile,
-			expectedFile,
-		});
+		for (const auto& sourceEntry : fs::directory_iterator(sourceDirectory))
+		{
+			if (!sourceEntry.is_regular_file())
+			{
+				continue;
+			}
+
+			const fs::path sourceFile = sourceEntry.path();
+			fs::path expectedFile = expectedDirectory / sourceFile.stem();
+			expectedFile.replace_extension(".txt");
+
+			if (!fs::exists(expectedFile))
+			{
+				throw std::runtime_error(
+					"Expected file not found: " + expectedFile.string());
+			}
+
+			const std::string feature = featureDirectory.filename().string();
+
+			testCases.push_back({
+				feature,
+				feature + "_positive_" + sourceFile.stem().string(),
+				sourceFile,
+				expectedFile,
+			});
+		}
 	}
 
 	std::ranges::sort(testCases,
@@ -128,6 +148,7 @@ TEST_P(SmokeTest, MatchesExpectedOutput)
 
 	const std::string expectedOutput = ReadFile(testCase.expectedFile);
 
+	std::cout << testCase.sourceFile << std::endl;
 	EXPECT_EQ(actualOutput, expectedOutput);
 }
 

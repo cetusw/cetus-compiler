@@ -1,0 +1,4 @@
+func main() {
+    var values [3]int;
+    println(values[3]);
+}

@@ -1,0 +1,11 @@
+type Stack struct {
+    value int
+}
+
+func main() {
+    var stack *Stack
+    println(stack == nil)
+
+    stack = &Stack{value: 7}
+    println(stack == nil)
+}

@@ -1,0 +1,10 @@
+test "add" {
+    assert(true)
+}
+
+test "add" {
+    assert(true)
+}
+
+func main() {
+}

@@ -1,0 +1,1 @@
+Short variable declaration expects the same number of names and values.

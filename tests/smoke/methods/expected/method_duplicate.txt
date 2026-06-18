@@ -1,0 +1,1 @@
+Method is already declared in current scope: Point.Value

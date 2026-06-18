@@ -1,0 +1,1 @@
+Break statement is not allowed outside loop.

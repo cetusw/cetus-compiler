@@ -1,0 +1,12 @@
+type Counter struct {
+    value int
+}
+
+func (counter *Counter) Leak() *Counter {
+    return counter
+}
+
+func main() {
+    var counter Counter
+    counter.Leak()
+}

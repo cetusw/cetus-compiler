@@ -1,0 +1,18 @@
+type Point struct {
+    x int;
+}
+
+type Box struct {
+    point Point;
+}
+
+func (p *Point) Move(dx int) {
+    p.x = p.x + dx;
+}
+
+func main() {
+    var box Box;
+    box.point.x = 1;
+    box.point.Move(4);
+    printf(box.point.x);
+}

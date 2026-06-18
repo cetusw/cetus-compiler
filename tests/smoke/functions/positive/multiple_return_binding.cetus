@@ -1,0 +1,8 @@
+func Pair() (int, bool) {
+    return 7, true
+}
+
+func main() {
+    value, ok := Pair()
+    println(value, ok)
+}

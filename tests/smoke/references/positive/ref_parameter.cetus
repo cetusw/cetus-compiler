@@ -1,0 +1,9 @@
+func inc(value *int) {
+    value = value + 1;
+}
+
+func main() {
+    value := 1;
+    inc(&value);
+    println(value);
+}

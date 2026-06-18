@@ -1,0 +1,9 @@
+func Bump(values []int) {
+    values[1] = 7;
+}
+
+func main() {
+    nums := []int{1, 2, 3};
+    Bump(nums)
+    println(nums[1])
+}

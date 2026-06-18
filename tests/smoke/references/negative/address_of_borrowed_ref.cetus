@@ -1,0 +1,12 @@
+func forward(value *int) {
+    println(value)
+}
+
+func bad(value *int) {
+    forward(&value)
+}
+
+func main() {
+    value := 1
+    bad(&value)
+}

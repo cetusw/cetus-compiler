@@ -1,0 +1,7 @@
+func main() {
+    printf(1);
+    printf(1.5);
+    printf(5 % 2);
+    printf(1 + 2);
+    printf(1 + 2.5);
+}

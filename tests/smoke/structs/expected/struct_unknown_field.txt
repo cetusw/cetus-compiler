@@ -1,0 +1,1 @@
+Struct field is not declared: Point.y
