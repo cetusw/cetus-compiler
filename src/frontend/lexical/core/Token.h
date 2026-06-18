@@ -1,6 +1,5 @@
 #pragma once
 #include <string>
-#include <string_view>
 
 enum class TokenType
 {
@@ -76,6 +75,7 @@ enum class TokenType
     FALSE,              // false
     NIL,                // nil
 
+    NEWLINE,            // служебный перевод строки внутри lexical pipeline
     EOF_TOKEN,          // конец входного потока
     ERROR               // ошибка лексера
 };

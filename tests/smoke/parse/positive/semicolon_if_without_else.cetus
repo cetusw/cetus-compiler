@@ -1,0 +1,6 @@
+func main() {
+    if true {
+        println(1)
+    }
+    println(3)
+}

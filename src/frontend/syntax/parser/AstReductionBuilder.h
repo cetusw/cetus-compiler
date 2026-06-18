@@ -1,6 +1,6 @@
 #pragma once
 
-#include "src/frontend/lexical/Token.h"
+#include "src/frontend/lexical/core/Token.h"
 #include "src/frontend/syntax/ast/ASTNode.h"
 #include "src/frontend/syntax/lalr/types/PreparedGrammar.h"
 #include <variant>

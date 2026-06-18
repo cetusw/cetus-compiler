@@ -1,0 +1,11 @@
+func main() {
+    if false {
+        println(1)
+    }
+    /*
+        comment between branches
+    */
+    else {
+        println(2)
+    }
+}

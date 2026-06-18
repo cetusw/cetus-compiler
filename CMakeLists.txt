@@ -48,6 +48,15 @@ add_library(cetus_frontend STATIC
         src/frontend/codegen/OperatorOpcodeResolver.cpp
         src/frontend/codegen/ProgramContext.cpp
         src/frontend/lexical/LexicalAnalyzer.cpp
+        src/frontend/lexical/core/SourceCursor.cpp
+        src/frontend/lexical/core/TokenFactory.cpp
+        src/frontend/lexical/pipeline/SemicolonInserter.cpp
+        src/frontend/lexical/pipeline/TokenPostProcessor.cpp
+        src/frontend/lexical/scanning/CommentSkipper.cpp
+        src/frontend/lexical/scanning/KeywordClassifier.cpp
+        src/frontend/lexical/scanning/LiteralScanner.cpp
+        src/frontend/lexical/scanning/OperatorScanner.cpp
+        src/frontend/lexical/scanning/RawTokenScanner.cpp
         src/frontend/syntax/SyntaxAnalyzer.cpp
         src/frontend/syntax/ast/AstDumper.cpp
         src/frontend/syntax/ast/ASTNode.cpp
