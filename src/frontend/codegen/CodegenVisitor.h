@@ -5,7 +5,7 @@
 #include "CodegenResult.h"
 #include "FunctionContext.h"
 #include "ProgramContext.h"
-#include "src/frontend/syntax/ast/ASTNode.h"
+#include "src/frontend/ast/ASTNode.h"
 #include <vector>
 
 class ASTNode;

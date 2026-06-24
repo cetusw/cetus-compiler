@@ -4,7 +4,7 @@
 #include "src/backend/vm/objects/ObjFunction.h"
 #include "src/backend/vm/objects/ObjString.h"
 #include "src/frontend/testing/PropertyGenerator.h"
-#include "src/frontend/syntax/ast/ASTNode.h"
+#include "src/frontend/ast/ASTNode.h"
 
 namespace
 {

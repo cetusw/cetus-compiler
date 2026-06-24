@@ -1,7 +1,7 @@
 #pragma once
 
 #include "src/backend/vm/types/OpCode.h"
-#include "src/frontend/syntax/ast/ASTNode.h"
+#include "src/frontend/ast/ASTNode.h"
 #include <optional>
 
 class OperatorOpcodeResolver

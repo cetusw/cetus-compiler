@@ -1,119 +1,81 @@
 #include "TokenSymbolMapper.h"
 
+#include <algorithm>
 #include <stdexcept>
+#include <string>
 #include <string_view>
 
 namespace
 {
+struct TokenTerminalEntry
+{
+	TokenType type;
+	std::string_view terminal;
+};
+
+constexpr TokenTerminalEntry TOKEN_TO_TERMINAL[] = {
+	{ TokenType::OR_OR, "OR_OR" },
+	{ TokenType::AND_AND, "AND_AND" },
+	{ TokenType::BIT_AND, "BIT_AND" },
+	{ TokenType::SEMICOLON, "SEMICOLON" },
+	{ TokenType::IF, "IF" },
+	{ TokenType::ELSE, "ELSE" },
+	{ TokenType::FOR, "FOR" },
+	{ TokenType::BREAK, "BREAK" },
+	{ TokenType::CONTINUE, "CONTINUE" },
+	{ TokenType::RETURN, "RETURN" },
+	{ TokenType::TEST, "TEST" },
+	{ TokenType::ASSERT, "ASSERT" },
+	{ TokenType::FORALL, "FORALL" },
+	{ TokenType::FUNC, "FUNC" },
+	{ TokenType::TYPE, "TYPE" },
+	{ TokenType::VAR, "VAR" },
+	{ TokenType::STRUCT, "STRUCT" },
+	{ TokenType::COMMA, "COMMA" },
+	{ TokenType::COLON, "COLON" },
+	{ TokenType::EQUAL, "EQUAL" },
+	{ TokenType::COLON_EQUAL, "COLON_EQUAL" },
+	{ TokenType::BANG, "BANG" },
+	{ TokenType::TRUE, "TRUE" },
+	{ TokenType::FALSE, "FALSE" },
+	{ TokenType::NIL, "NIL" },
+	{ TokenType::PLUS, "PLUS" },
+	{ TokenType::PLUS_PLUS, "PLUS_PLUS" },
+	{ TokenType::MINUS, "MINUS" },
+	{ TokenType::MINUS_MINUS, "MINUS_MINUS" },
+	{ TokenType::STAR, "STAR" },
+	{ TokenType::SLASH, "SLASH" },
+	{ TokenType::PERCENT, "PERCENT" },
+	{ TokenType::LPAREN, "LPAREN" },
+	{ TokenType::RPAREN, "RPAREN" },
+	{ TokenType::LBRACE, "LBRACE" },
+	{ TokenType::RBRACE, "RBRACE" },
+	{ TokenType::LBRACKET, "LBRACKET" },
+	{ TokenType::RBRACKET, "RBRACKET" },
+	{ TokenType::DOT, "DOT" },
+	{ TokenType::LESS, "LESS" },
+	{ TokenType::LESS_EQUAL, "LESS_EQUAL" },
+	{ TokenType::BANG_EQUAL, "BANG_EQUAL" },
+	{ TokenType::EQUAL_EQUAL, "EQUAL_EQUAL" },
+	{ TokenType::GREATER, "GREATER" },
+	{ TokenType::GREATER_EQUAL, "GREATER_EQUAL" },
+	{ TokenType::IDENTIFIER, "IDENTIFIER" },
+	{ TokenType::TYPE_IDENTIFIER, "TYPE_IDENTIFIER" },
+	{ TokenType::INT_LIT, "INT_LIT" },
+	{ TokenType::FLOAT_LIT, "FLOAT_LIT" },
+	{ TokenType::STRING, "STRING" },
+	{ TokenType::EOF_TOKEN, "⊥" },
+};
+
 std::string_view TokenTypeToGrammarTerminal(const TokenType type)
 {
-	switch (type)
+	const auto entry = std::ranges::find_if(TOKEN_TO_TERMINAL,
+		[type](const TokenTerminalEntry& candidate) { return candidate.type == type; });
+	if (entry == std::end(TOKEN_TO_TERMINAL))
 	{
-	case TokenType::OR_OR:
-		return "OR_OR";
-	case TokenType::AND_AND:
-		return "AND_AND";
-	case TokenType::BIT_AND:
-		return "BIT_AND";
-	case TokenType::SEMICOLON:
-		return "SEMICOLON";
-	case TokenType::IF:
-		return "IF";
-	case TokenType::ELSE:
-		return "ELSE";
-	case TokenType::FOR:
-		return "FOR";
-	case TokenType::BREAK:
-		return "BREAK";
-	case TokenType::CONTINUE:
-		return "CONTINUE";
-	case TokenType::RETURN:
-		return "RETURN";
-	case TokenType::TEST:
-		return "TEST";
-	case TokenType::ASSERT:
-		return "ASSERT";
-	case TokenType::FORALL:
-		return "FORALL";
-	case TokenType::FUNC:
-		return "FUNC";
-	case TokenType::TYPE:
-		return "TYPE";
-	case TokenType::VAR:
-		return "VAR";
-	case TokenType::STRUCT:
-		return "STRUCT";
-	case TokenType::COMMA:
-		return "COMMA";
-	case TokenType::COLON:
-		return "COLON";
-	case TokenType::EQUAL:
-		return "EQUAL";
-	case TokenType::COLON_EQUAL:
-		return "COLON_EQUAL";
-	case TokenType::BANG:
-		return "BANG";
-	case TokenType::TRUE:
-		return "TRUE";
-	case TokenType::FALSE:
-		return "FALSE";
-	case TokenType::NIL:
-		return "NIL";
-	case TokenType::PLUS:
-		return "PLUS";
-	case TokenType::PLUS_PLUS:
-		return "PLUS_PLUS";
-	case TokenType::MINUS:
-		return "MINUS";
-	case TokenType::MINUS_MINUS:
-		return "MINUS_MINUS";
-	case TokenType::STAR:
-		return "STAR";
-	case TokenType::SLASH:
-		return "SLASH";
-	case TokenType::PERCENT:
-		return "PERCENT";
-	case TokenType::LPAREN:
-		return "LPAREN";
-	case TokenType::RPAREN:
-		return "RPAREN";
-	case TokenType::LBRACE:
-		return "LBRACE";
-	case TokenType::RBRACE:
-		return "RBRACE";
-	case TokenType::LBRACKET:
-		return "LBRACKET";
-	case TokenType::RBRACKET:
-		return "RBRACKET";
-	case TokenType::DOT:
-		return "DOT";
-	case TokenType::LESS:
-		return "LESS";
-	case TokenType::LESS_EQUAL:
-		return "LESS_EQUAL";
-	case TokenType::BANG_EQUAL:
-		return "BANG_EQUAL";
-	case TokenType::EQUAL_EQUAL:
-		return "EQUAL_EQUAL";
-	case TokenType::GREATER:
-		return "GREATER";
-	case TokenType::GREATER_EQUAL:
-		return "GREATER_EQUAL";
-	case TokenType::IDENTIFIER:
-		return "IDENTIFIER";
-	case TokenType::TYPE_IDENTIFIER:
-		return "TYPE_IDENTIFIER";
-	case TokenType::INT_LIT:
-		return "INT_LIT";
-	case TokenType::FLOAT_LIT:
-		return "FLOAT_LIT";
-	case TokenType::STRING:
-		return "STRING";
-	case TokenType::EOF_TOKEN:
-		return "⊥";
-	default:
 		return "";
 	}
+	return entry->terminal;
 }
 } // namespace
 
@@ -122,7 +84,9 @@ Symbol TokenSymbolMapper::MapTokenToGrammarSymbol(const Token& token)
 	const std::string_view terminal = TokenTypeToGrammarTerminal(token.type);
 	if (terminal.empty())
 	{
-		throw std::runtime_error("Token is not supported by the current grammar: '" + token.lexeme + "'");
+		throw std::runtime_error(
+			"Token is not supported by the current grammar. Token type does not belong to the parser terminal set: '"
+			+ token.lexeme + "'");
 	}
 
 	return { std::string(terminal), true };

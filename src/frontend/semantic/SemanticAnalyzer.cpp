@@ -2,7 +2,7 @@
 
 #include "rules/TypeRules.h"
 #include "src/frontend/testing/PropertyGenerator.h"
-#include "src/frontend/syntax/ast/ASTNode.h"
+#include "src/frontend/ast/ASTNode.h"
 
 // TODO избавится от dynamic_cast
 namespace
@@ -547,24 +547,24 @@ void SemanticAnalyzer::TypeCheckBuiltinCall(const CallExpressionASTNode& node, c
 		}
 
 		bool hasError = false;
-		for (std::size_t index = 0; index < argumentTypes.size(); ++index)
+		for (const auto & argumentType : argumentTypes)
 		{
-			if (!ValidateValueExpression(argumentTypes[index].type, "function argument"))
+			if (!ValidateValueExpression(argumentType.type, "function argument"))
 			{
 				hasError = true;
 			}
-			if (IsAddressOfExpression(*argumentTypes[index].expression))
+			if (IsAddressOfExpression(*argumentType.expression))
 			{
 				AddDiagnostic(calleeName + " expects value argument, not address argument.");
 				hasError = true;
 			}
-			if (argumentTypes[index].type != Type::INT
-				&& argumentTypes[index].type != Type::FLOAT
-				&& argumentTypes[index].type != Type::BOOL
-				&& argumentTypes[index].type != Type::STRING
-				&& argumentTypes[index].type != Type::NIL
-				&& !argumentTypes[index].type.IsPointer()
-				&& !argumentTypes[index].type.IsSequence())
+			if (argumentType.type != Type::INT
+				&& argumentType.type != Type::FLOAT
+				&& argumentType.type != Type::BOOL
+				&& argumentType.type != Type::STRING
+				&& argumentType.type != Type::NIL
+				&& !argumentType.type.IsPointer()
+				&& !argumentType.type.IsSequence())
 			{
 				AddDiagnostic(calleeName + " expects int, float, bool, string, nil, pointer, array or slice argument.");
 				hasError = true;

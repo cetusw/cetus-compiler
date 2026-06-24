@@ -1,7 +1,7 @@
 #pragma once
 
 #include "rules/TypeCheckResult.h"
-#include "src/frontend/syntax/ast/ASTNode.h"
+#include "src/frontend/ast/ASTNode.h"
 #include "symbols/SymbolTable.h"
 #include <optional>
 #include <string>

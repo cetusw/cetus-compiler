@@ -1,7 +1,7 @@
 #pragma once
 
 #include "src/app/diagnostics/DiagnosticStage.h"
-#include "src/frontend/syntax/ast/ASTNode.h"
+#include "src/frontend/ast/ASTNode.h"
 #include <string>
 #include <utility>
 #include <vector>

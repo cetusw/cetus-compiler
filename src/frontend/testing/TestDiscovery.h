@@ -1,7 +1,7 @@
 #pragma once
 
 #include "src/frontend/semantic/rules/TypeCheckResult.h"
-#include "src/frontend/syntax/ast/ASTNode.h"
+#include "src/frontend/ast/ASTNode.h"
 #include <string>
 #include <unordered_set>
 #include <vector>

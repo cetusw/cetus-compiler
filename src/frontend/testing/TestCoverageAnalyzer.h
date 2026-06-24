@@ -2,7 +2,7 @@
 
 #include "TestDiscovery.h"
 #include "src/frontend/semantic/rules/TypeCheckResult.h"
-#include "src/frontend/syntax/ast/ASTNode.h"
+#include "src/frontend/ast/ASTNode.h"
 #include <vector>
 
 class TestCoverageAnalyzer

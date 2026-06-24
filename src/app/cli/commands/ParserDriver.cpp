@@ -3,7 +3,7 @@
 #include "src/app/cli/utils/utils.h"
 #include "src/app/diagnostics/CompilerError.h"
 #include "src/app/diagnostics/DiagnosticStage.h"
-#include "src/frontend/syntax/ast/AstDumper.h"
+#include "src/frontend/ast/debug/AstDumper.h"
 #include <iostream>
 
 void ParserDriver::Execute(const Configuration& configuration)

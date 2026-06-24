@@ -2,10 +2,10 @@
 
 #include "src/app/diagnostics/CompilerError.h"
 #include "src/app/diagnostics/DiagnosticStage.h"
-#include "../../../frontend/syntax/presentation/presenters/ConsolePresenter.h"
-#include "src/frontend/syntax/grammar/GrammarLoader.h"
-#include "src/frontend/syntax/lalr/LALRBuilder.h"
-#include "src/frontend/syntax/presentation/presenters/CsvPresenter.h"
+#include "../../../frontend/parsergen/presentation/presenters/ConsolePresenter.h"
+#include "src/frontend/parsergen/grammar/GrammarLoader.h"
+#include "src/frontend/parsergen/lalr/LALRBuilder.h"
+#include "src/frontend/parsergen/presentation/presenters/CsvPresenter.h"
 
 #include <iostream>
 

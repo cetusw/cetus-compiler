@@ -58,18 +58,25 @@ add_library(cetus_frontend STATIC
         src/frontend/lexical/scanning/OperatorScanner.cpp
         src/frontend/lexical/scanning/RawTokenScanner.cpp
         src/frontend/syntax/SyntaxAnalyzer.cpp
-        src/frontend/syntax/ast/AstDumper.cpp
-        src/frontend/syntax/ast/ASTNode.cpp
-        src/frontend/syntax/analysis/guiding-set-provider/GuidingSetProvider.cpp
-        src/frontend/syntax/grammar/Grammar.cpp
-        src/frontend/syntax/grammar/GrammarLoader.cpp
-        src/frontend/syntax/grammar/Production.cpp
-        src/frontend/syntax/grammar/Symbol.cpp
-        src/frontend/syntax/grammar/transformation/transformations/AugmentStartGrammarTransformation.cpp
-        src/frontend/syntax/lalr/ActionFormatter.cpp
-        src/frontend/syntax/lalr/LALRBuilder.cpp
-        src/frontend/syntax/lalr/LR1ClosureCalculator.cpp
-        src/frontend/syntax/presentation/presenters/ConsolePresenter.cpp
+        src/frontend/ast/debug/AstDumper.cpp
+        src/frontend/ast/ASTNode.cpp
+        src/frontend/ast/format/ExpressionFormatter.cpp
+        src/frontend/parsergen/grammar/Grammar.cpp
+        src/frontend/parsergen/grammar/GrammarLineParser.cpp
+        src/frontend/parsergen/grammar/GrammarLoader.cpp
+        src/frontend/parsergen/grammar/Production.cpp
+        src/frontend/parsergen/grammar/SemanticTagFormatter.cpp
+        src/frontend/syntax/table/Symbol.cpp
+        src/frontend/parsergen/grammar/sets/GrammarSetsBuilder.cpp
+        src/frontend/parsergen/grammar/sets/calculators/FirstSetCalculator.cpp
+        src/frontend/parsergen/grammar/sets/calculators/FollowSetCalculator.cpp
+        src/frontend/parsergen/grammar/sets/calculators/NullableSetCalculator.cpp
+        src/frontend/parsergen/grammar/sets/resolvers/FirstSetResolver.cpp
+        src/frontend/parsergen/grammar/transformation/transformations/AugmentStartGrammarTransformation.cpp
+        src/frontend/parsergen/lalr/ActionFormatter.cpp
+        src/frontend/parsergen/lalr/LALRBuilder.cpp
+        src/frontend/parsergen/lalr/LR1ClosureCalculator.cpp
+        src/frontend/parsergen/presentation/presenters/ConsolePresenter.cpp
         src/frontend/semantic/symbols/SymbolTable.cpp
         src/frontend/semantic/Type.cpp
         src/frontend/semantic/rules/TypeRules.cpp
@@ -77,17 +84,21 @@ add_library(cetus_frontend STATIC
         src/frontend/testing/PropertyGenerator.cpp
         src/frontend/testing/TestCoverageAnalyzer.cpp
         src/frontend/testing/TestDiscovery.cpp
-        src/frontend/syntax/parser/AstReductionBuilder.cpp
-        src/frontend/syntax/storage/JsonPreparedGrammarStorage.cpp
+        src/frontend/ast/building/AstReductionBuilder.cpp
+        src/frontend/syntax/parser/ParserEngine.cpp
+        src/frontend/syntax/parser/ParserStack.cpp
+        src/frontend/syntax/diagnostics/SyntaxErrorBuilder.cpp
+        src/frontend/parsergen/storage/JsonPreparedGrammarStorage.cpp
         src/frontend/syntax/parser/TokenSymbolMapper.cpp
-        src/frontend/syntax/presentation/presenters/CsvPresenter.cpp
-        src/frontend/syntax/presentation/presenters/CsvPresenter.h
+        src/frontend/parsergen/presentation/presenters/CsvPresenter.cpp
+        src/frontend/parsergen/presentation/presenters/CsvPresenter.h
         ${CETUS_FRONTEND_HEADERS}
+        src/frontend/syntax/table/ParseTable.h
 )
 
 add_library(cetus_tooling STATIC
-        src/frontend/syntax/GrammarPreparator.cpp
-        src/frontend/syntax/GrammarPreparator.h
+        src/frontend/parsergen/GrammarPreparator.cpp
+        src/frontend/parsergen/GrammarPreparator.h
 )
 
 add_library(cetus_backend_vm STATIC
@@ -201,6 +212,25 @@ add_test(
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
+add_executable(cetus_syntax_tests
+        tests/syntax/SyntaxTests.cpp
+)
+
+target_include_directories(cetus_syntax_tests PRIVATE ${CMAKE_SOURCE_DIR})
+
+target_link_libraries(cetus_syntax_tests
+        PRIVATE
+        cetus_frontend
+        GTest::gtest
+        GTest::gtest_main
+)
+
+add_test(
+        NAME cetus_syntax_tests
+        COMMAND cetus_syntax_tests
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
 if (MSVC)
     foreach(target
             cetus_support
@@ -209,7 +239,8 @@ if (MSVC)
             cetus_backend_vm
             cetus_app_cli
             cetus
-            cetus_smoke_tests)
+            cetus_smoke_tests
+            cetus_syntax_tests)
         target_compile_options(${target} PRIVATE /W4 /WX)
     endforeach()
 else ()
@@ -220,7 +251,8 @@ else ()
             cetus_backend_vm
             cetus_app_cli
             cetus
-            cetus_smoke_tests)
+            cetus_smoke_tests
+            cetus_syntax_tests)
         target_compile_options(${target} PRIVATE -Wall -Wextra -Wpedantic -Werror)
     endforeach()
 endif ()
