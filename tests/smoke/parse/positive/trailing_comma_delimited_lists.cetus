@@ -1,0 +1,48 @@
+type Box struct {
+    value int;
+}
+
+func Sum(
+    left int,
+    right int,
+) int {
+    return left + right
+}
+
+func PairValues() (int, int,) {
+    return 1, 2
+}
+
+func MakeBox(
+    value int,
+) Box {
+    return Box{
+        value: value,
+    }
+}
+
+func (box Box) Add(
+    value int,
+) int {
+    return box.value + value
+}
+
+func main() {
+    first, second := PairValues()
+
+    source := [][]int{
+        []int{first, second,},
+        []int{3, 4,},
+    }
+
+    box := MakeBox(
+        source[0][1],
+    )
+
+    println(Sum(
+        source[1][1],
+        box.Add(
+            2,
+        ),
+    ))
+}

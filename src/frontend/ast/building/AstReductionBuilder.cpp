@@ -282,6 +282,16 @@ AstSemanticValue AstReductionBuilder::BuildArrayLiteral(std::vector<AstSemanticV
 		};
 	}
 
+	if (values.size() == 7
+		&& TakeToken(values, 1).type == TokenType::RBRACKET)
+	{
+		return NodeValue{
+			std::make_unique<ArrayLiteralASTNode>(
+				TypeDescriptor::Slice(TakeType(values, 2)),
+				TakeExpressionList(values, 4))
+		};
+	}
+
 	if (values.size() == 7)
 	{
 		const int length = std::stoi(TakeToken(values, 1).lexeme);
@@ -297,7 +307,22 @@ AstSemanticValue AstReductionBuilder::BuildArrayLiteral(std::vector<AstSemanticV
 		};
 	}
 
-	throw std::logic_error("Array literal reduction expects 6 or 7 semantic values.");
+	if (values.size() == 8)
+	{
+		const int length = std::stoi(TakeToken(values, 1).lexeme);
+		if (length <= 0)
+		{
+			throw std::runtime_error("Array length must be source.");
+		}
+
+		return NodeValue{
+			std::make_unique<ArrayLiteralASTNode>(
+				TypeDescriptor::Array(length, TakeType(values, 3)),
+				TakeExpressionList(values, 5))
+		};
+	}
+
+	throw std::logic_error("Array literal reduction expects 6, 7 or 8 semantic values.");
 }
 
 AstSemanticValue AstReductionBuilder::BuildEmptyArrayLiteral(const std::vector<AstSemanticValue>& values)
@@ -560,7 +585,10 @@ AstSemanticValue AstReductionBuilder::BuildSingleReturnType(const std::vector<As
 
 AstSemanticValue AstReductionBuilder::BuildTupleReturnType(std::vector<AstSemanticValue> values)
 {
-	RequireValueCount(values, 3, "Tuple return type reduction");
+	if (values.size() != 3 && values.size() != 4)
+	{
+		throw std::logic_error("Tuple return type reduction expects 3 or 4 semantic values.");
+	}
 
 	return TypeValue{
 		TypeDescriptor::Tuple(TakeTypeList(values, 1))
@@ -658,7 +686,10 @@ AstSemanticValue AstReductionBuilder::BuildCallNoArgs(const std::vector<AstSeman
 
 AstSemanticValue AstReductionBuilder::BuildCall(std::vector<AstSemanticValue> values)
 {
-	RequireValueCount(values, 4, "Function call reduction");
+	if (values.size() != 4 && values.size() != 5)
+	{
+		throw std::logic_error("Function call reduction expects 4 or 5 semantic values.");
+	}
 
 	return NodeValue{
 		std::make_unique<CallExpressionASTNode>(
@@ -681,7 +712,10 @@ AstSemanticValue AstReductionBuilder::BuildMethodCallNoArgs(std::vector<AstSeman
 
 AstSemanticValue AstReductionBuilder::BuildMethodCall(std::vector<AstSemanticValue> values)
 {
-	RequireValueCount(values, 6, "Method call reduction");
+	if (values.size() != 6 && values.size() != 7)
+	{
+		throw std::logic_error("Method call reduction expects 6 or 7 semantic values.");
+	}
 
 	return NodeValue{
 		std::make_unique<CallExpressionASTNode>(
@@ -964,7 +998,10 @@ AstSemanticValue AstReductionBuilder::BuildVarTypedDeclarationFull(std::vector<A
 
 AstSemanticValue AstReductionBuilder::BuildVarTypedCompositeDeclaration(std::vector<AstSemanticValue> values)
 {
-	RequireValueCount(values, 6, "Typed composite variable declaration reduction");
+	if (values.size() != 6 && values.size() != 7)
+	{
+		throw std::logic_error("Typed composite variable declaration reduction expects 6 or 7 semantic values.");
+	}
 
 	std::vector<ASTNodePtr> initializers;
 	initializers.push_back(std::make_unique<ArrayLiteralASTNode>(
@@ -1024,12 +1061,15 @@ AstSemanticValue AstReductionBuilder::BuildAssertStatement(std::vector<AstSemant
 
 AstSemanticValue AstReductionBuilder::BuildForAllStatement(std::vector<AstSemanticValue> values)
 {
-	RequireValueCount(values, 5, "Forall statement reduction");
+	if (values.size() != 5 && values.size() != 6)
+	{
+		throw std::logic_error("Forall statement reduction expects 5 or 6 semantic values.");
+	}
 
 	return NodeValue{
 		std::make_unique<ForAllStatementASTNode>(
 			TakeParameterList(values, 2),
-			TakeNode(values, 4))
+			TakeNode(values, values.size() - 1))
 	};
 }
 
@@ -1231,27 +1271,33 @@ AstSemanticValue AstReductionBuilder::BuildReturnFunctionNoParams(std::vector<As
 
 AstSemanticValue AstReductionBuilder::BuildVoidFunction(std::vector<AstSemanticValue> values)
 {
-	RequireValueCount(values, 6, "Void function declaration reduction");
+	if (values.size() != 6 && values.size() != 7)
+	{
+		throw std::logic_error("Void function declaration reduction expects 6 or 7 semantic values.");
+	}
 
 	return NodeValue{
 		std::make_unique<FunctionDeclarationASTNode>(
 			TakeToken(values, 1).lexeme,
 			TakeParameterList(values, 3),
 			std::nullopt,
-			TakeNode(values, 5))
+			TakeNode(values, values.size() - 1))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildReturnFunction(std::vector<AstSemanticValue> values)
 {
-	RequireValueCount(values, 7, "Returning function declaration reduction");
+	if (values.size() != 7 && values.size() != 8)
+	{
+		throw std::logic_error("Returning function declaration reduction expects 7 or 8 semantic values.");
+	}
 
 	return NodeValue{
 		std::make_unique<FunctionDeclarationASTNode>(
 			TakeToken(values, 1).lexeme,
 			TakeParameterList(values, 3),
-			TakeType(values, 5),
-			TakeNode(values, 6))
+			TakeType(values, values.size() - 2),
+			TakeNode(values, values.size() - 1))
 	};
 }
 
@@ -1285,7 +1331,10 @@ AstSemanticValue AstReductionBuilder::BuildReturnMethodNoParams(std::vector<AstS
 
 AstSemanticValue AstReductionBuilder::BuildVoidMethod(std::vector<AstSemanticValue> values)
 {
-	RequireValueCount(values, 9, "Void method declaration reduction");
+	if (values.size() != 9 && values.size() != 10)
+	{
+		throw std::logic_error("Void method declaration reduction expects 9 or 10 semantic values.");
+	}
 
 	return NodeValue{
 		std::make_unique<FunctionDeclarationASTNode>(
@@ -1293,21 +1342,24 @@ AstSemanticValue AstReductionBuilder::BuildVoidMethod(std::vector<AstSemanticVal
 			TakeToken(values, 4).lexeme,
 			TakeParameterList(values, 6),
 			std::nullopt,
-			TakeNode(values, 8))
+			TakeNode(values, values.size() - 1))
 	};
 }
 
 AstSemanticValue AstReductionBuilder::BuildReturnMethod(std::vector<AstSemanticValue> values)
 {
-	RequireValueCount(values, 10, "Returning method declaration reduction");
+	if (values.size() != 10 && values.size() != 11)
+	{
+		throw std::logic_error("Returning method declaration reduction expects 10 or 11 semantic values.");
+	}
 
 	return NodeValue{
 		std::make_unique<FunctionDeclarationASTNode>(
 			TakeParameterList(values, 2).front(),
 			TakeToken(values, 4).lexeme,
 			TakeParameterList(values, 6),
-			TakeType(values, 8),
-			TakeNode(values, 9))
+			TakeType(values, values.size() - 2),
+			TakeNode(values, values.size() - 1))
 	};
 }
 

@@ -19,11 +19,15 @@
 ~FunctionDecl~ -> FUNC IDENTIFIER LPAREN RPAREN ~Block~ @function_void_no_params
 ~FunctionDecl~ -> FUNC IDENTIFIER LPAREN RPAREN ~ReturnType~ ~Block~ @function_return_no_params
 ~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~Block~ @function_void
+~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ COMMA RPAREN ~Block~ @function_void
 ~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ RPAREN ~ReturnType~ ~Block~ @function_return
+~FunctionDecl~ -> FUNC IDENTIFIER LPAREN ~ParamList~ COMMA RPAREN ~ReturnType~ ~Block~ @function_return
 ~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN RPAREN ~Block~ @method_void_no_params
 ~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN RPAREN ~ReturnType~ ~Block~ @method_return_no_params
 ~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN ~ParamList~ RPAREN ~Block~ @method_void
+~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN ~ParamList~ COMMA RPAREN ~Block~ @method_void
 ~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN ~ParamList~ RPAREN ~ReturnType~ ~Block~ @method_return
+~FunctionDecl~ -> FUNC LPAREN ~Param~ RPAREN IDENTIFIER LPAREN ~ParamList~ COMMA RPAREN ~ReturnType~ ~Block~ @method_return
 
 ~StmtList~ -> ~StmtList~ ~Stmt~ @statement_list
 ~StmtList~ -> ~Stmt~ @statement_list_single
@@ -33,6 +37,7 @@
 ~Stmt~ -> SEMICOLON @empty_statement
 ~Stmt~ -> ASSERT LPAREN ~Con~ RPAREN SEMICOLON @assert_statement
 ~Stmt~ -> FORALL LPAREN ~ParamList~ RPAREN ~Block~ @forall_statement
+~Stmt~ -> FORALL LPAREN ~ParamList~ COMMA RPAREN ~Block~ @forall_statement
 ~Stmt~ -> RETURN SEMICOLON @return_void
 ~Stmt~ -> RETURN ~ExpressionList~ SEMICOLON @return_value
 ~Stmt~ -> ~IfStmt~ @pass_expr
@@ -55,6 +60,7 @@
 ~VarDecl~ -> VAR ~IdentifierList~ ~Type~ @var_typed_declaration
 ~VarDecl~ -> VAR ~IdentifierList~ ~Type~ EQUAL ~ExpressionList~ @var_typed_initialized_declaration
 ~VarDecl~ -> VAR ~IdentifierList~ ~Type~ LBRACE ~ExpressionList~ RBRACE @var_typed_composite_declaration
+~VarDecl~ -> VAR ~IdentifierList~ ~Type~ LBRACE ~ExpressionList~ COMMA RBRACE @var_typed_composite_declaration
 ~VarDecl~ -> VAR ~IdentifierList~ ~Type~ LBRACE RBRACE @var_typed_empty_composite_declaration
 
 ~ForInit~ -> ~SimpleStmt~ @pass_expr
@@ -87,6 +93,7 @@
 
 ~ReturnType~ -> ~Type~ @single_return_type
 ~ReturnType~ -> LPAREN ~TypeList~ RPAREN @tuple_return_type
+~ReturnType~ -> LPAREN ~TypeList~ COMMA RPAREN @tuple_return_type
 
 ~TypeList~ -> ~TypeList~ COMMA ~Type~ @type_list
 ~TypeList~ -> ~Type~ @type_list_single
@@ -120,10 +127,14 @@
 ~Exp2~ -> LPAREN ~Con~ RPAREN @group
 ~Exp2~ -> IDENTIFIER LPAREN RPAREN @call_no_args
 ~Exp2~ -> IDENTIFIER LPAREN ~ExpressionList~ RPAREN @call
+~Exp2~ -> IDENTIFIER LPAREN ~ExpressionList~ COMMA RPAREN @call
 ~Exp2~ -> ~PostfixExp~ DOT IDENTIFIER LPAREN RPAREN @method_call_no_args
 ~Exp2~ -> ~PostfixExp~ DOT IDENTIFIER LPAREN ~ExpressionList~ RPAREN @method_call
+~Exp2~ -> ~PostfixExp~ DOT IDENTIFIER LPAREN ~ExpressionList~ COMMA RPAREN @method_call
 ~Exp2~ -> LBRACKET INT_LIT RBRACKET ~Type~ LBRACE ~ExpressionList~ RBRACE @array_literal
+~Exp2~ -> LBRACKET INT_LIT RBRACKET ~Type~ LBRACE ~ExpressionList~ COMMA RBRACE @array_literal
 ~Exp2~ -> LBRACKET RBRACKET ~Type~ LBRACE ~ExpressionList~ RBRACE @array_literal
+~Exp2~ -> LBRACKET RBRACKET ~Type~ LBRACE ~ExpressionList~ COMMA RBRACE @array_literal
 ~Exp2~ -> LBRACKET INT_LIT RBRACKET ~Type~ LBRACE RBRACE @array_literal_empty
 ~Exp2~ -> LBRACKET RBRACKET ~Type~ LBRACE RBRACE @array_literal_empty
 ~Exp2~ -> TYPE_IDENTIFIER LBRACE ~FieldInitList~ RBRACE @struct_literal
