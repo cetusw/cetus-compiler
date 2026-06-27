@@ -1,0 +1,850 @@
+type Matrix struct {
+    values [][]int
+    rows int
+    cols int
+    rectangular bool
+}
+
+func NewMatrix(values [][]int) Matrix {
+    copied := [][]int{}
+    rows := len(values)
+    cols := 0
+    rectangular := true
+
+    if rows > 0 {
+        cols = len(values[0])
+    }
+
+    for i := 0; i < len(values); i++ {
+        row := []int{}
+
+        if len(values[i]) != cols {
+            rectangular = false
+        }
+
+        for j := 0; j < len(values[i]); j++ {
+            row = append(row, values[i][j])
+        }
+
+        copied = append(copied, row)
+    }
+
+    m := Matrix{
+        values: copied,
+        rows: rows,
+        cols: cols,
+        rectangular: rectangular,
+    }
+
+    return m
+}
+
+test "NewMatrix" {
+    source := [][]int{
+        []int{1, 2},
+        []int{3, 4},
+    }
+
+    matrix := NewMatrix(source)
+
+    // проверяем корректность размера созданной матрицы
+    assert(matrix.Rows() == 2)
+    assert(matrix.Cols() == 2)
+
+    // проверяем, что созданная матрица - прямоугольная
+    assert(matrix.IsRectangular())
+
+    // проверяем, что значения соответствуют заданным. не меняется порядок, значения
+    assert(matrix.values[0][0] == 1)
+    assert(matrix.values[0][1] == 2)
+    assert(matrix.values[1][0] == 3)
+    assert(matrix.values[1][1] == 4)
+
+    // проверка, что матрица копируется, а не ссылается на ту же область данных
+    source[0][0] = 999
+
+    assert(matrix.values[0][0] == 1)
+}
+
+func (m Matrix) IsRectangular() bool {
+    return m.rectangular
+}
+
+test "Matrix.IsRectangular" {
+    empty := NewMatrix([][]int{})
+
+    // Проверяем, что пустая матрица считается прямоугольной
+    assert(empty.IsRectangular())
+
+    singleRow := NewMatrix([][]int{
+        []int{1, 2, 3},
+    })
+
+    // Проверяем, что матрица с одной строкой считается прямоугольной
+    assert(singleRow.IsRectangular())
+
+    rectangular := NewMatrix([][]int{
+        []int{1, 2, 3},
+        []int{4, 5, 6},
+        []int{7, 8, 9},
+    })
+
+    // Проверяем, что матрица с одинаковой длиной всех строк считается прямоугольной
+    assert(rectangular.IsRectangular())
+
+    jagged := NewMatrix([][]int{
+        []int{1, 2, 3},
+        []int{4, 5},
+        []int{6, 7, 8},
+    })
+
+    // Проверяем, что матрица с разной длиной строк не считается прямоугольной
+    assert(!jagged.IsRectangular())
+}
+
+func (m Matrix) Rows() int {
+    return m.rows
+}
+
+test "Matrix.Rows" {
+    empty := NewMatrix([][]int{})
+
+    // Проверяем, что у пустой матрицы количество строк равно нулю
+    assert(empty.Rows() == 0)
+
+    singleRow := NewMatrix([][]int{
+        []int{1, 2, 3},
+    })
+
+    // Проверяем, что матрица с одной строкой возвращает одну строку
+    assert(singleRow.Rows() == 1)
+
+    rectangular := NewMatrix([][]int{
+        []int{1, 2, 3},
+        []int{4, 5, 6},
+        []int{7, 8, 9},
+    })
+
+    // Проверяем, что количество строк считается по числу вложенных слайсов
+    assert(rectangular.Rows() == 3)
+
+    jagged := NewMatrix([][]int{
+        []int{1, 2, 3},
+        []int{4},
+        []int{5, 6},
+        []int{},
+    })
+
+    // Проверяем, что Rows считает строки даже у непрямоугольной матрицы
+    assert(jagged.Rows() == 4)
+}
+
+func (m Matrix) Cols() int {
+    return m.cols
+}
+
+test "Matrix.Cols" {
+    empty := NewMatrix([][]int{})
+
+    // Проверяем, что у пустой матрицы количество столбцов равно нулю
+    assert(empty.Cols() == 0)
+
+    singleRow := NewMatrix([][]int{
+        []int{1},
+        []int{2},
+        []int{3},
+    })
+
+    // Проверяем, что матрица с одним столбцом возвращает один столбец
+    assert(singleRow.Cols() == 1)
+
+    rectangular := NewMatrix([][]int{
+        []int{1, 2, 3},
+        []int{4, 5, 6},
+        []int{7, 8, 9},
+    })
+
+    // Проверяем, что количество столбцов считается по размеру вложенного массива
+    assert(rectangular.Cols() == 3)
+
+    jagged := NewMatrix([][]int{
+        []int{1, 2, 3},
+        []int{4},
+        []int{5, 6},
+        []int{},
+    })
+
+    // Проверяем, что Cols считает строки даже у непрямоугольной матрицы
+    assert(jagged.Cols() == 3)
+}
+
+func ZeroMatrix(rows int, cols int) Matrix {
+    values := [][]int{}
+
+    for i := 0; i < rows; i++ {
+        row := []int{}
+
+        for j := 0; j < cols; j++ {
+            row = append(row, 0)
+        }
+
+        values = append(values, row)
+    }
+
+    return Matrix{
+        values: values,
+        rows: rows,
+        cols: cols,
+        rectangular: true,
+    }
+}
+
+test "ZeroMatrix" {
+    forall(rows int, cols int) {
+        matrix := ZeroMatrix(rows, cols)
+
+        assert(matrix.Rows() == rows)
+        assert(matrix.Cols() == cols)
+        assert(matrix.IsRectangular())
+
+        for i := 0; i < matrix.Rows(); i++ {
+            for j := 0; j < matrix.Cols(); j++ {
+                assert(matrix.values[i][j] == 0)
+            }
+        }
+    }
+}
+
+func IdentityMatrix(size int) Matrix {
+    matrix := ZeroMatrix(size, size)
+
+    for i := 0; i < size; i++ {
+        matrix.values[i][i] = 1
+    }
+
+    return matrix
+}
+
+test "IdentityMatrix" {
+    empty := IdentityMatrix(0)
+
+    // Проверяем, что единичная матрица размера 0 имеет ноль строк и ноль столбцов
+    assert(empty.Rows() == 0)
+    assert(empty.Cols() == 0)
+
+    // Проверяем, что пустая единичная матрица считается прямоугольной
+    assert(empty.IsRectangular())
+
+    one := IdentityMatrix(1)
+
+    // Проверяем, что единичная матрица размера 1 имеет размер 1x1
+    assert(one.Rows() == 1)
+    assert(one.Cols() == 1)
+
+    // Проверяем, что единственный диагональный элемент равен единице
+    assert(one.values[0][0] == 1)
+
+    matrix := IdentityMatrix(3)
+
+    // Проверяем, что единичная матрица размера 3 имеет размер 3x3
+    assert(matrix.Rows() == 3)
+    assert(matrix.Cols() == 3)
+
+    // Проверяем, что единичная матрица является прямоугольной
+    assert(matrix.IsRectangular())
+
+    // Проверяем, что диагональные элементы равны единице, а остальные элементы равны нулю
+    // TODO повторяет логику функции
+    for i := 0; i < matrix.Rows(); i++ {
+        for j := 0; j < matrix.Cols(); j++ {
+            if i == j {
+                assert(matrix.values[i][j] == 1)
+            } else {
+                assert(matrix.values[i][j] == 0)
+            }
+        }
+    }
+}
+
+func SameShape(left Matrix, right Matrix) bool {
+    return left.Rows() == right.Rows() && left.Cols() == right.Cols()
+}
+
+test "SameShape" {
+    left := NewMatrix([][]int{
+        []int{1, 2},
+        []int{3, 4},
+    })
+
+    right := NewMatrix([][]int{
+        []int{5, 6},
+        []int{7, 8},
+    })
+
+    // Проверяем, что матрицы одинакового размера имеют одинаковую форму
+    assert(SameShape(left, right))
+
+    differentRows := NewMatrix([][]int{
+        []int{1, 2},
+        []int{3, 4},
+        []int{5, 6},
+    })
+
+    // Проверяем, что матрицы с разным количеством строк имеют разную форму
+    assert(!SameShape(left, differentRows))
+
+    differentCols := NewMatrix([][]int{
+        []int{1, 2, 3},
+        []int{4, 5, 6},
+    })
+
+    // Проверяем, что матрицы с разным количеством столбцов имеют разную форму
+    assert(!SameShape(left, differentCols))
+
+    emptyLeft := NewMatrix([][]int{})
+    emptyRight := NewMatrix([][]int{})
+
+    // Проверяем, что две пустые матрицы имеют одинаковую форму 0x0
+    assert(SameShape(emptyLeft, emptyRight))
+
+    zeroRows := ZeroMatrix(0, 0)
+    nonEmpty := ZeroMatrix(1, 1)
+
+    // Проверяем, что пустая и непустая матрицы имеют разную форму
+    assert(!SameShape(zeroRows, nonEmpty))
+
+    rowMatrix := ZeroMatrix(1, 3)
+    anotherRowMatrix := NewMatrix([][]int{
+        []int{10, 20, 30},
+    })
+
+    // Проверяем, что форма зависит только от размеров, а не от значений элементов
+    assert(SameShape(rowMatrix, anotherRowMatrix))
+}
+
+func CanMultiply(left Matrix, right Matrix) bool {
+    if !left.IsRectangular() {
+        return false
+    }
+
+    if !right.IsRectangular() {
+        return false
+    }
+
+    return left.Cols() == right.Rows()
+}
+
+test "CanMultiply" {
+    left := ZeroMatrix(2, 3)
+    right := ZeroMatrix(3, 4)
+
+    // Проверяем, что матрицы можно умножить, если количество столбцов первой равно количеству строк второй
+    assert(CanMultiply(left, right))
+
+    incompatible := ZeroMatrix(2, 4)
+
+    // Проверяем, что матрицы нельзя умножить, если количество столбцов первой не равно количеству строк второй
+    assert(!CanMultiply(left, incompatible))
+
+    squareLeft := ZeroMatrix(3, 3)
+    squareRight := ZeroMatrix(3, 3)
+
+    // Проверяем, что квадратные матрицы одинакового размера можно умножить
+    assert(CanMultiply(squareLeft, squareRight))
+
+    rowMatrix := ZeroMatrix(1, 3)
+    columnMatrix := ZeroMatrix(3, 1)
+
+    // Проверяем, что строку можно умножить на столбец при совместимых размерах
+    assert(CanMultiply(rowMatrix, columnMatrix))
+
+    reverseLeft := ZeroMatrix(3, 1)
+    reverseRight := ZeroMatrix(1, 3)
+
+    // Проверяем, что столбец можно умножить на строку при совместимых размерах
+    assert(CanMultiply(reverseLeft, reverseRight))
+
+    empty := ZeroMatrix(0, 0)
+    nonEmpty := ZeroMatrix(2, 2)
+
+    // Проверяем, что пустую матрицу нельзя умножить на непустую при несовместимых размерах
+    assert(!CanMultiply(empty, nonEmpty))
+
+    jagged := NewMatrix([][]int{
+        []int{1, 2, 3},
+        []int{4},
+    })
+
+    valid := ZeroMatrix(3, 2)
+
+    // Проверяем, что непрямоугольная левая матрица не допускается к умножению
+    assert(!CanMultiply(jagged, valid))
+
+    validLeft := ZeroMatrix(2, 2)
+
+    // Проверяем, что непрямоугольная правая матрица не допускается к умножению
+    assert(!CanMultiply(validLeft, jagged))
+}
+
+func EqualMatrix(left Matrix, right Matrix) bool {
+    if !left.IsRectangular() {
+        return false
+    }
+
+    if !right.IsRectangular() {
+        return false
+    }
+
+    if !SameShape(left, right) {
+        return false
+    }
+
+    for i := 0; i < left.Rows(); i++ {
+        for j := 0; j < left.Cols(); j++ {
+            if left.values[i][j] != right.values[i][j] {
+                return false
+            }
+        }
+    }
+
+    return true
+}
+
+test "EqualMatrix" {
+    left := NewMatrix([][]int{
+        []int{1, 2},
+        []int{3, 4},
+    })
+
+    same := NewMatrix([][]int{
+        []int{1, 2},
+        []int{3, 4},
+    })
+
+    // Проверяем, что матрицы одинаковой формы с одинаковыми значениями считаются равными
+    assert(EqualMatrix(left, same))
+
+    differentValue := NewMatrix([][]int{
+        []int{1, 2},
+        []int{3, 999},
+    })
+
+    // Проверяем, что матрицы одинаковой формы с разными значениями не считаются равными
+    assert(!EqualMatrix(left, differentValue))
+
+    differentRows := NewMatrix([][]int{
+        []int{1, 2},
+        []int{3, 4},
+        []int{5, 6},
+    })
+
+    // Проверяем, что матрицы с разным количеством строк не считаются равными
+    assert(!EqualMatrix(left, differentRows))
+
+    differentCols := NewMatrix([][]int{
+        []int{1, 2, 3},
+        []int{4, 5, 6},
+    })
+
+    // Проверяем, что матрицы с разным количеством столбцов не считаются равными
+    assert(!EqualMatrix(left, differentCols))
+
+    emptyLeft := NewMatrix([][]int{})
+    emptyRight := NewMatrix([][]int{})
+
+    // Проверяем, что две пустые матрицы считаются равными
+    assert(EqualMatrix(emptyLeft, emptyRight))
+
+    zero := ZeroMatrix(2, 2)
+    explicitZero := NewMatrix([][]int{
+        []int{0, 0},
+        []int{0, 0},
+    })
+
+    // Проверяем, что равенство зависит от значений, а не от способа создания матрицы
+    assert(EqualMatrix(zero, explicitZero))
+
+    jaggedLeft := NewMatrix([][]int{
+        []int{1, 2},
+        []int{3},
+    })
+
+    jaggedRight := NewMatrix([][]int{
+        []int{1, 2},
+        []int{3},
+    })
+
+    // Проверяем, что непрямоугольные матрицы не сравниваются поэлементно
+    assert(!EqualMatrix(jaggedLeft, jaggedRight))
+}
+
+func AddMatrix(left Matrix, right Matrix) Matrix {
+    if !left.IsRectangular() {
+        return ZeroMatrix(0, 0)
+    }
+
+    if !right.IsRectangular() {
+        return ZeroMatrix(0, 0)
+    }
+
+    if !SameShape(left, right) {
+        return ZeroMatrix(0, 0)
+    }
+
+    result := ZeroMatrix(left.Rows(), left.Cols())
+
+    for i := 0; i < left.Rows(); i++ {
+        for j := 0; j < left.Cols(); j++ {
+            result.values[i][j] = left.values[i][j] + right.values[i][j]
+        }
+    }
+
+    return result
+}
+
+test "AddMatrix" {
+    left := NewMatrix([][]int{
+        []int{1, 2},
+        []int{3, 4},
+    })
+
+    right := NewMatrix([][]int{
+        []int{10, 20},
+        []int{30, 40},
+    })
+
+    result := AddMatrix(left, right)
+
+    // Проверяем, что результат сложения имеет тот же размер, что и исходные матрицы
+    assert(result.Rows() == 2)
+    assert(result.Cols() == 2)
+
+    // Проверяем, что результат сложения является прямоугольной матрицей
+    assert(result.IsRectangular())
+
+    // Проверяем, что элементы результата равны сумме соответствующих элементов исходных матриц
+    assert(result.values[0][0] == 11)
+    assert(result.values[0][1] == 22)
+    assert(result.values[1][0] == 33)
+    assert(result.values[1][1] == 44)
+
+    // Проверяем, что AddMatrix не изменяет левую исходную матрицу
+    assert(left.values[0][0] == 1)
+    assert(left.values[0][1] == 2)
+    assert(left.values[1][0] == 3)
+    assert(left.values[1][1] == 4)
+
+    // Проверяем, что AddMatrix не изменяет правую исходную матрицу
+    assert(right.values[0][0] == 10)
+    assert(right.values[0][1] == 20)
+    assert(right.values[1][0] == 30)
+    assert(right.values[1][1] == 40)
+
+    zero := ZeroMatrix(2, 2)
+    sameAfterZeroAdd := AddMatrix(left, zero)
+
+    // Проверяем, что прибавление нулевой матрицы не меняет матрицу
+    assert(EqualMatrix(sameAfterZeroAdd, left))
+
+    reverse := AddMatrix(right, left)
+
+    // Проверяем коммутативность сложения для матриц одинаковой формы
+    assert(EqualMatrix(result, reverse))
+
+    differentShape := ZeroMatrix(3, 2)
+    invalid := AddMatrix(left, differentShape)
+
+    // Проверяем, что при разных размерах AddMatrix возвращает пустую матрицу 0x0
+    assert(invalid.Rows() == 0)
+    assert(invalid.Cols() == 0)
+    assert(invalid.IsRectangular())
+
+    jagged := NewMatrix([][]int{
+        []int{1, 2},
+        []int{3},
+    })
+
+    invalidJagged := AddMatrix(left, jagged)
+
+    // Проверяем, что непрямоугольная матрица не допускается к сложению
+    assert(invalidJagged.Rows() == 0)
+    assert(invalidJagged.Cols() == 0)
+    assert(invalidJagged.IsRectangular())
+}
+
+func TransposeMatrix(matrix Matrix) Matrix {
+    if !matrix.IsRectangular() {
+        return ZeroMatrix(0, 0)
+    }
+
+    result := ZeroMatrix(matrix.Cols(), matrix.Rows())
+
+    for i := 0; i < matrix.Rows(); i++ {
+        for j := 0; j < matrix.Cols(); j++ {
+            result.values[j][i] = matrix.values[i][j]
+        }
+    }
+
+    return result
+}
+
+test "TransposeMatrix" {
+    matrix := NewMatrix([][]int{
+        []int{1, 2, 3},
+        []int{4, 5, 6},
+    })
+
+    transposed := TransposeMatrix(matrix)
+
+    // Проверяем, что транспонированная матрица имеет поменянные местами размеры
+    assert(transposed.Rows() == 3)
+    assert(transposed.Cols() == 2)
+
+    // Проверяем, что результат транспонирования является прямоугольной матрицей
+    assert(transposed.IsRectangular())
+
+    // Проверяем, что строки исходной матрицы стали столбцами транспонированной матрицы
+    assert(transposed.values[0][0] == 1)
+    assert(transposed.values[0][1] == 4)
+
+    assert(transposed.values[1][0] == 2)
+    assert(transposed.values[1][1] == 5)
+
+    assert(transposed.values[2][0] == 3)
+    assert(transposed.values[2][1] == 6)
+
+    // Проверяем, что TransposeMatrix не изменяет исходную матрицу
+    assert(matrix.values[0][0] == 1)
+    assert(matrix.values[0][1] == 2)
+    assert(matrix.values[0][2] == 3)
+    assert(matrix.values[1][0] == 4)
+    assert(matrix.values[1][1] == 5)
+    assert(matrix.values[1][2] == 6)
+
+    doubleTransposed := TransposeMatrix(transposed)
+
+    // Проверяем свойство двойного транспонирования: transpose(transpose(A)) = A
+    assert(EqualMatrix(doubleTransposed, matrix))
+
+    square := NewMatrix([][]int{
+        []int{1, 2},
+        []int{3, 4},
+    })
+
+    squareTransposed := TransposeMatrix(square)
+
+    // Проверяем транспонирование квадратной матрицы
+    assert(squareTransposed.Rows() == 2)
+    assert(squareTransposed.Cols() == 2)
+    assert(squareTransposed.values[0][0] == 1)
+    assert(squareTransposed.values[0][1] == 3)
+    assert(squareTransposed.values[1][0] == 2)
+    assert(squareTransposed.values[1][1] == 4)
+
+    singleRow := NewMatrix([][]int{
+        []int{7, 8, 9},
+    })
+
+    singleRowTransposed := TransposeMatrix(singleRow)
+
+    // Проверяем, что матрица-строка превращается в матрицу-столбец
+    assert(singleRowTransposed.Rows() == 3)
+    assert(singleRowTransposed.Cols() == 1)
+    assert(singleRowTransposed.values[0][0] == 7)
+    assert(singleRowTransposed.values[1][0] == 8)
+    assert(singleRowTransposed.values[2][0] == 9)
+
+    empty := NewMatrix([][]int{})
+    emptyTransposed := TransposeMatrix(empty)
+
+    // Проверяем, что транспонирование пустой матрицы возвращает пустую матрицу
+    assert(emptyTransposed.Rows() == 0)
+    assert(emptyTransposed.Cols() == 0)
+    assert(emptyTransposed.IsRectangular())
+
+    jagged := NewMatrix([][]int{
+        []int{1, 2, 3},
+        []int{4},
+    })
+
+    invalid := TransposeMatrix(jagged)
+
+    // Проверяем, что непрямоугольная матрица не транспонируется и даёт пустую матрицу 0x0
+    assert(invalid.Rows() == 0)
+    assert(invalid.Cols() == 0)
+    assert(invalid.IsRectangular())
+}
+
+func MultiplyMatrix(left Matrix, right Matrix) Matrix
+require CanMultiply(left, right)
+{
+    result := ZeroMatrix(left.Rows(), right.Cols())
+
+    for i := 0; i < left.Rows(); i++ {
+        for j := 0; j < right.Cols(); j++ {
+            sum := 0
+
+            for k := 0; k < left.Cols(); k++ {
+                sum = sum + left.values[i][k] * right.values[k][j]
+            }
+
+            result.values[i][j] = sum
+        }
+    }
+
+    return result
+}
+ensures result.IsRectangular()
+
+test "MultiplyMatrix" {
+    left := NewMatrix([][]int{
+        []int{1, 2, 3},
+        []int{4, 5, 6},
+    })
+
+    right := NewMatrix([][]int{
+        []int{7, 8},
+        []int{9, 10},
+        []int{11, 12},
+    })
+
+    result := MultiplyMatrix(left, right)
+
+    // Проверяем, что результат умножения имеет размер rows(left) x cols(right)
+    assert(result.Rows() == 2)
+    assert(result.Cols() == 2)
+
+    // Проверяем, что результат умножения является прямоугольной матрицей
+    assert(result.IsRectangular())
+
+    // Проверяем, что элементы результата вычислены по правилу строка на столбец
+    assert(result.values[0][0] == 58)
+    assert(result.values[0][1] == 64)
+    assert(result.values[1][0] == 139)
+    assert(result.values[1][1] == 154)
+
+    // Проверяем, что MultiplyMatrix не изменяет левую исходную матрицу
+    assert(left.values[0][0] == 1)
+    assert(left.values[0][1] == 2)
+    assert(left.values[0][2] == 3)
+    assert(left.values[1][0] == 4)
+    assert(left.values[1][1] == 5)
+    assert(left.values[1][2] == 6)
+
+    // Проверяем, что MultiplyMatrix не изменяет правую исходную матрицу
+    assert(right.values[0][0] == 7)
+    assert(right.values[0][1] == 8)
+    assert(right.values[1][0] == 9)
+    assert(right.values[1][1] == 10)
+    assert(right.values[2][0] == 11)
+    assert(right.values[2][1] == 12)
+
+    square := NewMatrix([][]int{
+        []int{1, 2},
+        []int{3, 4},
+    })
+
+    identity := IdentityMatrix(2)
+
+    leftIdentity := MultiplyMatrix(identity, square)
+    rightIdentity := MultiplyMatrix(square, identity)
+
+    // Проверяем левый нейтральный элемент умножения: I * A = A
+    assert(EqualMatrix(leftIdentity, square))
+
+    // Проверяем правый нейтральный элемент умножения: A * I = A
+    assert(EqualMatrix(rightIdentity, square))
+
+    zero := ZeroMatrix(2, 2)
+
+    leftZero := MultiplyMatrix(zero, square)
+    rightZero := MultiplyMatrix(square, zero)
+
+    // Проверяем левую нулевую матрицу: 0 * A = 0
+    assert(EqualMatrix(leftZero, zero))
+
+    // Проверяем правую нулевую матрицу: A * 0 = 0
+    assert(EqualMatrix(rightZero, zero))
+
+    a := NewMatrix([][]int{
+        []int{1, 2},
+        []int{3, 4},
+    })
+
+    b := NewMatrix([][]int{
+        []int{5, 6},
+        []int{7, 8},
+    })
+
+    c := NewMatrix([][]int{
+        []int{9, 10},
+        []int{11, 12},
+    })
+
+    leftAssociated := MultiplyMatrix(MultiplyMatrix(a, b), c)
+    rightAssociated := MultiplyMatrix(a, MultiplyMatrix(b, c))
+
+    // Проверяем ассоциативность умножения: (A * B) * C = A * (B * C)
+    assert(EqualMatrix(leftAssociated, rightAssociated))
+
+    transposeLeft := TransposeMatrix(MultiplyMatrix(a, b))
+    transposeRight := MultiplyMatrix(TransposeMatrix(b), TransposeMatrix(a))
+
+    // Проверяем свойство транспонирования произведения: transpose(A * B) = transpose(B) * transpose(A)
+    assert(EqualMatrix(transposeLeft, transposeRight))
+
+    incompatibleLeft := ZeroMatrix(2, 3)
+    incompatibleRight := ZeroMatrix(2, 2)
+
+    invalid := MultiplyMatrix(incompatibleLeft, incompatibleRight)
+
+    // Проверяем, что при несовместимых размерах MultiplyMatrix возвращает пустую матрицу 0x0
+    assert(invalid.Rows() == 0)
+    assert(invalid.Cols() == 0)
+    assert(invalid.IsRectangular())
+
+    jagged := NewMatrix([][]int{
+        []int{1, 2},
+        []int{3},
+    })
+
+    valid := ZeroMatrix(2, 2)
+
+    invalidJaggedLeft := MultiplyMatrix(jagged, valid)
+    invalidJaggedRight := MultiplyMatrix(valid, jagged)
+
+    // Проверяем, что непрямоугольная левая матрица не допускается к умножению
+    assert(invalidJaggedLeft.Rows() == 0)
+    assert(invalidJaggedLeft.Cols() == 0)
+
+    // Проверяем, что непрямоугольная правая матрица не допускается к умножению
+    assert(invalidJaggedRight.Rows() == 0)
+    assert(invalidJaggedRight.Cols() == 0)
+}
+
+func PrintMatrix(matrix Matrix) {
+    for i := 0; i < matrix.Rows(); i++ {
+        println(matrix.values[i])
+    }
+}
+
+test "PrintMatrix" {
+    // TODO придумать как тестировать вывод
+    assert(true)
+}
+
+func main() {
+    a := NewMatrix([][]int{
+        []int{1, 2, 3},
+        []int{4, 5},
+        []int{7, 8, 9},
+    })
+
+    b := NewMatrix([][]int{
+        []int{1, 2, 3},
+        []int{4, 5, 6},
+        []int{7, 8, 9},
+    })
+
+    PrintMatrix(MultiplyMatrix(a, b))
+}
